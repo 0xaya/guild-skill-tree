@@ -22,7 +22,7 @@ export default function Home() {
           style={{
             fontSize: "1.5rem",
             fontWeight: "bold",
-            color: "#e879f9",
+            color: "#f979d6",
           }}
         >
           ギルドスキルツリーシミュレータ

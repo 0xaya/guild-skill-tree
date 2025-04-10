@@ -301,7 +301,7 @@ export function SkillTreeSimulator() {
             overflowY: "auto",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#e879f9", marginBottom: "0.5rem" }}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#f979d6", marginBottom: "0.5rem" }}>
             スキルシミュレーション
           </h2>
 
