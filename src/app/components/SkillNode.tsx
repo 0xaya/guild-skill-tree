@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Skill, CATEGORY_COLORS } from "../types/skill";
+import { Skill } from "../types/skill";
+import { SKILL_CATEGORY_COLORS, SkillCategory } from "../utils/skillUtils";
 
 interface SkillNodeProps {
   skill: Skill;
@@ -50,15 +51,15 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const categoryColorHex = CATEGORY_COLORS[skill.category as keyof typeof CATEGORY_COLORS] || "#666666";
+  const categoryColor = SKILL_CATEGORY_COLORS[skill.category as SkillCategory] || "#666";
   const isActive = selectedLevel > 0;
   const isCore = skill.id === "core";
 
   // 背景色の透明度を全体的に下げる（未選択時0.15→0.12、選択時0.4→0.3）
   const nodeBgColor = isActive
-    ? hexToRgba(categoryColorHex, 0.3) // アクティブ時の透明度を下げる
-    : hexToRgba(categoryColorHex, 0.12); // 未取得時の透明度を下げる
-  const nodeBorderColor = isActive ? categoryColorHex : "rgba(120, 120, 140, 0.4)";
+    ? `${categoryColor}40` // alpha: 0.3
+    : `${categoryColor}20`; // alpha: 0.12
+  const nodeBorderColor = isActive ? categoryColor : "rgba(120, 120, 140, 0.4)";
 
   // ノードのスタイルを設定
   const nodeWidth = isCore ? 60 : 90; // コアは小さく、それ以外は幅広く
@@ -85,7 +86,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     fontSize: isCore ? "12px" : "10px", // コアは少し大きいフォント
     fontWeight: isCore ? "bold" : "normal",
     boxShadow: isActive
-      ? `0 0 ${isCore ? "15px" : "8px"} ${categoryColorHex}70, 0 0 ${isCore ? "8px" : "4px"} ${categoryColorHex}50`
+      ? `0 0 ${isCore ? "15px" : "8px"} ${categoryColor}70, 0 0 ${isCore ? "8px" : "4px"} ${categoryColor}50`
       : "none", // コアはより強いグロー効果
     transition: "all 0.2s ease-in-out",
     zIndex: isCore ? 15 : 10, // コアを少し前面に
@@ -99,7 +100,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     left: "0",
     transform: "translateX(-50%)",
     backgroundColor: "rgba(30, 30, 40, 0.95)",
-    border: `1px solid ${categoryColorHex}80`,
+    border: `1px solid ${categoryColor}80`,
     borderRadius: "8px",
     padding: "10px",
     zIndex: 100,

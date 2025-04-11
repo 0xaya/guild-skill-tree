@@ -2,61 +2,17 @@ import { SkillTreeSimulator } from "./components/SkillTreeSimulator";
 
 export default function Home() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#111",
-        color: "#fff",
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-      }}
-    >
-      <header
-        style={{
-          padding: "1rem",
-          borderBottom: "1px solid #333",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            color: "#f979d6",
-          }}
-        >
-          ギルドスキルツリーシミュレータ
-        </h1>
-        <p
-          style={{
-            fontSize: "0.875rem",
-            color: "#999",
-          }}
-        >
-          元素騎士オンライン - ギルドスキルのシミュレーションができます
-        </p>
+    <div className="min-h-screen flex flex-col w-full bg-background-dark text-text-primary">
+      <header className="p-4 border-b border-background-light">
+        <h1 className="text-2xl font-bold text-primary">ギルドスキルツリーシミュレータ</h1>
+        <p className="text-sm text-text-muted">元素騎士オンライン - ギルドスキルのシミュレーションができます</p>
       </header>
 
-      <main
-        style={{
-          flex: "1",
-          display: "flex",
-          justifyContent: "center",
-          padding: "1rem",
-        }}
-      >
+      <main className="flex-1 flex justify-center p-4">
         <SkillTreeSimulator />
       </main>
 
-      <footer
-        style={{
-          padding: "1rem",
-          textAlign: "center",
-          fontSize: "0.75rem",
-          color: "#666",
-          borderTop: "1px solid #333",
-        }}
-      >
+      <footer className="p-4 text-center text-xs text-text-muted border-t border-background-light">
         <p>© pocoapoco</p>
       </footer>
     </div>

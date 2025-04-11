@@ -5,6 +5,7 @@ import { Skill } from "../types/skill";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
 import { loadSkillsFromCSV, isSkillUnlocked, calculateTotalCost, SKILL_POSITIONS } from "../utils/skillUtils";
+import { THEME_COLORS } from "../styles/theme";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -130,127 +131,40 @@ export function SkillTreeSimulator() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        width: "100%",
-        height: "100%",
-        gap: "1rem",
-        padding: "1rem",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          flexGrow: 1,
-          gap: "1rem",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            position: "relative",
-            flex: "2",
-            minHeight: "600px",
-            backgroundColor: "rgba(30, 30, 40, 0.8)",
-            borderRadius: "0.5rem",
-            overflow: "hidden",
-            border: "1px solid #444",
-          }}
-        >
+    <div className="flex flex-col w-full h-full gap-4 p-4">
+      <div className="flex flex-grow gap-4 flex-col">
+        <div className="relative flex-[2] min-h-[600px] bg-background-medium rounded-lg overflow-hidden border border-background-light">
           {isLoading ? (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                width: "100%",
-                height: "100%",
-                backgroundColor: "rgba(0, 0, 0, 0.7)",
-                borderRadius: "0.5rem",
-              }}
-            >
+            <div className="flex justify-center items-center w-full h-full bg-background-dark/70 rounded-lg">
               <p>読み込み中...</p>
             </div>
           ) : (
             <>
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: "1rem",
-                  left: "1rem",
-                  zIndex: 50,
-                  display: "flex",
-                  gap: "0.5rem",
-                }}
-              >
+              <div className="absolute bottom-4 left-4 z-50 flex gap-2">
                 <button
                   onClick={handleZoomIn}
-                  style={{
-                    width: "2.5rem",
-                    height: "2.5rem",
-                    backgroundColor: "rgba(50, 50, 60, 0.9)",
-                    border: "1px solid #666",
-                    borderRadius: "0.25rem",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "white",
-                    fontSize: "1.25rem",
-                    cursor: "pointer",
-                  }}
+                  className="w-10 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-xl cursor-pointer"
                 >
                   +
                 </button>
                 <button
                   onClick={handleZoomOut}
-                  style={{
-                    width: "2.5rem",
-                    height: "2.5rem",
-                    backgroundColor: "rgba(50, 50, 60, 0.9)",
-                    border: "1px solid #666",
-                    borderRadius: "0.25rem",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "white",
-                    fontSize: "1.25rem",
-                    cursor: "pointer",
-                  }}
+                  className="w-10 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-xl cursor-pointer"
                 >
                   -
                 </button>
                 <button
                   onClick={handleZoomReset}
-                  style={{
-                    padding: "0 0.75rem",
-                    height: "2.5rem",
-                    backgroundColor: "rgba(50, 50, 60, 0.9)",
-                    border: "1px solid #666",
-                    borderRadius: "0.25rem",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    color: "white",
-                    fontSize: "0.875rem",
-                    cursor: "pointer",
-                  }}
+                  className="px-3 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-sm cursor-pointer"
                 >
                   Reset
                 </button>
               </div>
 
               <div
+                className="absolute w-[800px] h-[800px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ease-out"
                 style={{
-                  position: "absolute",
-                  width: "800px",
-                  height: "800px",
-                  top: "50%",
-                  left: "50%",
                   transform: `translate(-50%, -50%) scale(${scale}) translate(${position.x}px, ${position.y}px)`,
-                  transformOrigin: "center",
-                  transition: "transform 0.2s ease-out",
                 }}
               >
                 {skills.map(skill =>
@@ -287,63 +201,13 @@ export function SkillTreeSimulator() {
           )}
         </div>
 
-        <div
-          style={{
-            flex: "1",
-            backgroundColor: "rgba(30, 30, 40, 0.8)",
-            borderRadius: "0.5rem",
-            padding: "1rem",
-            display: "flex",
-            flexDirection: "column",
-            gap: "1rem",
-            border: "1px solid #444",
-            maxHeight: "calc(100vh - 4rem)",
-            overflowY: "auto",
-          }}
-        >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold", color: "#f979d6", marginBottom: "0.5rem" }}>
-            スキルシミュレーション
-          </h2>
+        <div className="flex-1 bg-background-medium rounded-lg p-4 flex flex-col gap-4 border border-background-light max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <h2 className="text-xl font-bold text-secondary mb-2">スキルシミュレーション</h2>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem",
-              backgroundColor: "rgba(0, 0, 0, 0.2)",
-              padding: "0.75rem",
-              borderRadius: "0.25rem",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: "0.25rem",
-              }}
-            >
-              <h3
-                style={{
-                  fontSize: "1rem",
-                  fontWeight: "bold",
-                  color: "#f9a8d4",
-                }}
-              >
-                ギルドランク
-              </h3>
-              <span
-                style={{
-                  backgroundColor: "#f9a8d4",
-                  color: "black",
-                  borderRadius: "9999px",
-                  padding: "0.1rem 0.6rem",
-                  fontWeight: "bold",
-                  minWidth: "2rem",
-                  fontSize: "0.875rem",
-                  textAlign: "center",
-                }}
-              >
+          <div className="flex flex-col gap-2 bg-background-light p-3 rounded">
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="text-base font-bold text-secondary">ギルドランク</h3>
+              <span className="bg-secondary text-black rounded-full px-2.5 py-0.5 font-bold min-w-8 text-sm text-center">
                 {guildRank}
               </span>
             </div>
@@ -353,140 +217,48 @@ export function SkillTreeSimulator() {
               max="15"
               value={guildRank}
               onChange={handleRankChange}
-              style={{
-                width: "100%",
-                cursor: "pointer",
-              }}
+              className="w-full cursor-pointer"
             />
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: "0.75rem",
-                color: "#9ca3af",
-                padding: "0 0.25rem",
-              }}
-            >
+            <div className="flex justify-between text-xs text-text-muted px-1">
               <span>1</span>
               <span>15</span>
             </div>
           </div>
 
           {error && (
-            <div
-              style={{
-                backgroundColor: "rgba(239, 68, 68, 0.3)",
-                color: "#fecaca",
-                padding: "0.75rem",
-                borderRadius: "0.25rem",
-                fontSize: "0.875rem",
-                border: "1px solid rgba(239, 68, 68, 0.5)",
-              }}
-            >
+            <div className="bg-accent-red/30 text-accent-red/80 p-3 rounded text-sm border border-accent-red">
               {error}
             </div>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem",
-              backgroundColor: "rgba(0, 0, 0, 0.2)",
-              padding: "0.75rem",
-              borderRadius: "0.25rem",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "1rem",
-                fontWeight: "bold",
-                color: "#86efac",
-              }}
-            >
-              必要素材合計
-            </h3>
-            <div
-              style={{
-                borderRadius: "0.25rem",
-                padding: "0.25rem 0",
-                maxHeight: "150px",
-                overflowY: "auto",
-              }}
-            >
+          <div className="flex flex-col gap-2 bg-background-light p-3 rounded">
+            <h3 className="text-base font-bold text-tertiary">必要素材合計</h3>
+            <div className="rounded p-1 max-h-[150px] overflow-y-auto">
               {Object.keys(totalCost.materials).length > 0 ? (
-                <ul
-                  style={{
-                    paddingLeft: "0.25rem",
-                    fontSize: "0.875rem",
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-                    gap: "0.25rem 0.75rem",
-                  }}
-                >
+                <ul className="pl-1 text-sm grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-1 gap-x-3">
                   {Object.entries(totalCost.materials).map(([material, quantity]) => (
-                    <li key={material} style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ color: "#d1d5db" }}>{material}:</span>
-                      <span style={{ color: "#86efac", fontWeight: "500" }}>x{quantity}</span>
+                    <li key={material} className="flex justify-between">
+                      <span className="text-secondary">{material}:</span>
+                      <span className="text-tertiary font-medium">x{quantity}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p style={{ fontSize: "0.875rem", color: "#9ca3af", paddingLeft: "0.25rem" }}>なし</p>
+                <p className="text-sm text-text-muted pl-1">なし</p>
               )}
             </div>
           </div>
 
           <button
             onClick={handleReset}
-            style={{
-              backgroundColor: "#dc2626",
-              color: "white",
-              padding: "0.6rem",
-              borderRadius: "0.25rem",
-              fontWeight: "bold",
-              textAlign: "center",
-              marginTop: "0.5rem",
-              border: "1px solid #f87171",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-            onMouseOver={e => (e.currentTarget.style.backgroundColor = "#ef4444")}
-            onMouseOut={e => (e.currentTarget.style.backgroundColor = "#dc2626")}
+            className="bg-accent-red text-white py-2.5 rounded font-bold text-center mt-2 border border-accent-red cursor-pointer transition-colors duration-200 hover:bg-accent-red/90"
           >
             リセット
           </button>
 
-          <div
-            style={{
-              backgroundColor: "rgba(0, 0, 0, 0.2)",
-              borderRadius: "0.25rem",
-              padding: "0.75rem",
-              fontSize: "0.875rem",
-              marginTop: "auto",
-              border: "1px solid #444",
-            }}
-          >
-            <h4
-              style={{
-                fontWeight: "bold",
-                marginBottom: "0.5rem",
-                color: "#f9a8d4",
-                fontSize: "1rem",
-              }}
-            >
-              操作方法
-            </h4>
-            <ul
-              style={{
-                listStyleType: "disc",
-                paddingLeft: "1.25rem",
-                color: "#d1d5db",
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.25rem",
-              }}
-            >
+          <div className="bg-background-light rounded p-3 text-sm mt-auto border border-background-light">
+            <h4 className="font-bold mb-2 text-secondary text-base">操作方法</h4>
+            <ul className="list-disc pl-5 text-text-secondary flex flex-col gap-1">
               <li>左クリック: スキルレベルアップ</li>
               <li>右クリック: スキルレベルダウン</li>
               <li>マウスホバー: スキル詳細表示</li>

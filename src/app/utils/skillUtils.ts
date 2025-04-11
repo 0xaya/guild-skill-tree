@@ -289,3 +289,13 @@ export const calculateResourceNeeds = (
 ): { coins: number; materials: { [key: string]: number } } => {
   return calculateTotalCost(skills, selectedSkills);
 };
+
+export type SkillCategory = "攻撃" | "防御" | "支援" | "特殊" | "コア";
+
+export const SKILL_CATEGORY_COLORS: Record<SkillCategory, string> = {
+  攻撃: "#f87171", // 赤
+  防御: "#60a5fa", // 青
+  支援: "#34d399", // 緑
+  特殊: "#fbbf24", // 黄
+  コア: "#f472b6", // ピンク
+} as const;
