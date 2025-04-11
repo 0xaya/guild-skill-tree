@@ -12,7 +12,7 @@ export function SkillTreeSimulator() {
   const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>({
     core: 1,
   });
-  const [guildRank, setGuildRank] = useState<number>(5);
+  const [guildRank, setGuildRank] = useState<number>(3);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
     coins: 0,
@@ -111,14 +111,12 @@ export function SkillTreeSimulator() {
   };
 
   const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newRank = parseInt(e.target.value, 10);
-    if (!isNaN(newRank) && newRank >= 1 && newRank <= 15) {
-      setGuildRank(newRank);
-    }
+    const newRank = parseInt(e.target.value);
+    setGuildRank(newRank);
   };
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 1.5));
+    setScale(prev => Math.min(prev + 0.1, 2));
   };
 
   const handleZoomOut = () => {
@@ -130,142 +128,155 @@ export function SkillTreeSimulator() {
     setPosition({ x: 0, y: 0 });
   };
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const startX = e.clientX - position.x;
+    const startY = e.clientY - position.y;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setPosition({
+        x: e.clientX - startX,
+        y: e.clientY - startY,
+      });
+    };
+
+    const handleMouseUp = () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-text-muted">読み込み中...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col w-full h-full gap-4 p-4">
-      <div className="flex flex-grow gap-4 flex-col">
-        <div className="relative flex-[2] min-h-[600px] bg-background-medium rounded-lg overflow-hidden border border-background-light">
-          {isLoading ? (
-            <div className="flex justify-center items-center w-full h-full bg-background-dark/70 rounded-lg">
-              <p>読み込み中...</p>
-            </div>
-          ) : (
-            <>
-              <div className="absolute bottom-4 left-4 z-50 flex gap-2">
-                <button
-                  onClick={handleZoomIn}
-                  className="w-10 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-xl cursor-pointer"
-                >
-                  +
-                </button>
-                <button
-                  onClick={handleZoomOut}
-                  className="w-10 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-xl cursor-pointer"
-                >
-                  -
-                </button>
-                <button
-                  onClick={handleZoomReset}
-                  className="px-3 h-10 bg-background-medium/90 border border-background-light rounded flex justify-center items-center text-text-primary text-sm cursor-pointer"
-                >
-                  Reset
-                </button>
-              </div>
+    <div className="flex flex-col lg:flex-row gap-4 w-full h-full">
+      {/* スキルツリー表示部分 */}
+      <div className="relative w-full lg:w-2/3 h-[600px] bg-background-light rounded-lg overflow-hidden">
+        <div
+          className="absolute inset-0"
+          style={{
+            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+            transformOrigin: "center",
+          }}
+          onMouseDown={handleMouseDown}
+        >
+          {/* スキル接続線 */}
+          {skills.map(skill => {
+            if (!skill.parentIds) return null;
+            return skill.parentIds.map(parentId => {
+              const parent = skills.find(s => s.id === parentId);
+              if (!parent) return null;
+              return (
+                <SkillConnection
+                  key={`${parentId}-${skill.id}`}
+                  parent={parent}
+                  child={skill}
+                  isActive={selectedSkills[skill.id] > 0 && selectedSkills[parentId] > 0}
+                />
+              );
+            });
+          })}
 
-              <div
-                className="absolute w-[800px] h-[800px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-transform duration-200 ease-out"
-                style={{
-                  transform: `translate(-50%, -50%) scale(${scale}) translate(${position.x}px, ${position.y}px)`,
-                }}
-              >
-                {skills.map(skill =>
-                  (skill.parentIds || []).map(parentId => {
-                    const parent = skills.find(s => s.id === parentId);
-                    if (!parent || !skill) return null;
-
-                    const isActive = (selectedSkills[skill.id] || 0) > 0 && (selectedSkills[parentId] || 0) > 0;
-
-                    return (
-                      <SkillConnection
-                        key={`${parentId}-${skill.id}`}
-                        parent={parent}
-                        child={skill}
-                        isActive={isActive}
-                      />
-                    );
-                  })
-                )}
-
-                {skills.map(skill => (
-                  <SkillNode
-                    key={skill.id}
-                    skill={skill}
-                    selectedLevel={selectedSkills[skill.id] || 0}
-                    maxLevel={skill.levels.length}
-                    isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
-                    onClick={handleSkillClick}
-                    onRightClick={handleSkillRightClick}
-                  />
-                ))}
-              </div>
-            </>
-          )}
+          {/* スキルノード */}
+          {skills.map(skill => (
+            <SkillNode
+              key={skill.id}
+              skill={skill}
+              selectedLevel={selectedSkills[skill.id] || 0}
+              maxLevel={skill.levels.length}
+              isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
+              onClick={handleSkillClick}
+              onRightClick={handleSkillRightClick}
+            />
+          ))}
         </div>
 
-        <div className="flex-1 bg-background-medium rounded-lg p-4 flex flex-col gap-4 border border-background-light max-h-[calc(100vh-4rem)] overflow-y-auto">
-          <h2 className="text-xl font-bold text-secondary mb-2">スキルシミュレーション</h2>
+        {/* ズームコントロール */}
+        <div className="absolute bottom-4 right-4 flex gap-2">
+          <button
+            onClick={handleZoomIn}
+            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
+          >
+            +
+          </button>
+          <button
+            onClick={handleZoomOut}
+            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
+          >
+            -
+          </button>
+          <button
+            onClick={handleZoomReset}
+            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
+          >
+            ↺
+          </button>
+        </div>
+      </div>
 
-          <div className="flex flex-col gap-2 bg-background-light p-3 rounded">
-            <div className="flex justify-between items-center mb-1">
-              <h3 className="text-base font-bold text-secondary">ギルドランク</h3>
-              <span className="bg-secondary text-black rounded-full px-2.5 py-0.5 font-bold min-w-8 text-sm text-center">
-                {guildRank}
-              </span>
-            </div>
-            <input
-              type="range"
-              min="1"
-              max="15"
-              value={guildRank}
-              onChange={handleRankChange}
-              className="w-full cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-text-muted px-1">
-              <span>1</span>
-              <span>15</span>
+      {/* コントロールパネル */}
+      <div className="w-full lg:w-1/3 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
+            <div className="relative h-2">
+              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-primary"
+                  style={{
+                    width: `${((guildRank - 1) / 9) * 100}%`,
+                  }}
+                />
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={guildRank}
+                onChange={handleRankChange}
+                className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-10"
+              />
             </div>
           </div>
 
-          {error && (
-            <div className="bg-accent-red/30 text-accent-red/80 p-3 rounded text-sm border border-accent-red">
-              {error}
-            </div>
-          )}
-
-          <div className="flex flex-col gap-2 bg-background-light p-3 rounded">
-            <h3 className="text-base font-bold text-tertiary">必要素材合計</h3>
-            <div className="rounded p-1 max-h-[150px] overflow-y-auto">
-              {Object.keys(totalCost.materials).length > 0 ? (
-                <ul className="pl-1 text-sm grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-1 gap-x-3">
-                  {Object.entries(totalCost.materials).map(([material, quantity]) => (
-                    <li key={material} className="flex justify-between">
-                      <span className="text-secondary">{material}:</span>
-                      <span className="text-tertiary font-medium">x{quantity}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-text-muted pl-1">なし</p>
-              )}
+          <div>
+            <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-text-muted">コイン</span>
+                <span className="text-text-primary">{totalCost.coins.toLocaleString()}</span>
+              </div>
+              {Object.entries(totalCost.materials).map(([material, amount]) => (
+                <div key={material} className="flex justify-between">
+                  <span className="text-text-muted">{material}</span>
+                  <span className="text-text-primary">{amount.toLocaleString()}</span>
+                </div>
+              ))}
             </div>
           </div>
 
           <button
             onClick={handleReset}
-            className="bg-accent-red text-white py-2.5 rounded font-bold text-center mt-2 border border-accent-red cursor-pointer transition-colors duration-200 hover:bg-accent-red/90"
+            className="w-full py-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
           >
             リセット
           </button>
-
-          <div className="bg-background-light rounded p-3 text-sm mt-auto border border-background-light">
-            <h4 className="font-bold mb-2 text-secondary text-base">操作方法</h4>
-            <ul className="list-disc pl-5 text-text-secondary flex flex-col gap-1">
-              <li>左クリック: スキルレベルアップ</li>
-              <li>右クリック: スキルレベルダウン</li>
-              <li>マウスホバー: スキル詳細表示</li>
-              <li>ズームボタン/ホイール: 拡大縮小</li>
-              <li>ギルドランク変更: スキル解放条件の変更</li>
-            </ul>
-          </div>
         </div>
       </div>
     </div>
