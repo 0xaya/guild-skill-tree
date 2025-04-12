@@ -232,7 +232,7 @@ export function SkillTreeSimulator() {
 
       {/* コントロールパネル */}
       <div className="w-full lg:w-1/3 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
-        <div className="space-y-4">
+        <div className="flex flex-col gap-y-6">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">

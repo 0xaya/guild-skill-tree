@@ -12,7 +12,7 @@ export default function Home() {
         <SkillTreeSimulator />
       </main>
 
-      <footer className="space-y-4 p-4 text-center text-xs text-text-muted border-t border-background-light">
+      <footer className="flex flex-col gap-y-6 p-4 text-center text-xs text-text-muted border-t border-background-light">
         <p>© pocoapoco</p>
       </footer>
     </div>
