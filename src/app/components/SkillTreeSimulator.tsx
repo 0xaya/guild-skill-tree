@@ -258,14 +258,14 @@ export function SkillTreeSimulator() {
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
             <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-text-muted">コイン</span>
-                <span className="text-text-primary">{totalCost.coins.toLocaleString()}</span>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">ギルドコイン</span>
+                <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
               </div>
-              {Object.entries(totalCost.materials).map(([material, amount]) => (
-                <div key={material} className="flex justify-between">
-                  <span className="text-text-muted">{material}</span>
-                  <span className="text-text-primary">{amount.toLocaleString()}</span>
+              {Object.entries(totalCost.materials).map(([material, count]) => (
+                <div key={material} className="flex justify-between items-center">
+                  <span className="text-text-primary">{material}</span>
+                  <span className="text-text-primary">×{count.toLocaleString()}</span>
                 </div>
               ))}
             </div>
