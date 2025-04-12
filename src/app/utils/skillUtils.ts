@@ -24,59 +24,205 @@ const MATERIAL_COLUMNS = [
   "救済Ⅲ",
 ];
 
+// スキル系統別の色定義
+export const SKILL_COLORS = {
+  strength: "#FF6B6B", // 腕力系統（赤系）
+  vitality: "#FFA07A", // 体力系統（オレンジ系）
+  agility: "#4DB6AC", // 速さ系統（青緑で明るめ）
+  intelligence: "#9370DB", // 知力系統（紫系）
+  dexterity: "#6A5ACD", // 器用系統（濃い青紫系）
+  mind: "#87CEEB", // 精神系統（水色系）
+  core: "#0066CC", // コア（青系）
+};
+
+// カテゴリ名のマッピング
+export const CATEGORY_MAPPING: { [key: string]: keyof typeof SKILL_COLORS } = {
+  "腕力系統": "strength",
+  "体力系統": "vitality",
+  "速さ系統": "agility",
+  "知力系統": "intelligence",
+  "器用系統": "dexterity",
+  "精神系統": "mind",
+  "コア": "core", // コアは独自の色を使用
+};
+
 // スキルIDとその座標をマッピングするための定義
 // 配置調整 Ver.8 (二次スキル反時計回り, 三次スキル半径拡大)
-export const SKILL_POSITIONS: { [key: string]: { x: number; y: number; radius?: number } } = {
+export const SKILL_POSITIONS: { [key: string]: { x: number; y: number; radius?: number; color?: string } } = {
   // 中心
   core: { x: 400, y: 400, radius: 67.5 },
 
   // 一次スキル (半径 約90)
-  "11": { x: 400, y: 310 }, // 90度（真上）
-  "12": { x: 400 + 90 * Math.sin(Math.PI * 0.372), y: 400 - 90 * Math.cos(Math.PI * 0.372) }, // 67度
-  "13": { x: 400 + 90 * Math.sin(Math.PI * 0.628), y: 400 - 90 * Math.cos(Math.PI * 0.628) }, // 113度
-  "14": { x: 400, y: 490 }, // 240度
-  "15": { x: 400 + 90 * Math.sin(Math.PI * 1.372), y: 400 - 90 * Math.cos(Math.PI * 1.372) }, // 247度
-  "16": { x: 400 + 90 * Math.sin(Math.PI * 1.628), y: 400 - 90 * Math.cos(Math.PI * 1.628) }, // 293度
+  "11": { x: 400, y: 310, color: SKILL_COLORS.strength }, // 90度（真上）
+  "12": {
+    x: 400 + 90 * Math.sin(Math.PI * 0.372),
+    y: 400 - 90 * Math.cos(Math.PI * 0.372),
+    color: SKILL_COLORS.vitality,
+  }, // 67度
+  "13": {
+    x: 400 + 90 * Math.sin(Math.PI * 0.628),
+    y: 400 - 90 * Math.cos(Math.PI * 0.628),
+    color: SKILL_COLORS.agility,
+  }, // 113度
+  "14": { x: 400, y: 490, color: SKILL_COLORS.intelligence }, // 240度
+  "15": {
+    x: 400 + 90 * Math.sin(Math.PI * 1.372),
+    y: 400 - 90 * Math.cos(Math.PI * 1.372),
+    color: SKILL_COLORS.dexterity,
+  }, // 247度
+  "16": { x: 400 + 90 * Math.sin(Math.PI * 1.628), y: 400 - 90 * Math.cos(Math.PI * 1.628), color: SKILL_COLORS.mind }, // 293度
 
   // 二次スキル (半径 約190) - 反時計回り 30度ごと
-  "21": { x: 400, y: 210 }, // 90度（真上）
-  "212": { x: 400 + 190 * Math.sin(Math.PI * 1.8), y: 400 - 190 * Math.cos(Math.PI * 1.8) }, // 324度
-  "211": { x: 400 + 190 * Math.sin(Math.PI * 1.65), y: 400 - 190 * Math.cos(Math.PI * 1.65) }, // 297度
-  "210": { x: 210, y: 400 }, // 180度（真左）
-  "29": { x: 400 + 190 * Math.sin(Math.PI * 1.35), y: 400 - 190 * Math.cos(Math.PI * 1.35) }, // 243度
-  "28": { x: 400 + 190 * Math.sin(Math.PI * 1.2), y: 400 - 190 * Math.cos(Math.PI * 1.2) }, // 216度
-  "27": { x: 400, y: 590 }, // 270度（真下）
-  "26": { x: 400 + 190 * Math.sin(Math.PI * 0.8), y: 400 - 190 * Math.cos(Math.PI * 0.8) }, // 144度
-  "25": { x: 400 + 190 * Math.sin(Math.PI * 0.65), y: 400 - 190 * Math.cos(Math.PI * 0.65) }, // 117度
-  "24": { x: 590, y: 400 }, // 0度（真右）
-  "23": { x: 400 + 190 * Math.sin(Math.PI * 0.35), y: 400 - 190 * Math.cos(Math.PI * 0.35) }, // 63度
-  "22": { x: 400 + 190 * Math.sin(Math.PI * 0.2), y: 400 - 190 * Math.cos(Math.PI * 0.2) }, // 36度
+  "21": { x: 400, y: 210, color: SKILL_COLORS.strength }, // 90度（真上）
+  "212": {
+    x: 400 + 190 * Math.sin(Math.PI * 1.8),
+    y: 400 - 190 * Math.cos(Math.PI * 1.8),
+    color: SKILL_COLORS.strength,
+  }, // 324度
+  "211": {
+    x: 400 + 190 * Math.sin(Math.PI * 1.65),
+    y: 400 - 190 * Math.cos(Math.PI * 1.65),
+    color: SKILL_COLORS.intelligence,
+  }, // 297度
+  "210": { x: 210, y: 400, color: SKILL_COLORS.intelligence }, // 180度（真左）
+  "29": {
+    x: 400 + 190 * Math.sin(Math.PI * 1.35),
+    y: 400 - 190 * Math.cos(Math.PI * 1.35),
+    color: SKILL_COLORS.dexterity,
+  }, // 243度
+  "28": {
+    x: 400 + 190 * Math.sin(Math.PI * 1.2),
+    y: 400 - 190 * Math.cos(Math.PI * 1.2),
+    color: SKILL_COLORS.dexterity,
+  }, // 216度
+  "27": { x: 400, y: 590, color: SKILL_COLORS.mind }, // 270度（真下）
+  "26": {
+    x: 400 + 190 * Math.sin(Math.PI * 0.8),
+    y: 400 - 190 * Math.cos(Math.PI * 0.8),
+    color: SKILL_COLORS.vitality,
+  }, // 144度
+  "25": {
+    x: 400 + 190 * Math.sin(Math.PI * 0.65),
+    y: 400 - 190 * Math.cos(Math.PI * 0.65),
+    color: SKILL_COLORS.agility,
+  }, // 117度
+  "24": { x: 590, y: 400, color: SKILL_COLORS.strength }, // 0度（真右）
+  "23": {
+    x: 400 + 190 * Math.sin(Math.PI * 0.35),
+    y: 400 - 190 * Math.cos(Math.PI * 0.35),
+    color: SKILL_COLORS.vitality,
+  }, // 63度
+  "22": {
+    x: 400 + 190 * Math.sin(Math.PI * 0.2),
+    y: 400 - 190 * Math.cos(Math.PI * 0.2),
+    color: SKILL_COLORS.vitality,
+  }, // 36度
 
   // 三次スキル (半径 約320) - 等間隔 15度ごと
-  "31": { x: 400, y: 80 }, // 90度
-  "32": { x: 400 + 320 * Math.sin(Math.PI * 0.111), y: 400 - 320 * Math.cos(Math.PI * 0.111) }, // 20度
-  "33": { x: 400 + 320 * Math.sin(Math.PI * 0.211), y: 400 - 320 * Math.cos(Math.PI * 0.211) }, // 38度
-  "34": { x: 400 + 320 * Math.sin(Math.PI * 0.289), y: 400 - 320 * Math.cos(Math.PI * 0.289) }, // 52度
-  "35": { x: 400 + 320 * Math.sin(Math.PI * 0.367), y: 400 - 320 * Math.cos(Math.PI * 0.367) }, // 66度
-  "36": { x: 400 + 320 * Math.sin(Math.PI * 0.433), y: 400 - 320 * Math.cos(Math.PI * 0.433) }, // 78度
-  "37": { x: 710, y: 400 }, // 0 deg
-  "38": { x: 400 + 320 * Math.sin(Math.PI * 0.567), y: 400 - 320 * Math.cos(Math.PI * 0.567) }, // 102度
-  "39": { x: 400 + 320 * Math.sin(Math.PI * 0.633), y: 400 - 320 * Math.cos(Math.PI * 0.633) }, // 114度
-  "310": { x: 400 + 320 * Math.sin(Math.PI * 0.711), y: 400 - 320 * Math.cos(Math.PI * 0.711) }, // 128度
-  "311": { x: 400 + 320 * Math.sin(Math.PI * 0.789), y: 400 - 320 * Math.cos(Math.PI * 0.789) }, // 142度
-  "312": { x: 400 + 320 * Math.sin(Math.PI * 0.889), y: 400 - 320 * Math.cos(Math.PI * 0.889) }, // 160度
-  "313": { x: 400, y: 720 }, // -90 deg
-  "314": { x: 400 + 320 * Math.sin(Math.PI * 1.111), y: 400 - 320 * Math.cos(Math.PI * 1.111) }, // 200度
-  "315": { x: 400 + 320 * Math.sin(Math.PI * 1.211), y: 400 - 320 * Math.cos(Math.PI * 1.211) }, // 218度
-  "316": { x: 400 + 320 * Math.sin(Math.PI * 1.289), y: 400 - 320 * Math.cos(Math.PI * 1.289) }, // 232度
-  "317": { x: 400 + 320 * Math.sin(Math.PI * 1.367), y: 400 - 320 * Math.cos(Math.PI * 1.367) }, // 246度
-  "318": { x: 400 + 320 * Math.sin(Math.PI * 1.433), y: 400 - 320 * Math.cos(Math.PI * 1.433) }, // 258度
-  "319": { x: 90, y: 400 }, // -180 deg
-  "320": { x: 400 + 320 * Math.sin(Math.PI * 1.567), y: 400 - 320 * Math.cos(Math.PI * 1.567) }, // 282度
-  "321": { x: 400 + 320 * Math.sin(Math.PI * 1.633), y: 400 - 320 * Math.cos(Math.PI * 1.633) }, // 294度
-  "322": { x: 400 + 320 * Math.sin(Math.PI * 1.711), y: 400 - 320 * Math.cos(Math.PI * 1.711) }, // 308度
-  "323": { x: 400 + 320 * Math.sin(Math.PI * 1.789), y: 400 - 320 * Math.cos(Math.PI * 1.789) }, // 322度
-  "324": { x: 400 + 320 * Math.sin(Math.PI * 1.889), y: 400 - 320 * Math.cos(Math.PI * 1.889) }, // 340度
+  "31": { x: 400, y: 80, color: SKILL_COLORS.strength }, // 90度
+  "32": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.111),
+    y: 400 - 320 * Math.cos(Math.PI * 0.111),
+    color: SKILL_COLORS.strength,
+  }, // 20度
+  "33": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.211),
+    y: 400 - 320 * Math.cos(Math.PI * 0.211),
+    color: SKILL_COLORS.vitality,
+  }, // 38度
+  "34": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.289),
+    y: 400 - 320 * Math.cos(Math.PI * 0.289),
+    color: SKILL_COLORS.agility,
+  }, // 52度
+  "35": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.367),
+    y: 400 - 320 * Math.cos(Math.PI * 0.367),
+    color: SKILL_COLORS.intelligence,
+  }, // 66度
+  "36": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.433),
+    y: 400 - 320 * Math.cos(Math.PI * 0.433),
+    color: SKILL_COLORS.agility,
+  }, // 78度
+  "37": { x: 710, y: 400, color: SKILL_COLORS.strength }, // 0 deg
+  "38": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.567),
+    y: 400 - 320 * Math.cos(Math.PI * 0.567),
+    color: SKILL_COLORS.intelligence,
+  }, // 102度
+  "39": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.633),
+    y: 400 - 320 * Math.cos(Math.PI * 0.633),
+    color: SKILL_COLORS.vitality,
+  }, // 114度
+  "310": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.711),
+    y: 400 - 320 * Math.cos(Math.PI * 0.711),
+    color: SKILL_COLORS.intelligence,
+  }, // 128度
+  "311": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.789),
+    y: 400 - 320 * Math.cos(Math.PI * 0.789),
+    color: SKILL_COLORS.intelligence,
+  }, // 142度
+  "312": {
+    x: 400 + 320 * Math.sin(Math.PI * 0.889),
+    y: 400 - 320 * Math.cos(Math.PI * 0.889),
+    color: SKILL_COLORS.intelligence,
+  }, // 160度
+  "313": { x: 400, y: 720, color: SKILL_COLORS.mind }, // -90 deg
+  "314": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.111),
+    y: 400 - 320 * Math.cos(Math.PI * 1.111),
+    color: SKILL_COLORS.dexterity,
+  }, // 200度
+  "315": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.211),
+    y: 400 - 320 * Math.cos(Math.PI * 1.211),
+    color: SKILL_COLORS.dexterity,
+  }, // 218度
+  "316": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.289),
+    y: 400 - 320 * Math.cos(Math.PI * 1.289),
+    color: SKILL_COLORS.strength,
+  }, // 232度
+  "317": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.367),
+    y: 400 - 320 * Math.cos(Math.PI * 1.367),
+    color: SKILL_COLORS.intelligence,
+  }, // 246度
+  "318": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.433),
+    y: 400 - 320 * Math.cos(Math.PI * 1.433),
+    color: SKILL_COLORS.mind,
+  }, // 258度
+  "319": { x: 90, y: 400, color: SKILL_COLORS.intelligence }, // -180 deg
+  "320": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.567),
+    y: 400 - 320 * Math.cos(Math.PI * 1.567),
+    color: SKILL_COLORS.intelligence,
+  }, // 282度
+  "321": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.633),
+    y: 400 - 320 * Math.cos(Math.PI * 1.633),
+    color: SKILL_COLORS.intelligence,
+  }, // 294度
+  "322": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.711),
+    y: 400 - 320 * Math.cos(Math.PI * 1.711),
+    color: SKILL_COLORS.strength,
+  }, // 308度
+  "323": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.789),
+    y: 400 - 320 * Math.cos(Math.PI * 1.789),
+    color: SKILL_COLORS.strength,
+  }, // 322度
+  "324": {
+    x: 400 + 320 * Math.sin(Math.PI * 1.889),
+    y: 400 - 320 * Math.cos(Math.PI * 1.889),
+    color: SKILL_COLORS.strength,
+  }, // 340度
 };
 
 // スキルの親子関係を定義（前提条件）
