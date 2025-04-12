@@ -31,7 +31,7 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
   const stars = [];
   for (let i = 1; i <= maxLevel; i++) {
     stars.push(
-      <span key={i} className={`mr-px ${i <= currentLevel ? "text-yellow-400" : "text-gray-500"}`}>
+      <span key={i} className={`mr-px ${i <= currentLevel ? "text-yellow-400" : "text-white-500"}`}>
         {i <= currentLevel ? "★" : "☆"} {/* Use ☆ for unfilled */}
       </span>
     );
@@ -88,8 +88,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
     backgroundColor: nodeBgColor,
-    opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.3, // ランク条件を満たしていない場合は30%不透明
-    border: `${isCore ? "2px" : "1.5px"} solid ${nodeBorderColor}`,
+    opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.3,
+    border: `${isCore ? "2px" : skill.type === "パッシブ" ? "1.5px" : "4px"} solid ${nodeBorderColor}`,
     color: "#ffffff",
     fontSize: isCore ? "12px" : "10px",
     fontWeight: isCore ? "bold" : "normal",
