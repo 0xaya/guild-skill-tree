@@ -24,7 +24,7 @@ const MATERIAL_COLUMNS = [
   "救済Ⅲ",
 ];
 
-// スキル系統別の色定義
+// スキル系統のカラーマッピング
 export const SKILL_COLORS = {
   strength: "#FF6B6B", // 腕力系統（赤系）
   vitality: "#FFA07A", // 体力系統（オレンジ系）
@@ -344,6 +344,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
           x: position.x,
           y: position.y,
           parentIds,
+          isPassive: row["タイプ"] === "パッシブ",
         };
       }
     });
@@ -363,6 +364,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       x: SKILL_POSITIONS["core"]?.x || 400,
       y: SKILL_POSITIONS["core"]?.y || 400,
       parentIds: [],
+      isPassive: true,
     };
 
     const existingSkillIds = new Set(["core", ...Object.keys(skillsMap)]);
@@ -435,13 +437,3 @@ export const calculateResourceNeeds = (
 ): { coins: number; materials: { [key: string]: number } } => {
   return calculateTotalCost(skills, selectedSkills);
 };
-
-export type SkillCategory = "攻撃" | "防御" | "支援" | "特殊" | "コア";
-
-export const SKILL_CATEGORY_COLORS: Record<SkillCategory, string> = {
-  攻撃: "#f87171", // 赤
-  防御: "#60a5fa", // 青
-  支援: "#34d399", // 緑
-  特殊: "#fbbf24", // 黄
-  コア: "#f472b6", // ピンク
-} as const;
