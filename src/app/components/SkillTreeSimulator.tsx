@@ -279,6 +279,7 @@ export function SkillTreeSimulator() {
                 selectedLevel={selectedSkills[skill.id] || 0}
                 maxLevel={skill.levels.length}
                 isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
+                guildRank={guildRank}
                 onClick={handleSkillClick}
                 onRightClick={handleSkillRightClick}
               />
