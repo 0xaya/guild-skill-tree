@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { Skill } from "../types/skill";
-import { SKILL_CATEGORY_COLORS, SkillCategory } from "../utils/skillUtils";
+import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
 
 interface SkillNodeProps {
   skill: Skill;
   selectedLevel: number;
   maxLevel: number;
   isUnlocked: boolean;
+  guildRank: number;
   onClick: (id: string) => void;
   onRightClick: (id: string) => void;
 }
@@ -46,50 +47,57 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   selectedLevel,
   maxLevel,
   isUnlocked,
+  guildRank,
   onClick,
   onRightClick,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
 
-  const categoryColor = SKILL_CATEGORY_COLORS[skill.category as SkillCategory] || "#666";
+  const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
   const isActive = selectedLevel > 0;
   const isCore = skill.id === "core";
+  const isRankMet = guildRank >= skill.requiredRank;
 
-  // 背景色の透明度を全体的に下げる（未選択時0.15→0.12、選択時0.4→0.3）
+  // 背景色の透明度を全体的に下げる
   const nodeBgColor = isActive
-    ? `${categoryColor}40` // alpha: 0.3
-    : `${categoryColor}20`; // alpha: 0.12
-  const nodeBorderColor = isActive ? categoryColor : "rgba(120, 120, 140, 0.4)";
+    ? `${categoryColor}70` // alpha: 0.7 (取得済み)
+    : isRankMet
+    ? `${categoryColor}20` // alpha: 0.2 (ランク条件を満たしている)
+    : `${categoryColor}10`; // alpha: 0.1 (ランク条件を満たしていない)
+  const nodeBorderColor = isActive
+    ? categoryColor
+    : isRankMet
+    ? "rgba(120, 120, 140, 0.5)" // ランク条件を満たしている
+    : "rgba(120, 120, 140, 0.3)"; // ランク条件を満たしていない
 
   // ノードのスタイルを設定
-  const nodeWidth = isCore ? 60 : 90; // コアは小さく、それ以外は幅広く
-  const nodeHeight = isCore ? 60 : 45; // コアは正円に
+  const nodeWidth = isCore ? 60 : 90;
+  const nodeHeight = isCore ? 60 : 45;
   const nodeStyle: React.CSSProperties = {
     width: `${nodeWidth}px`,
     height: `${nodeHeight}px`,
-    padding: isCore ? "0px" : "2px", // コアはパディングなし
-    borderRadius: isCore ? "50%" : "6px", // コアは円形、それ以外は角丸
+    padding: isCore ? "0px" : "2px",
+    borderRadius: isCore ? "50%" : "6px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
     textAlign: "center",
-    cursor: isUnlocked ? "pointer" : "not-allowed",
+    cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
     position: "absolute",
-    // 位置調整: 各ノードの幅に合わせてオフセット調整
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
     backgroundColor: nodeBgColor,
-    opacity: isUnlocked ? 1 : 0.5,
+    opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.3, // ランク条件を満たしていない場合は30%不透明
     border: `${isCore ? "2px" : "1.5px"} solid ${nodeBorderColor}`,
     color: "#ffffff",
-    fontSize: isCore ? "12px" : "10px", // コアは少し大きいフォント
+    fontSize: isCore ? "12px" : "10px",
     fontWeight: isCore ? "bold" : "normal",
     boxShadow: isActive
       ? `0 0 ${isCore ? "15px" : "8px"} ${categoryColor}70, 0 0 ${isCore ? "8px" : "4px"} ${categoryColor}50`
-      : "none", // コアはより強いグロー効果
+      : "none",
     transition: "all 0.2s ease-in-out",
-    zIndex: isCore ? 15 : 10, // コアを少し前面に
+    zIndex: isCore ? 15 : 10,
     overflow: "hidden",
   };
 
@@ -114,14 +122,14 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isUnlocked) {
+    if (isUnlocked && isRankMet) {
       onClick(skill.id);
     }
   };
 
   const handleRightClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (isUnlocked && selectedLevel > 0) {
+    if (isUnlocked && selectedLevel > 0 && isRankMet) {
       onRightClick(skill.id);
     }
   };
