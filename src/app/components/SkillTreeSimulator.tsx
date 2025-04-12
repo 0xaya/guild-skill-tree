@@ -19,7 +19,11 @@ export function SkillTreeSimulator() {
     materials: {},
   });
   const [error, setError] = useState<string | null>(null);
-  const [scale, setScale] = useState<number>(1);
+  const [scale, setScale] = useState<number>(() => {
+    if (window.innerWidth < 640) return 0.5;
+    if (window.innerWidth < 768) return 0.6;
+    return 1;
+  });
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -46,6 +50,72 @@ export function SkillTreeSimulator() {
     const cost = calculateTotalCost(skills, selectedSkills);
     setTotalCost(cost);
   }, [skills, selectedSkills]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setScale(0.5);
+      } else if (window.innerWidth < 768) {
+        setScale(0.6);
+      } else {
+        setScale(1);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const calculateCenterPosition = () => {
+      const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
+      const containerHeight = window.innerWidth < 768 ? 500 : 800;
+      const treeWidth = 800 * scale;
+      const treeHeight = 800 * scale;
+
+      if (window.innerWidth < 640) {
+        return {
+          x: (containerWidth - treeWidth) / 2 - 220,
+          y: -50,
+        };
+      }
+
+      return {
+        x: 0,
+        y: (containerHeight - treeHeight) / 2,
+      };
+    };
+
+    setPosition(calculateCenterPosition());
+  }, [scale]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const calculateCenterPosition = () => {
+        const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
+        const containerHeight = window.innerWidth < 768 ? 500 : 800;
+        const treeWidth = 800 * scale;
+        const treeHeight = 800 * scale;
+
+        if (window.innerWidth < 640) {
+          return {
+            x: (containerWidth - treeWidth) / 2 - 220,
+            y: -50,
+          };
+        }
+
+        return {
+          x: 0,
+          y: (containerHeight - treeHeight) / 2,
+        };
+      };
+
+      setPosition(calculateCenterPosition());
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [scale]);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") {
@@ -165,46 +235,55 @@ export function SkillTreeSimulator() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 w-full h-full">
+    <div className="flex flex-col lg:flex-row gap-2 w-full h-full">
       {/* スキルツリー表示部分 */}
-      <div className="relative w-full lg:w-2/3 h-[600px] bg-background-light rounded-lg overflow-hidden">
+      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] bg-background-light rounded-lg overflow-hidden lg:overflow-visible">
         <div
           className="absolute inset-0"
           style={{
-            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
-            transformOrigin: "center",
+            transform: `scale(${scale})`,
+            transformOrigin: "top center",
           }}
           onMouseDown={handleMouseDown}
         >
-          {/* スキル接続線 */}
-          {skills.map(skill => {
-            if (!skill.parentIds) return null;
-            return skill.parentIds.map(parentId => {
-              const parent = skills.find(s => s.id === parentId);
-              if (!parent) return null;
-              return (
-                <SkillConnection
-                  key={`${parentId}-${skill.id}`}
-                  parent={parent}
-                  child={skill}
-                  isActive={selectedSkills[skill.id] > 0 && selectedSkills[parentId] > 0}
-                />
-              );
-            });
-          })}
+          <div
+            style={{
+              transform: `translate(${window.innerWidth < 640 ? position.x : 0}px, ${position.y}px)`,
+              position: "relative",
+              width: "800px",
+              height: "800px",
+            }}
+          >
+            {/* スキル接続線 */}
+            {skills.map(skill => {
+              if (!skill.parentIds) return null;
+              return skill.parentIds.map(parentId => {
+                const parent = skills.find(s => s.id === parentId);
+                if (!parent) return null;
+                return (
+                  <SkillConnection
+                    key={`${parentId}-${skill.id}`}
+                    parent={parent}
+                    child={skill}
+                    isActive={selectedSkills[skill.id] > 0 && selectedSkills[parentId] > 0}
+                  />
+                );
+              });
+            })}
 
-          {/* スキルノード */}
-          {skills.map(skill => (
-            <SkillNode
-              key={skill.id}
-              skill={skill}
-              selectedLevel={selectedSkills[skill.id] || 0}
-              maxLevel={skill.levels.length}
-              isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
-              onClick={handleSkillClick}
-              onRightClick={handleSkillRightClick}
-            />
-          ))}
+            {/* スキルノード */}
+            {skills.map(skill => (
+              <SkillNode
+                key={skill.id}
+                skill={skill}
+                selectedLevel={selectedSkills[skill.id] || 0}
+                maxLevel={skill.levels.length}
+                isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
+                onClick={handleSkillClick}
+                onRightClick={handleSkillRightClick}
+              />
+            ))}
+          </div>
         </div>
 
         {/* ズームコントロール */}
@@ -231,8 +310,8 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* コントロールパネル */}
-      <div className="w-full lg:w-1/3 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
-        <div className="flex flex-col gap-y-6">
+      <div className="w-full lg:w-1/5 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
+        <div className="flex flex-col gap-y-10">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">
