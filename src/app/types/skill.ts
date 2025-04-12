@@ -9,6 +9,7 @@ export interface Skill {
   x?: number;
   y?: number;
   parentIds?: string[];
+  isPassive: boolean;
 }
 
 export interface SkillLevel {
