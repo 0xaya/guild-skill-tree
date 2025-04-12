@@ -26,9 +26,9 @@ const MATERIAL_COLUMNS = [
 
 // スキルIDとその座標をマッピングするための定義
 // 配置調整 Ver.8 (二次スキル反時計回り, 三次スキル半径拡大)
-export const SKILL_POSITIONS: { [key: string]: { x: number; y: number } } = {
+export const SKILL_POSITIONS: { [key: string]: { x: number; y: number; radius?: number } } = {
   // 中心
-  core: { x: 400, y: 400 },
+  core: { x: 400, y: 400, radius: 67.5 },
 
   // 一次スキル (半径 約90)
   "11": { x: 400, y: 310 }, // 90度（真上）
