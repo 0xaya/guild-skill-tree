@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "ギルドスキルツリーシミュレータ | 元素騎士オンライン",
-  description: "元素騎士オンラインのギルドスキルをシミュレーションできる非公式ツールです。",
+  title: "元素騎士ギルドスキルツリーシミュレータ",
+  description: "元素騎士のギルドスキルをシミュレーションできる非公式ツールです。",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
