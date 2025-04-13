@@ -227,23 +227,15 @@ export function SkillTreeSimulator() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-red-500">{error}</div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col lg:flex-row gap-2 w-full h-full">
       {/* コントロールパネル */}
-      <div className="w-full lg:w-1/5 p-4 overflow-y-auto max-h-[800px]">
+      <div className="w-full lg:w-1/5 rounded-lg p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">
-              <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
@@ -285,7 +277,12 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* スキルツリー表示部分 */}
-      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] overflow-hidden lg:overflow-visible">
+      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] rounded-lg overflow-hidden lg:overflow-visible">
+        {error && (
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[70%] bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm  text-center">
+            {error}
+          </div>
+        )}
         <div
           className="absolute inset-0"
           style={{
