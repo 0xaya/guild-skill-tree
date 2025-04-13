@@ -20,11 +20,7 @@ export function SkillTreeSimulator() {
     materials: {},
   });
   const [error, setError] = useState<string | null>(null);
-  const [scale, setScale] = useState<number>(() => {
-    if (window.innerWidth < 640) return 0.5;
-    if (window.innerWidth < 768) return 0.6;
-    return 1;
-  });
+  const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [totalStats, setTotalStats] = useState({
     str: 0,
@@ -75,7 +71,8 @@ export function SkillTreeSimulator() {
   }, [skills, selectedSkills]);
 
   useEffect(() => {
-    const handleResize = () => {
+    // クライアントサイドでのみ実行
+    const updateScale = () => {
       if (window.innerWidth < 640) {
         setScale(0.5);
       } else if (window.innerWidth < 768) {
@@ -85,59 +82,39 @@ export function SkillTreeSimulator() {
       }
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const calculateCenterPosition = () => {
+    const updatePosition = () => {
       const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
       const containerHeight = window.innerWidth < 768 ? 500 : 800;
       const treeWidth = 800 * scale;
       const treeHeight = 800 * scale;
 
       if (window.innerWidth < 640) {
-        return {
+        setPosition({
           x: (containerWidth - treeWidth) / 2 - 220,
           y: -50,
-        };
-      }
-
-      return {
-        x: 0,
-        y: (containerHeight - treeHeight) / 2,
-      };
-    };
-
-    setPosition(calculateCenterPosition());
-  }, [scale]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      const calculateCenterPosition = () => {
-        const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
-        const containerHeight = window.innerWidth < 768 ? 500 : 800;
-        const treeWidth = 800 * scale;
-        const treeHeight = 800 * scale;
-
-        if (window.innerWidth < 640) {
-          return {
-            x: (containerWidth - treeWidth) / 2 - 220,
-            y: -50,
-          };
-        }
-
-        return {
+        });
+      } else {
+        setPosition({
           x: 0,
           y: (containerHeight - treeHeight) / 2,
-        };
-      };
-
-      setPosition(calculateCenterPosition());
+        });
+      }
     };
 
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    // 初期値の設定
+    updateScale();
+    updatePosition();
+
+    // リサイズイベントのリスナーを設定
+    window.addEventListener("resize", () => {
+      updateScale();
+      updatePosition();
+    });
+
+    return () => {
+      window.removeEventListener("resize", updateScale);
+      window.removeEventListener("resize", updatePosition);
+    };
   }, [scale]);
 
   const handleSkillClick = (skillId: string) => {
@@ -482,7 +459,7 @@ export function SkillTreeSimulator() {
         >
           <div
             style={{
-              transform: `translate(${window.innerWidth < 640 ? position.x : 0}px, ${position.y}px)`,
+              transform: `translate(${position.x}px, ${position.y}px)`,
               position: "relative",
               width: "800px",
               height: "800px",
