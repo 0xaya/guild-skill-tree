@@ -481,7 +481,7 @@ export const isSkillUnlocked = (
 
   if (!skill.parentIds || skill.parentIds.length === 0) {
     console.warn(`Skill ${skill.id} (${skill.name}) has no parent IDs defined or available after filtering.`);
-    // 親が定義されていないスキルも、 일단 true にして表示はされるようにする
+    // 親が定義されていないスキルも、true にして表示はされるようにする
     return true;
   }
 
