@@ -238,6 +238,53 @@ export function SkillTreeSimulator() {
 
   return (
     <div className="flex flex-col lg:flex-row gap-2 w-full h-full">
+      {/* コントロールパネル */}
+      <div className="w-full lg:w-1/5 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
+        <div className="flex flex-col gap-y-10">
+          <div>
+            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
+            <div className="relative h-2">
+              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 bg-primary"
+                  style={{
+                    width: `${((guildRank - 1) / 9) * 100}%`,
+                  }}
+                />
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={guildRank}
+                onChange={handleRankChange}
+                className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">ギルドコイン</span>
+                <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
+              </div>
+              {Object.entries(totalCost.materials).map(([material, count]) => (
+                <div key={material} className="flex justify-between items-center">
+                  <span className="text-text-primary">{material}</span>
+                  <span className="text-text-primary">×{count.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <Button onClick={handleReset} fullWidth size="lg">
+            リセット
+          </Button>
+        </div>
+      </div>
+
       {/* スキルツリー表示部分 */}
       <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] bg-background-light rounded-lg overflow-hidden lg:overflow-visible">
         <div
@@ -294,53 +341,6 @@ export function SkillTreeSimulator() {
           <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
           <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
           <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
-        </div>
-      </div>
-
-      {/* コントロールパネル */}
-      <div className="w-full lg:w-1/5 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
-        <div className="flex flex-col gap-y-10">
-          <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
-            <div className="relative h-2">
-              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
-                <div
-                  className="absolute inset-y-0 left-0 bg-primary"
-                  style={{
-                    width: `${((guildRank - 1) / 9) * 100}%`,
-                  }}
-                />
-              </div>
-              <input
-                type="range"
-                min="1"
-                max="10"
-                value={guildRank}
-                onChange={handleRankChange}
-                className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-10"
-              />
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">ギルドコイン</span>
-                <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
-              </div>
-              {Object.entries(totalCost.materials).map(([material, count]) => (
-                <div key={material} className="flex justify-between items-center">
-                  <span className="text-text-primary">{material}</span>
-                  <span className="text-text-primary">×{count.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <Button onClick={handleReset} fullWidth size="lg">
-            リセット
-          </Button>
         </div>
       </div>
     </div>
