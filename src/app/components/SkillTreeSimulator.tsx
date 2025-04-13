@@ -346,80 +346,116 @@ export function SkillTreeSimulator() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">ステータス上昇</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-2">パッシブスキル上昇率</h3>
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">腕力</span>
-                <span className="text-text-primary">+{totalStats.str}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">体力</span>
-                <span className="text-text-primary">+{totalStats.vit}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">速さ</span>
-                <span className="text-text-primary">+{totalStats.agi}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">知力</span>
-                <span className="text-text-primary">+{totalStats.int}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">器用</span>
-                <span className="text-text-primary">+{totalStats.dex}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">精神</span>
-                <span className="text-text-primary">+{totalStats.mnd}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">防御力</span>
-                <span className="text-text-primary">+{totalStats.def}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">MP</span>
-                <span className="text-text-primary">+{totalStats.mp}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">HP</span>
-                <span className="text-text-primary">+{totalStats.hp}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">攻撃速度</span>
-                <span className="text-text-primary">+{totalStats.atkSpd}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">魔法スキル威力</span>
-                <span className="text-text-primary">+{totalStats.magicPower}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">物理スキル威力</span>
-                <span className="text-text-primary">+{totalStats.physicalPower}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">EXP獲得率</span>
-                <span className="text-text-primary">+{totalStats.expGetRate}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">詠唱速度</span>
-                <span className="text-text-primary">+{totalStats.castSpd}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">魔法CRI発動率</span>
-                <span className="text-text-primary">+{totalStats.magicCri}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">物理CRI発動率</span>
-                <span className="text-text-primary">+{totalStats.physicalCri}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">魔法CRI倍率</span>
-                <span className="text-text-primary">+{totalStats.magicCriMulti}%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">物理CRI倍率</span>
-                <span className="text-text-primary">+{totalStats.physicalCriMulti}%</span>
-              </div>
+              {totalStats.str > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">腕力</span>
+                  <span className="text-text-primary">+{totalStats.str}%</span>
+                </div>
+              )}
+              {totalStats.vit > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">体力</span>
+                  <span className="text-text-primary">+{totalStats.vit}%</span>
+                </div>
+              )}
+              {totalStats.agi > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">速さ</span>
+                  <span className="text-text-primary">+{totalStats.agi}%</span>
+                </div>
+              )}
+              {totalStats.int > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">知力</span>
+                  <span className="text-text-primary">+{totalStats.int}%</span>
+                </div>
+              )}
+              {totalStats.dex > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">器用</span>
+                  <span className="text-text-primary">+{totalStats.dex}%</span>
+                </div>
+              )}
+              {totalStats.mnd > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">精神</span>
+                  <span className="text-text-primary">+{totalStats.mnd}%</span>
+                </div>
+              )}
+              {totalStats.def > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">防御力</span>
+                  <span className="text-text-primary">+{totalStats.def}%</span>
+                </div>
+              )}
+              {totalStats.mp > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">MP</span>
+                  <span className="text-text-primary">+{totalStats.mp}%</span>
+                </div>
+              )}
+              {totalStats.hp > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">HP</span>
+                  <span className="text-text-primary">+{totalStats.hp}%</span>
+                </div>
+              )}
+              {totalStats.atkSpd > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">攻撃速度</span>
+                  <span className="text-text-primary">+{totalStats.atkSpd}%</span>
+                </div>
+              )}
+              {totalStats.magicPower > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">魔法スキル威力</span>
+                  <span className="text-text-primary">+{totalStats.magicPower}%</span>
+                </div>
+              )}
+              {totalStats.physicalPower > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">物理スキル威力</span>
+                  <span className="text-text-primary">+{totalStats.physicalPower}%</span>
+                </div>
+              )}
+              {totalStats.expGetRate > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">EXP獲得率</span>
+                  <span className="text-text-primary">+{totalStats.expGetRate}%</span>
+                </div>
+              )}
+              {totalStats.castSpd > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">詠唱速度</span>
+                  <span className="text-text-primary">+{totalStats.castSpd}%</span>
+                </div>
+              )}
+              {totalStats.magicCri > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">魔法CRI発動率</span>
+                  <span className="text-text-primary">+{totalStats.magicCri}%</span>
+                </div>
+              )}
+              {totalStats.physicalCri > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">物理CRI発動率</span>
+                  <span className="text-text-primary">+{totalStats.physicalCri}%</span>
+                </div>
+              )}
+              {totalStats.magicCriMulti > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">魔法CRI倍率</span>
+                  <span className="text-text-primary">+{totalStats.magicCriMulti}%</span>
+                </div>
+              )}
+              {totalStats.physicalCriMulti > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary">物理CRI倍率</span>
+                  <span className="text-text-primary">+{totalStats.physicalCriMulti}%</span>
+                </div>
+              )}
             </div>
           </div>
 

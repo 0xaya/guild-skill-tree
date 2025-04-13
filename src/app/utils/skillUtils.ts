@@ -379,13 +379,13 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       const description = row["説明"] || "";
       const stats = extractStatsFromDescription(description);
 
-      // デバッグログ：パッシブスキルの場合のみ出力
-      if (row["タイプ"] === "パッシブ") {
-        console.group(`スキル: ${skillName} (ID: ${skillId})`);
-        console.log("説明文:", description);
-        console.log("抽出されたステータス値:", stats);
-        console.groupEnd();
-      }
+      // // デバッグログ：パッシブスキルの場合のみ出力
+      // if (row["タイプ"] === "パッシブ") {
+      //   console.group(`スキル: ${skillName} (ID: ${skillId})`);
+      //   console.log("説明文:", description);
+      //   console.log("抽出されたステータス値:", stats);
+      //   console.groupEnd();
+      // }
 
       const skillLevel: SkillLevel = {
         level,
