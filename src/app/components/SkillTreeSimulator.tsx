@@ -13,7 +13,7 @@ export function SkillTreeSimulator() {
   const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>({
     core: 1,
   });
-  const [guildRank, setGuildRank] = useState<number>(3);
+  const [guildRank, setGuildRank] = useState<number>(5);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
     coins: 0,
