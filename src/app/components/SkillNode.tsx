@@ -62,7 +62,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const nodeBgColor = isActive
     ? `${categoryColor}70` // alpha: 0.7 (取得済み)
     : isRankMet
-    ? `${categoryColor}20` // alpha: 0.2 (ランク条件を満たしている)
+    ? `${categoryColor}40` // alpha: 0.2 (ランク条件を満たしている)
     : `${categoryColor}10`; // alpha: 0.1 (ランク条件を満たしていない)
   const nodeBorderColor = isActive
     ? categoryColor
