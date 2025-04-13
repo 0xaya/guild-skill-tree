@@ -3,7 +3,7 @@ import { SkillTreeSimulator } from "./components/SkillTreeSimulator";
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col w-full bg-background-dark text-text-primary">
-      <header className="p-8 lg:p-16 border-b border-background-light">
+      <header className="p-8 lg:p-16">
         <h1 className="text-2xl font-bold text-primary">ギルドスキルツリーシミュレータ</h1>
         <p className="text-sm text-text-muted">元素騎士オンライン - ギルドスキルのシミュレーションができます</p>
       </header>
@@ -12,7 +12,7 @@ export default function Home() {
         <SkillTreeSimulator />
       </main>
 
-      <footer className="flex flex-col gap-y-6 p-4 text-center text-xs text-text-muted border-t border-background-light">
+      <footer className="flex flex-col gap-y-6 p-4 text-center text-xs text-text-muted">
         <p>© pocoapoco</p>
       </footer>
     </div>
