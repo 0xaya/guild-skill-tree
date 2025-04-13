@@ -72,9 +72,8 @@ export function SkillTreeSimulator() {
 
   useEffect(() => {
     // クライアントサイドでのみ実行
-    if (typeof window === "undefined") return;
-
     const updateScale = () => {
+      console.log("updateScale");
       if (window.innerWidth < 640) {
         setScale(0.5);
       } else if (window.innerWidth < 768) {
@@ -117,7 +116,7 @@ export function SkillTreeSimulator() {
       window.removeEventListener("resize", updateScale);
       window.removeEventListener("resize", updatePosition);
     };
-  }, []);
+  }, [scale]);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") {
@@ -161,6 +160,17 @@ export function SkillTreeSimulator() {
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
+    // レベル2以上を下げる場合は依存関係の確認をスキップ
+    if (currentLevel > 1) {
+      setSelectedSkills((prev: { [key: string]: number }) => ({
+        ...prev,
+        [skillId]: currentLevel - 1,
+      }));
+      setError(null);
+      return;
+    }
+
+    // レベル1から0に下げる場合のみ依存関係を確認
     const hasActiveChildren = skills.some(
       (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
     );
@@ -289,7 +299,7 @@ export function SkillTreeSimulator() {
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">
-              <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
@@ -311,12 +321,12 @@ export function SkillTreeSimulator() {
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
             <div className="space-y-2">
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex justify-between items-center">
                 <span className="text-text-primary">ギルドコイン</span>
                 <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
               </div>
               {Object.entries(totalCost.materials).map(([material, count]) => (
-                <div key={material} className="flex justify-between items-center text-sm">
+                <div key={material} className="flex justify-between items-center">
                   <span className="text-text-primary">{material}</span>
                   <span className="text-text-primary">×{count.toLocaleString()}</span>
                 </div>
@@ -328,7 +338,7 @@ export function SkillTreeSimulator() {
             <h3 className="text-lg font-medium text-text-primary mb-2">パッシブスキル上昇率</h3>
             <div className="space-y-2">
               {totalStats.str > 0 && (
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex justify-between items-center">
                   <span className="text-text-primary">腕力</span>
                   <span className="text-text-primary">+{totalStats.str}%</span>
                 </div>
