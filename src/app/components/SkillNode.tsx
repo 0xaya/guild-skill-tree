@@ -162,7 +162,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       {/* ツールチップ - コアにも表示するが内容を調整 */}
       {showTooltip && (
         <div style={tooltipStyle}>
-          <div className="font-bold mb-1 text-[14px] text-pink-200">{skill.name}</div>
+          <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>
           <div className="text-xs mb-2 text-gray-300">
             {selectedLevel > 0 ? skill.levels[selectedLevel - 1].description : skill.levels[0].description}
           </div>
@@ -170,16 +170,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* コア以外のスキルのみレベル情報を表示 */}
           {!isCore && selectedLevel > 0 && (
             <div className="mt-2 pt-1 border-t border-gray-700">
-              <div className="text-xs font-bold text-green-300">現在: Lv{selectedLevel}</div>
+              <div className="text-xs font-bold text-primary">現在: Lv{selectedLevel}</div>
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel - 1]?.materials || {}).length > 0 && (
                 <div className="mt-1">
                   <div className="text-xs text-gray-400">必要素材:</div>
-                  <div className="grid grid-cols-2 gap-x-1 text-xs mt-1">
+                  <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel - 1]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-green-300">x{amount}</span>
+                        <span className="text-primary">x{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -196,16 +196,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* 次のレベル情報 - コア以外で最大レベルに達していないスキルのみ */}
           {!isCore && selectedLevel < maxLevel && (
             <div className="mt-2 pt-1 border-t border-gray-700">
-              <div className="text-xs font-bold text-blue-300">次のレベル: Lv{selectedLevel + 1}</div>
+              <div className="text-xs font-bold text-primary">次のレベル: Lv{selectedLevel + 1}</div>
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel]?.materials || {}).length > 0 && (
                 <div className="mt-1">
                   <div className="text-xs text-gray-400">必要素材:</div>
-                  <div className="grid grid-cols-2 gap-x-1 text-xs mt-1">
+                  <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-blue-300">x{amount}</span>
+                        <span className="text-primary">x{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -223,9 +223,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {!isCore && (
             <div className="mt-2 text-xs flex justify-between">
               <span className="text-gray-400">必要ランク:</span>
-              <span className={skill.requiredRank > 0 ? "text-orange-300" : "text-green-300"}>
-                {skill.requiredRank}
-              </span>
+              <span className={skill.requiredRank > 0 ? "text-orange-300" : "text-primary"}>{skill.requiredRank}</span>
             </div>
           )}
 
@@ -238,7 +236,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
           {/* コアスキル用の特別メッセージ */}
           {isCore && (
-            <div className="text-[10px] mt-2 text-blue-300 text-center">
+            <div className="text-[10px] mt-2 text-primary text-center">
               ギルドスキルツリーの中心です。6つの基本スキルが拡がっています。
             </div>
           )}
