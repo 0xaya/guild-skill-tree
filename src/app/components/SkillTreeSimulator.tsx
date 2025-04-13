@@ -316,7 +316,7 @@ export function SkillTreeSimulator() {
                 <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
               </div>
               {Object.entries(totalCost.materials).map(([material, count]) => (
-                <div key={material} className="flex justify-between items-center">
+                <div key={material} className="flex justify-between items-center text-sm">
                   <span className="text-text-primary">{material}</span>
                   <span className="text-text-primary">×{count.toLocaleString()}</span>
                 </div>
