@@ -154,7 +154,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {!isCore && <span className="leading-tight">{skillNameDisplay}</span>}
 
         {/* レベル表示 - コア以外でレベル1以上のスキルのみ表示 */}
-        {!isCore && selectedLevel > 0 && <span className="text-[9px] opacity-70 ml-1">Lv{selectedLevel}</span>}
+        {!isCore && selectedLevel > 0 && (
+          <span className="text-[9px] opacity-70 ml-1 mb-[-3px]">Lv{selectedLevel}</span>
+        )}
 
         {/* 星アイコン表示 - コア以外のスキルのみ */}
         {!isCore && renderStars(selectedLevel, maxLevel)}
@@ -163,7 +165,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       {/* ツールチップ - コアにも表示するが内容を調整 */}
       {showTooltip && (
         <div style={tooltipStyle}>
-          <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>
+          {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
           <div className="text-xs mb-2 text-gray-300">
             {selectedLevel > 0 ? skill.levels[selectedLevel - 1].description : skill.levels[0].description}
           </div>
@@ -180,7 +182,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                     {Object.entries(skill.levels[selectedLevel - 1]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-primary">x{amount}</span>
+                        <span className="text-primary">×{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -189,7 +191,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* コイン消費 */}
               <div className="mt-1 flex justify-between text-xs">
                 <span className="text-gray-300">ギルドコイン:</span>
-                <span className="text-yellow-300">{skill.levels[selectedLevel - 1]?.guildCoins || 0}</span>
+                <span className="text-yellow-300">×{skill.levels[selectedLevel - 1]?.guildCoins || 0}</span>
               </div>
             </div>
           )}
@@ -206,7 +208,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                     {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-primary">x{amount}</span>
+                        <span className="text-primary">×{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -215,7 +217,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* コイン消費 */}
               <div className="mt-1 flex justify-between text-xs">
                 <span className="text-gray-300">ギルドコイン:</span>
-                <span className="text-yellow-300">{skill.levels[selectedLevel]?.guildCoins || 0}</span>
+                <span className="text-yellow-300">×{skill.levels[selectedLevel]?.guildCoins || 0}</span>
               </div>
             </div>
           )}
@@ -230,9 +232,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
           {/* 操作ガイド - コア以外のスキルのみ */}
           {!isCore && (
-            <div className="text-[10px] mt-2 text-gray-500 text-center">
-              左クリック: レベルアップ / 右クリック: レベルダウン
-            </div>
+            <div className="text-[10px] mt-2 text-gray-500">左クリック: レベルアップ / 右クリック: レベルダウン</div>
           )}
 
           {/* コアスキル用の特別メッセージ */}
