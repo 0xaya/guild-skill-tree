@@ -26,6 +26,26 @@ export function SkillTreeSimulator() {
     return 1;
   });
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [totalStats, setTotalStats] = useState({
+    str: 0,
+    vit: 0,
+    agi: 0,
+    int: 0,
+    dex: 0,
+    mnd: 0,
+    def: 0,
+    mp: 0,
+    hp: 0,
+    atkSpd: 0,
+    magicPower: 0,
+    physicalPower: 0,
+    expGetRate: 0,
+    castSpd: 0,
+    magicCri: 0,
+    physicalCri: 0,
+    magicCriMulti: 0,
+    physicalCriMulti: 0,
+  });
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -50,6 +70,8 @@ export function SkillTreeSimulator() {
   useEffect(() => {
     const cost = calculateTotalCost(skills, selectedSkills);
     setTotalCost(cost);
+    const stats = calculateTotalStats();
+    setTotalStats(stats);
   }, [skills, selectedSkills]);
 
   useEffect(() => {
@@ -160,15 +182,13 @@ export function SkillTreeSimulator() {
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
-    if (currentLevel === 1) {
-      const hasActiveChildren = skills.some(
-        (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
-      );
+    const hasActiveChildren = skills.some(
+      (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
+    );
 
-      if (hasActiveChildren) {
-        setError("このスキルを下げるには、先に依存する子スキルを下げてください。");
-        return;
-      }
+    if (hasActiveChildren) {
+      setError("このスキルを下げるには、先に依存する子スキルを下げてください。");
+      return;
     }
 
     setSelectedSkills((prev: { [key: string]: number }) => ({
@@ -221,6 +241,59 @@ export function SkillTreeSimulator() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  // ステータス上昇の累計を計算する関数
+  const calculateTotalStats = () => {
+    const stats = {
+      str: 0, // 腕力
+      vit: 0, // 体力
+      agi: 0, // 速さ
+      int: 0, // 知力
+      dex: 0, // 器用
+      mnd: 0, // 精神
+      def: 0, // 防御力
+      mp: 0, // MP
+      hp: 0, // HP
+      atkSpd: 0, // 攻撃速度
+      magicPower: 0, // 魔法スキル威力
+      physicalPower: 0, // 物理スキル威力
+      expGetRate: 0, // EXP獲得率
+      castSpd: 0, // 詠唱速度
+      magicCri: 0, // 魔法CRI発動率
+      physicalCri: 0, // 物理CRI発動率
+      magicCriMulti: 0, // 魔法CRI倍率
+      physicalCriMulti: 0, // 物理CRI倍率
+    };
+
+    skills.forEach(skill => {
+      const level = selectedSkills[skill.id] || 0;
+      if (level > 0) {
+        const levelData = skill.levels[level - 1];
+        if (levelData) {
+          stats.str += levelData.str || 0;
+          stats.vit += levelData.vit || 0;
+          stats.agi += levelData.agi || 0;
+          stats.int += levelData.int || 0;
+          stats.dex += levelData.dex || 0;
+          stats.mnd += levelData.mnd || 0;
+          stats.def += levelData.def || 0;
+          stats.mp += levelData.mp || 0;
+          stats.hp += levelData.hp || 0;
+          stats.atkSpd += levelData.atkSpd || 0;
+          stats.magicPower += levelData.magicPower || 0;
+          stats.physicalPower += levelData.physicalPower || 0;
+          stats.expGetRate += levelData.expGetRate || 0;
+          stats.castSpd += levelData.castSpd || 0;
+          stats.magicCri += levelData.magicCri || 0;
+          stats.physicalCri += levelData.physicalCri || 0;
+          stats.magicCriMulti += levelData.magicCriMulti || 0;
+          stats.physicalCriMulti += levelData.physicalCriMulti || 0;
+        }
+      }
+    });
+
+    return stats;
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -269,6 +342,84 @@ export function SkillTreeSimulator() {
                   <span className="text-text-primary">×{count.toLocaleString()}</span>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium text-text-primary mb-2">ステータス上昇</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">腕力</span>
+                <span className="text-text-primary">+{totalStats.str}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">体力</span>
+                <span className="text-text-primary">+{totalStats.vit}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">速さ</span>
+                <span className="text-text-primary">+{totalStats.agi}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">知力</span>
+                <span className="text-text-primary">+{totalStats.int}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">器用</span>
+                <span className="text-text-primary">+{totalStats.dex}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">精神</span>
+                <span className="text-text-primary">+{totalStats.mnd}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">防御力</span>
+                <span className="text-text-primary">+{totalStats.def}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">MP</span>
+                <span className="text-text-primary">+{totalStats.mp}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">HP</span>
+                <span className="text-text-primary">+{totalStats.hp}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">攻撃速度</span>
+                <span className="text-text-primary">+{totalStats.atkSpd}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">魔法スキル威力</span>
+                <span className="text-text-primary">+{totalStats.magicPower}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">物理スキル威力</span>
+                <span className="text-text-primary">+{totalStats.physicalPower}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">EXP獲得率</span>
+                <span className="text-text-primary">+{totalStats.expGetRate}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">詠唱速度</span>
+                <span className="text-text-primary">+{totalStats.castSpd}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">魔法CRI発動率</span>
+                <span className="text-text-primary">+{totalStats.magicCri}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">物理CRI発動率</span>
+                <span className="text-text-primary">+{totalStats.physicalCri}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">魔法CRI倍率</span>
+                <span className="text-text-primary">+{totalStats.magicCriMulti}%</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-text-primary">物理CRI倍率</span>
+                <span className="text-text-primary">+{totalStats.physicalCriMulti}%</span>
+              </div>
             </div>
           </div>
 

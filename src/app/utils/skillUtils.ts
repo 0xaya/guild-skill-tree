@@ -288,6 +288,62 @@ export const SKILL_CONNECTIONS = Object.entries(SKILL_PARENTS).flatMap(([childId
   }))
 );
 
+// 説明文から数値を抽出するヘルパー関数
+const extractValueFromDescription = (description: string, pattern: string): number => {
+  const regex = new RegExp(`${pattern}([0-9.]+)`);
+  const match = description.match(regex);
+  return match ? parseFloat(match[1]) : 0;
+};
+
+// 説明文からステータス上昇値を抽出する関数
+const extractStatsFromDescription = (description: string): Partial<SkillLevel> => {
+  const stats: Partial<SkillLevel> = {};
+
+  // 基本ステータス
+  if (description.includes("腕力")) stats.str = extractValueFromDescription(description, "腕力を");
+  if (description.includes("体力")) stats.vit = extractValueFromDescription(description, "体力を");
+  if (description.includes("速さ")) stats.agi = extractValueFromDescription(description, "速さを");
+  if (description.includes("知力")) stats.int = extractValueFromDescription(description, "知力を");
+  if (description.includes("器用")) stats.dex = extractValueFromDescription(description, "器用を");
+  if (description.includes("精神")) stats.mnd = extractValueFromDescription(description, "精神を");
+  if (description.includes("防御力")) stats.def = extractValueFromDescription(description, "防御力を");
+
+  // その他のステータス
+  if (description.includes("MP")) stats.mp = extractValueFromDescription(description, "MPを");
+  if (description.includes("HP")) stats.hp = extractValueFromDescription(description, "HPを");
+  if (description.includes("攻撃速度")) stats.atkSpd = extractValueFromDescription(description, "攻撃速度を");
+  if (description.includes("魔法スキル威力")) {
+    const value = extractValueFromDescription(description, "魔法スキル威力を");
+    stats.magicPower = Math.round((value > 1 ? (value - 1) * 100 : value * 100) * 100) / 100;
+  }
+  if (description.includes("物理スキル威力")) {
+    const value = extractValueFromDescription(description, "物理スキル威力を");
+    stats.physicalPower = Math.round((value > 1 ? (value - 1) * 100 : value * 100) * 100) / 100;
+  }
+  if (description.includes("EXP獲得率")) {
+    const value = extractValueFromDescription(description, "EXP獲得率を");
+    stats.expGetRate = Math.round((value - 1) * 100 * 100) / 100; // 1.08倍 → 8%
+  }
+  if (description.includes("詠唱速度")) {
+    const value = extractValueFromDescription(description, "詠唱速度を");
+    stats.castSpd = Math.round((value - 1) * 100 * 100) / 100; // 1.08倍 → 8%
+  }
+  
+  // クリティカル関連の修正
+  if (description.includes("魔法クリティカル発動率")) stats.magicCri = extractValueFromDescription(description, "魔法クリティカル発動率を");
+  if (description.includes("物理クリティカル発動率")) stats.physicalCri = extractValueFromDescription(description, "物理クリティカル発動率を");
+  if (description.includes("魔法クリティカル倍率")) {
+    const value = extractValueFromDescription(description, "魔法クリティカル倍率を");
+    stats.magicCriMulti = Math.round(value * 100) / 100; // 1.08倍 → 1.08
+  }
+  if (description.includes("物理クリティカル倍率")) {
+    const value = extractValueFromDescription(description, "物理クリティカル倍率を");
+    stats.physicalCriMulti = Math.round(value * 100) / 100; // 1.08倍 → 1.08
+  }
+
+  return stats;
+};
+
 // CSVからスキルデータをロードして処理する
 export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
   try {
@@ -300,6 +356,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
     });
 
     const skillsMap: { [key: string]: Skill } = {};
+    let passiveSkillCount = 0;
 
     // 各行をループして処理
     result.data.forEach((row: any) => {
@@ -319,11 +376,23 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
         }
       });
 
+      const description = row["説明"] || "";
+      const stats = extractStatsFromDescription(description);
+
+      // デバッグログ：パッシブスキルの場合のみ出力
+      if (row["タイプ"] === "パッシブ") {
+        console.group(`スキル: ${skillName} (ID: ${skillId})`);
+        console.log("説明文:", description);
+        console.log("抽出されたステータス値:", stats);
+        console.groupEnd();
+      }
+
       const skillLevel: SkillLevel = {
         level,
         guildCoins: parseInt(row["ギルドコイン"] || "0", 10),
         materials,
-        description: row["説明"] || "",
+        description,
+        ...stats,
       };
 
       const baseName = skillName.replace(/Lv\d+$/, "");
@@ -333,6 +402,8 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       } else {
         const parentIds = SKILL_PARENTS[skillId] || [];
         const position = SKILL_POSITIONS[skillId] || { x: Math.random() * 600 + 100, y: Math.random() * 600 + 100 };
+        const isPassive = row["タイプ"] === "パッシブ";
+        if (isPassive) passiveSkillCount++;
 
         skillsMap[skillId] = {
           id: skillId,
@@ -345,10 +416,21 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
           x: position.x,
           y: position.y,
           parentIds,
-          isPassive: row["タイプ"] === "パッシブ",
+          isPassive,
         };
       }
     });
+
+    // デバッグログ：パッシブスキルの総数とIDを出力
+    console.group("パッシブスキル情報");
+    console.log("パッシブスキルの総数:", passiveSkillCount);
+    console.log(
+      "パッシブスキルのID一覧:",
+      Object.values(skillsMap)
+        .filter(skill => skill.isPassive)
+        .map(skill => `${skill.id}: ${skill.name}`)
+    );
+    console.groupEnd();
 
     Object.values(skillsMap).forEach(skill => {
       skill.levels.sort((a, b) => a.level - b.level);
