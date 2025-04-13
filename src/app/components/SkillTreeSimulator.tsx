@@ -299,7 +299,7 @@ export function SkillTreeSimulator() {
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">
-              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
