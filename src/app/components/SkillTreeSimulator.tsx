@@ -5,7 +5,6 @@ import { Skill } from "../types/skill";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
 import { loadSkillsFromCSV, isSkillUnlocked, calculateTotalCost, SKILL_POSITIONS } from "../utils/skillUtils";
-import { THEME_COLORS } from "../styles/theme";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
@@ -239,12 +238,12 @@ export function SkillTreeSimulator() {
   return (
     <div className="flex flex-col lg:flex-row gap-2 w-full h-full">
       {/* コントロールパネル */}
-      <div className="w-full lg:w-1/5 bg-background-light rounded-lg p-4 overflow-y-auto max-h-[800px]">
+      <div className="w-full lg:w-1/5 p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
             <div className="relative h-2">
-              <div className="absolute inset-0 bg-background-dark rounded-lg overflow-hidden">
+              <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
@@ -286,7 +285,7 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* スキルツリー表示部分 */}
-      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] bg-background-light rounded-lg overflow-hidden lg:overflow-visible">
+      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] overflow-hidden lg:overflow-visible">
         <div
           className="absolute inset-0"
           style={{

@@ -14,7 +14,7 @@ const config: Config = {
         background: {
           dark: "#111", // 背景色（濃）
           medium: "rgba(30, 30, 40, 0.8)", // 背景色（中）
-          light: "rgba(0, 0, 0, 0.2)", // 背景色（淡）
+          light: "rgba(180, 180, 180, 0.5)", // 背景色（淡）
         },
 
         // テキストカラー
