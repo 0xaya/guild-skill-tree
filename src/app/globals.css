@@ -4,18 +4,19 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 20, 20, 30;
-  --background-end-rgb: 10, 10, 20;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
 }
 
 body {
   color: rgb(var(--foreground-rgb));
   background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  min-height: 100vh;
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+  font-family: var(--font-inter);
 }
 
 /* カスタムスクロールバー */
@@ -25,15 +26,15 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(60, 60, 80, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(180, 120, 180, 0.5);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(200, 140, 200, 0.7);
+  background: rgba(255, 255, 255, 0.3);
 }
