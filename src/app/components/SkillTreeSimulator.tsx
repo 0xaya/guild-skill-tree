@@ -160,13 +160,15 @@ export function SkillTreeSimulator() {
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
-    const hasActiveChildren = skills.some(
-      (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
-    );
+    if (currentLevel === 1) {
+      const hasActiveChildren = skills.some(
+        (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
+      );
 
-    if (hasActiveChildren) {
-      setError("このスキルを下げるには、先に依存する子スキルを下げてください。");
-      return;
+      if (hasActiveChildren) {
+        setError("このスキルを下げるには、先に依存する子スキルを下げてください。");
+        return;
+      }
     }
 
     setSelectedSkills((prev: { [key: string]: number }) => ({
