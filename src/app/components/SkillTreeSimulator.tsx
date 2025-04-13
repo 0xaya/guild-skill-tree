@@ -6,6 +6,8 @@ import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
 import { loadSkillsFromCSV, isSkillUnlocked, calculateTotalCost, SKILL_POSITIONS } from "../utils/skillUtils";
 import { THEME_COLORS } from "../styles/theme";
+import { Button } from "./ui/Button";
+import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -289,24 +291,9 @@ export function SkillTreeSimulator() {
 
         {/* ズームコントロール */}
         <div className="absolute bottom-4 right-4 flex gap-2">
-          <button
-            onClick={handleZoomIn}
-            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
-          >
-            +
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
-          >
-            -
-          </button>
-          <button
-            onClick={handleZoomReset}
-            className="p-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
-          >
-            ↺
-          </button>
+          <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
+          <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
+          <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
         </div>
       </div>
 
@@ -351,12 +338,9 @@ export function SkillTreeSimulator() {
             </div>
           </div>
 
-          <button
-            onClick={handleReset}
-            className="w-full py-2 bg-background-dark text-text-primary rounded-lg hover:bg-background-light"
-          >
+          <Button onClick={handleReset} fullWidth size="lg">
             リセット
-          </button>
+          </Button>
         </div>
       </div>
     </div>
