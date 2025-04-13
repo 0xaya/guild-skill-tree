@@ -421,16 +421,16 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       }
     });
 
-    // デバッグログ：パッシブスキルの総数とIDを出力
-    console.group("パッシブスキル情報");
-    console.log("パッシブスキルの総数:", passiveSkillCount);
-    console.log(
-      "パッシブスキルのID一覧:",
-      Object.values(skillsMap)
-        .filter(skill => skill.isPassive)
-        .map(skill => `${skill.id}: ${skill.name}`)
-    );
-    console.groupEnd();
+    // // デバッグログ：パッシブスキルの総数とIDを出力
+    // console.group("パッシブスキル情報");
+    // console.log("パッシブスキルの総数:", passiveSkillCount);
+    // console.log(
+    //   "パッシブスキルのID一覧:",
+    //   Object.values(skillsMap)
+    //     .filter(skill => skill.isPassive)
+    //     .map(skill => `${skill.id}: ${skill.name}`)
+    // );
+    // console.groupEnd();
 
     Object.values(skillsMap).forEach(skill => {
       skill.levels.sort((a, b) => a.level - b.level);
