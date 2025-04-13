@@ -163,7 +163,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       {showTooltip && (
         <div style={tooltipStyle}>
           <div className="font-bold mb-1 text-[14px] text-pink-200">{skill.name}</div>
-          <div className="text-xs mb-2 text-gray-300">{skill.description}</div>
+          <div className="text-xs mb-2 text-gray-300">
+            {selectedLevel > 0 ? skill.levels[selectedLevel - 1].description : skill.levels[0].description}
+          </div>
 
           {/* コア以外のスキルのみレベル情報を表示 */}
           {!isCore && selectedLevel > 0 && (
