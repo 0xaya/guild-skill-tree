@@ -72,8 +72,9 @@ export function SkillTreeSimulator() {
 
   useEffect(() => {
     // クライアントサイドでのみ実行
+    if (typeof window === "undefined") return;
+
     const updateScale = () => {
-      console.log("updateScale");
       if (window.innerWidth < 640) {
         setScale(0.5);
       } else if (window.innerWidth < 768) {
@@ -116,7 +117,7 @@ export function SkillTreeSimulator() {
       window.removeEventListener("resize", updateScale);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [scale]);
+  }, []);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") {
@@ -199,10 +200,32 @@ export function SkillTreeSimulator() {
 
   const handleZoomIn = () => {
     setScale(prev => Math.min(prev + 0.1, 2));
+    // ズームイン時に中心を維持
+    const container = document.querySelector(".relative");
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      setPosition(prev => ({
+        x: prev.x + (centerX - prev.x) * 0.1,
+        y: prev.y + (centerY - prev.y) * 0.1,
+      }));
+    }
   };
 
   const handleZoomOut = () => {
     setScale(prev => Math.max(prev - 0.1, 0.5));
+    // ズームアウト時に中心を維持
+    const container = document.querySelector(".relative");
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      setPosition(prev => ({
+        x: prev.x - (centerX - prev.x) * 0.1,
+        y: prev.y - (centerY - prev.y) * 0.1,
+      }));
+    }
   };
 
   const handleZoomReset = () => {
@@ -464,14 +487,13 @@ export function SkillTreeSimulator() {
         <div
           className="absolute inset-0"
           style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "top center",
+            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
+            transformOrigin: "center center",
           }}
           onMouseDown={handleMouseDown}
         >
           <div
             style={{
-              transform: `translate(${position.x}px, ${position.y}px)`,
               position: "relative",
               width: "800px",
               height: "800px",
