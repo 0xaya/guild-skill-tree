@@ -291,7 +291,7 @@ export const SKILL_CONNECTIONS = Object.entries(SKILL_PARENTS).flatMap(([childId
 // CSVからスキルデータをロードして処理する
 export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
   try {
-    const response = await fetch("/data/skills.sv");
+    const response = await fetch("/data/skills.csv");
     const csvData = await response.text();
 
     const result = Papa.parse(csvData, {
@@ -323,6 +323,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
         level,
         guildCoins: parseInt(row["ギルドコイン"] || "0", 10),
         materials,
+        description: row["説明"] || "",
       };
 
       const baseName = skillName.replace(/Lv\d+$/, "");
@@ -338,7 +339,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
           name: baseName,
           category: row["系統"] || "不明",
           type: row["タイプ"] === "アクティブ" ? "アクティブ" : "パッシブ",
-          description: row["説明"] || "",
+          description: "", // ベースの説明は空に
           requiredRank: parseInt(row["必要ランク"] || "1", 10),
           levels: [skillLevel],
           x: position.x,
@@ -360,7 +361,7 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       type: "パッシブ",
       description: "スキルツリーの中心",
       requiredRank: 1,
-      levels: [{ level: 1, guildCoins: 0, materials: {} }],
+      levels: [{ level: 1, guildCoins: 0, materials: {}, description: "スキルツリーの中心" }],
       x: SKILL_POSITIONS["core"]?.x || 400,
       y: SKILL_POSITIONS["core"]?.y || 400,
       parentIds: [],

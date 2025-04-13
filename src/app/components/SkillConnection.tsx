@@ -18,11 +18,11 @@ export const SkillConnection: React.FC<SkillConnectionProps> = ({ parent, child,
   const lineWidth = isActive ? 2 : 1.5; // 少し太くする
   const lineColor = isActive
     ? "rgba(170, 210, 255, 0.6)" // アクティブ: 明るい水色（不透明度調整）
-    : "rgba(120, 130, 150, 0.35)"; // 非アクティブ: 明るめのグレー
+    : "rgba(120, 130, 150, 0.45)"; // 非アクティブ: 明るめのグレー（不透明度を0.35から0.45に変更）
 
   // グラデーション色（線をより美しく見せる）
-  const gradientStart = isActive ? "rgba(190, 230, 255, 0.5)" : "rgba(140, 150, 170, 0.25)";
-  const gradientEnd = isActive ? "rgba(130, 180, 255, 0.5)" : "rgba(100, 110, 140, 0.25)";
+  const gradientStart = isActive ? "rgba(190, 230, 255, 0.5)" : "rgba(140, 150, 170, 0.35)"; // 不透明度を0.25から0.35に変更
+  const gradientEnd = isActive ? "rgba(130, 180, 255, 0.5)" : "rgba(100, 110, 140, 0.35)"; // 不透明度を0.25から0.35に変更
 
   // ノードの半径を計算（コアとそれ以外で異なる）
   const isParentCore = parent.id === "core";

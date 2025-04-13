@@ -18,6 +18,7 @@ export interface SkillLevel {
   materials: {
     [key: string]: number;
   };
+  description: string;
 }
 
 // スキル系統のカラーマッピング

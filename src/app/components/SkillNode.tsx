@@ -115,6 +115,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     width: "240px",
     color: "#ffffff",
     fontSize: "12px",
+    fontFamily: "var(--font-inter)",
     display: showTooltip ? "block" : "none",
     boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)",
     backdropFilter: "blur(2px)",
@@ -174,7 +175,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel - 1]?.materials || {}).length > 0 && (
                 <div className="mt-1">
-                  <div className="text-xs text-gray-400">必要素材:</div>
+                  <div className="text-xs text-secondary-600">必要素材:</div>
                   <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel - 1]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
@@ -200,7 +201,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel]?.materials || {}).length > 0 && (
                 <div className="mt-1">
-                  <div className="text-xs text-gray-400">必要素材:</div>
+                  <div className="text-xs text-secondary-600">必要素材:</div>
                   <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
@@ -222,8 +223,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* ランク要件 - コア以外のスキルのみ */}
           {!isCore && (
             <div className="mt-2 text-xs flex justify-between">
-              <span className="text-gray-400">必要ランク:</span>
-              <span className={skill.requiredRank > 0 ? "text-orange-300" : "text-primary"}>{skill.requiredRank}</span>
+              <span className="text-secondary-600">必要ランク:</span>
+              <span className={skill.requiredRank > 0 ? "text-white-700" : "text-primary"}>{skill.requiredRank}</span>
             </div>
           )}
 
@@ -236,8 +237,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
           {/* コアスキル用の特別メッセージ */}
           {isCore && (
-            <div className="text-[10px] mt-2 text-primary text-center">
-              ギルドスキルツリーの中心です。6つの基本スキルが拡がっています。
+            <div className="text-[10px] mt-2 text-primary">
+              ギルドスキルツリーの中心です。6つの1次スキルにつながっています。
             </div>
           )}
         </div>
