@@ -348,117 +348,108 @@ const extractStatsFromDescription = (description: string): Partial<SkillLevel> =
 export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
   try {
     const response = await fetch("/data/skills.csv");
-    const csvData = await response.text();
+    const csvText = await response.text();
+    const rows = csvText.split("\n").filter(row => row.trim() !== "");
+    const headers = rows[0].split(",").map(header => header.trim());
 
-    const result = Papa.parse(csvData, {
-      header: true,
-      skipEmptyLines: true,
-    });
+    const skillsMap = new Map<string, Skill>();
 
-    const skillsMap: { [key: string]: Skill } = {};
-    let passiveSkillCount = 0;
-
-    // 各行をループして処理
-    result.data.forEach((row: any) => {
-      const skillId = row["No"];
-      if (!skillId) return;
-      const skillName = row["スキル名"];
-      if (!skillName) return;
-
-      const levelMatch = skillName.match(/Lv(\d+)$/);
-      const level = levelMatch ? parseInt(levelMatch[1], 10) : 1;
-
-      const materials: { [key: string]: number } = {};
-      MATERIAL_COLUMNS.forEach(mat => {
-        const value = row[mat] ? parseInt(row[mat], 10) : 0;
-        if (value > 0) {
-          materials[mat] = value;
-        }
-      });
-
-      const description = row["説明"] || "";
-      const stats = extractStatsFromDescription(description);
-
-      // // デバッグログ：パッシブスキルの場合のみ出力
-      // if (row["タイプ"] === "パッシブ") {
-      //   console.group(`スキル: ${skillName} (ID: ${skillId})`);
-      //   console.log("説明文:", description);
-      //   console.log("抽出されたステータス値:", stats);
-      //   console.groupEnd();
-      // }
-
-      const skillLevel: SkillLevel = {
-        level,
-        guildCoins: parseInt(row["ギルドコイン"] || "0", 10),
-        materials,
-        description,
-        ...stats,
-      };
-
-      const baseName = skillName.replace(/Lv\d+$/, "");
-
-      if (skillsMap[skillId]) {
-        skillsMap[skillId].levels.push(skillLevel);
-      } else {
-        const parentIds = SKILL_PARENTS[skillId] || [];
-        const position = SKILL_POSITIONS[skillId] || { x: Math.random() * 600 + 100, y: Math.random() * 600 + 100 };
-        const isPassive = row["タイプ"] === "パッシブ";
-        if (isPassive) passiveSkillCount++;
-
-        skillsMap[skillId] = {
-          id: skillId,
-          name: baseName,
-          category: row["系統"] || "不明",
-          type: row["タイプ"] === "アクティブ" ? "アクティブ" : "パッシブ",
-          description: "", // ベースの説明は空に
-          requiredRank: parseInt(row["必要ランク"] || "1", 10),
-          levels: [skillLevel],
-          x: position.x,
-          y: position.y,
-          parentIds,
-          isPassive,
-        };
-      }
-    });
-
-    // // デバッグログ：パッシブスキルの総数とIDを出力
-    // console.group("パッシブスキル情報");
-    // console.log("パッシブスキルの総数:", passiveSkillCount);
-    // console.log(
-    //   "パッシブスキルのID一覧:",
-    //   Object.values(skillsMap)
-    //     .filter(skill => skill.isPassive)
-    //     .map(skill => `${skill.id}: ${skill.name}`)
-    // );
-    // console.groupEnd();
-
-    Object.values(skillsMap).forEach(skill => {
-      skill.levels.sort((a, b) => a.level - b.level);
-    });
-
-    const coreNode: Skill = {
+    // コアスキルを追加
+    const corePosition = SKILL_POSITIONS["core"];
+    const coreSkill: Skill = {
       id: "core",
       name: "コア",
       category: "コア",
       type: "パッシブ",
-      description: "スキルツリーの中心",
+      description: "ギルドスキルの基礎となるスキル",
       requiredRank: 1,
-      levels: [{ level: 1, guildCoins: 0, materials: {}, description: "スキルツリーの中心" }],
-      x: SKILL_POSITIONS["core"]?.x || 400,
-      y: SKILL_POSITIONS["core"]?.y || 400,
-      parentIds: [],
+      parentIds: undefined,
+      levels: [
+        {
+          level: 1,
+          description: "ギルドスキルの基礎となるスキル",
+          guildCoins: 0,
+          materials: {},
+          requiredRank: 1,
+        },
+      ],
       isPassive: true,
+      x: corePosition?.x || 400,
+      y: corePosition?.y || 400,
+      radius: corePosition?.radius,
+      color: corePosition?.color,
     };
+    skillsMap.set("core", coreSkill);
 
-    const existingSkillIds = new Set(["core", ...Object.keys(skillsMap)]);
-    Object.values(skillsMap).forEach(skill => {
-      skill.parentIds = skill.parentIds?.filter(parentId => existingSkillIds.has(parentId));
-    });
+    // デバッグ用のログを追加
+    console.group("スキルデータの読み込み");
+    console.log("CSVの行数:", rows.length);
+    console.log("ヘッダー:", headers);
 
-    return [coreNode, ...Object.values(skillsMap)];
+    for (let i = 1; i < rows.length; i++) {
+      const values = rows[i].split(",").map(value => value.trim());
+      const rowData: { [key: string]: string } = {};
+      headers.forEach((header, index) => {
+        rowData[header] = values[index] || "";
+      });
+
+      const skillId = rowData["No"];
+      if (!skillId) continue;
+
+      let skill = skillsMap.get(skillId);
+      if (!skill) {
+        const position = SKILL_POSITIONS[skillId];
+        skill = {
+          id: skillId,
+          name: rowData["スキル名"],
+          category: rowData["系統"] as Skill["category"],
+          type: rowData["タイプ"] as Skill["type"],
+          description: rowData["説明"],
+          requiredRank: parseInt(rowData["必要ランク"] || "1"),
+          parentIds: SKILL_PARENTS[skillId] || undefined,
+          levels: [],
+          isPassive: rowData["タイプ"] === "パッシブ",
+          x: position?.x || 0,
+          y: position?.y || 0,
+          radius: position?.radius,
+          color: position?.color,
+        };
+        skillsMap.set(skillId, skill);
+      }
+
+      const level = parseInt(rowData["レベル"] || "1");
+      const requiredRank = parseInt(rowData["必要ランク"] || "1");
+
+      // デバッグ用のログを追加
+      console.group(`スキル: ${rowData["スキル名"]} (ID: ${skillId})`);
+      console.log("レベル:", level);
+      console.log("必要ランク:", requiredRank);
+      console.log("説明:", rowData["説明"]);
+      console.groupEnd();
+
+      const skillLevel: SkillLevel = {
+        level: level,
+        description: rowData["説明"],
+        guildCoins: parseInt(rowData["ギルドコイン"] || "0"),
+        materials: {},
+        requiredRank: requiredRank,
+      };
+
+      if (skill) {
+        skill.levels.push(skillLevel);
+      }
+    }
+
+    const skills = Array.from(skillsMap.values());
+
+    // デバッグ用のログを追加
+    console.log("読み込まれたスキル数:", skills.length);
+    console.groupEnd();
+
+    return skills;
   } catch (error) {
-    console.error("Failed to load skills:", error);
-    return [];
+    console.error("Error loading skills from CSV:", error);
+    throw error;
   }
 };
 

@@ -10,6 +10,8 @@ export interface Skill {
   y?: number;
   parentIds?: string[];
   isPassive: boolean;
+  radius?: number;
+  color?: string;
 }
 
 export interface SkillLevel {
@@ -19,6 +21,7 @@ export interface SkillLevel {
     [key: string]: number;
   };
   description: string;
+  requiredRank: number;
   str?: number; // 腕力
   vit?: number; // 体力
   agi?: number; // 速さ
