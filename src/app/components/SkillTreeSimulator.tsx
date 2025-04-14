@@ -11,12 +11,18 @@ import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>(() => {
-    const saved = localStorage.getItem("selectedSkills");
-    return saved ? JSON.parse(saved) : { core: 1 };
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("selectedSkills");
+      return saved ? JSON.parse(saved) : { core: 1 };
+    }
+    return { core: 1 };
   });
   const [guildRank, setGuildRank] = useState<number>(() => {
-    const saved = localStorage.getItem("guildRank");
-    return saved ? Number(saved) : 5;
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("guildRank");
+      return saved ? parseInt(saved, 10) : 5;
+    }
+    return 3;
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
@@ -123,10 +129,37 @@ export function SkillTreeSimulator() {
     };
   }, []);
 
-  // 状態が変更されたときにLocalStorageに保存
   useEffect(() => {
-    localStorage.setItem("guildRank", guildRank.toString());
-    localStorage.setItem("selectedSkills", JSON.stringify(selectedSkills));
+    // クライアントサイドでのみ実行
+    const loadSavedState = () => {
+      try {
+        const savedSkills = localStorage.getItem("selectedSkills");
+        const savedRank = localStorage.getItem("guildRank");
+
+        if (savedSkills) {
+          setSelectedSkills(JSON.parse(savedSkills));
+        }
+        if (savedRank) {
+          setGuildRank(parseInt(savedRank, 10));
+        }
+      } catch (error) {
+        console.error("Error loading saved state:", error);
+      }
+    };
+
+    loadSavedState();
+  }, []);
+
+  useEffect(() => {
+    // 状態が変更されたときにLocalStorageに保存
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("guildRank", guildRank.toString());
+        localStorage.setItem("selectedSkills", JSON.stringify(selectedSkills));
+      } catch (error) {
+        console.error("Error saving state:", error);
+      }
+    }
   }, [guildRank, selectedSkills]);
 
   const handleSkillClick = (skillId: string) => {
@@ -202,9 +235,14 @@ export function SkillTreeSimulator() {
     setSelectedSkills({ core: 1 });
     setGuildRank(5);
     setError(null);
-    // LocalStorageもクリア
-    localStorage.removeItem("guildRank");
-    localStorage.removeItem("selectedSkills");
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("guildRank");
+        localStorage.removeItem("selectedSkills");
+      } catch (error) {
+        console.error("Error clearing saved state:", error);
+      }
+    }
   };
 
   const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
