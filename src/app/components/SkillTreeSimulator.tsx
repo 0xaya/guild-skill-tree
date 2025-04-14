@@ -372,7 +372,7 @@ export function SkillTreeSimulator() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">パッシブスキル上昇率</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-2 whitespace-nowrap">パッシブスキル上昇率</h3>
             <div className="space-y-2 text-sm">
               {totalStats.str > 0 && (
                 <div className="flex justify-between items-center">
