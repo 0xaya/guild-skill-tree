@@ -224,9 +224,18 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
           {/* ランク要件 - コア以外のスキルのみ */}
           {!isCore && (
-            <div className="mt-2 text-xs flex justify-between">
-              <span className="text-secondary-600">必要ランク:</span>
-              <span className={skill.requiredRank > 0 ? "text-white-700" : "text-primary"}>{skill.requiredRank}</span>
+            <div className="mt-2 text-xs">
+              <div className="text-secondary-600">必要ランク:</div>
+              <div className="grid grid-cols-2 gap-x-3 mt-1">
+                {skill.levels.map((level, index) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-gray-300">Lv{index + 1}</span>
+                    <span className={level.requiredRank > guildRank ? "text-red-500" : "text-white"}>
+                      {level.requiredRank}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

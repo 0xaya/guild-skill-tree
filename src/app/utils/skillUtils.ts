@@ -396,12 +396,17 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       const skillId = rowData["No"];
       if (!skillId) continue;
 
+      // スキル名からレベル情報を抽出
+      const levelMatch = rowData["スキル名"].match(/Lv(\d+)$/);
+      const level = levelMatch ? parseInt(levelMatch[1]) : 1;
+      const skillName = rowData["スキル名"].replace(/Lv\d+$/, "").trim();
+
       let skill = skillsMap.get(skillId);
       if (!skill) {
         const position = SKILL_POSITIONS[skillId];
         skill = {
           id: skillId,
-          name: rowData["スキル名"],
+          name: skillName,
           category: rowData["系統"] as Skill["category"],
           type: rowData["タイプ"] as Skill["type"],
           description: rowData["説明"],
@@ -417,16 +422,13 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
         skillsMap.set(skillId, skill);
       }
 
-      const level = parseInt(rowData["レベル"] || "1");
       const requiredRank = parseInt(rowData["必要ランク"] || "1");
-
       // デバッグ用のログを追加
       console.group(`スキル: ${rowData["スキル名"]} (ID: ${skillId})`);
       console.log("レベル:", level);
       console.log("必要ランク:", requiredRank);
       console.log("説明:", rowData["説明"]);
       console.groupEnd();
-
       const skillLevel: SkillLevel = {
         level: level,
         description: rowData["説明"],
@@ -456,8 +458,13 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
         ...extractStatsFromDescription(rowData["説明"]),
       };
 
+      // レベルに応じた位置に挿入
       if (skill) {
-        skill.levels.push(skillLevel);
+        // レベルが配列の長さより大きい場合、不足分をnullで埋める
+        while (skill.levels.length < level - 1) {
+          skill.levels.push(skill.levels[skill.levels.length - 1] || skillLevel);
+        }
+        skill.levels[level - 1] = skillLevel;
       }
     }
 

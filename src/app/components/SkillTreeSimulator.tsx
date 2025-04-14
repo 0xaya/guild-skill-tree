@@ -187,7 +187,7 @@ export function SkillTreeSimulator() {
     );
 
     if (hasActiveChildren) {
-      setError("このスキルを下げるには、先に依存する子スキルを下げてください。");
+      setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
       return;
     }
 
