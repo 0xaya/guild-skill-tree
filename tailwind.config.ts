@@ -6,8 +6,8 @@ const config: Config = {
     extend: {
       colors: {
         // メインカラー
-        primary: "#f979d6", // ピンク（メインカラー）
-        secondary: "#f9a8d4", // ライトピンク（アクセントカラー）
+        primary: "#F06292", // ピンク（メインカラー）
+        secondary: "#F8BBD0", // ライトピンク（アクセントカラー）
         tertiary: "#86efac", // グリーン（素材関連）
 
         // UI要素カラー

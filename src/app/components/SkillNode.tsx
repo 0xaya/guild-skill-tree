@@ -177,12 +177,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel - 1]?.materials || {}).length > 0 && (
                 <div className="mt-1">
-                  <div className="text-xs text-secondary-600">必要素材:</div>
+                  {/* <div className="text-xs text-secondary">必要素材:</div> */}
                   <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel - 1]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-primary">×{amount}</span>
+                        <span className="text-gray-300">×{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -203,12 +203,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* 必要素材 */}
               {Object.keys(skill.levels[selectedLevel]?.materials || {}).length > 0 && (
                 <div className="mt-1">
-                  <div className="text-xs text-secondary-600">必要素材:</div>
+                  {/* <div className="text-xs text-secondary">必要素材:</div> */}
                   <div className="grid grid-cols-2 gap-x-3 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
                         <span className="text-gray-300">{name}</span>
-                        <span className="text-primary">×{amount}</span>
+                        <span className="text-gray-300">×{amount}</span>
                       </div>
                     ))}
                   </div>
@@ -225,12 +225,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* ランク要件 - コア以外のスキルのみ */}
           {!isCore && (
             <div className="mt-2 text-xs">
-              <div className="text-secondary-600">必要ランク:</div>
-              <div className="grid grid-cols-2 gap-x-3 mt-1">
+              <div className="text-primary font-bold">必要ランク:</div>
+              <div className="grid grid-cols-5 gap-x-3 mt-1">
                 {skill.levels.map((level, index) => (
                   <div key={index} className="flex justify-between">
-                    <span className="text-gray-300">Lv{index + 1}</span>
-                    <span className={level.requiredRank > guildRank ? "text-red-500" : "text-white"}>
+                    <span className="text-gray-300">Lv{index + 1}:</span>
+                    <span className={level.requiredRank > guildRank ? "text-red-500 font-bold" : "text-white"}>
                       {level.requiredRank}
                     </span>
                   </div>
