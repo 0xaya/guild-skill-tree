@@ -10,10 +10,14 @@ import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>({
-    core: 1,
+  const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>(() => {
+    const saved = localStorage.getItem("selectedSkills");
+    return saved ? JSON.parse(saved) : { core: 1 };
   });
-  const [guildRank, setGuildRank] = useState<number>(5);
+  const [guildRank, setGuildRank] = useState<number>(() => {
+    const saved = localStorage.getItem("guildRank");
+    return saved ? Number(saved) : 5;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
     coins: 0,
@@ -119,6 +123,12 @@ export function SkillTreeSimulator() {
     };
   }, []);
 
+  // 状態が変更されたときにLocalStorageに保存
+  useEffect(() => {
+    localStorage.setItem("guildRank", guildRank.toString());
+    localStorage.setItem("selectedSkills", JSON.stringify(selectedSkills));
+  }, [guildRank, selectedSkills]);
+
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") {
       return;
@@ -190,7 +200,11 @@ export function SkillTreeSimulator() {
 
   const handleReset = () => {
     setSelectedSkills({ core: 1 });
+    setGuildRank(5);
     setError(null);
+    // LocalStorageもクリア
+    localStorage.removeItem("guildRank");
+    localStorage.removeItem("selectedSkills");
   };
 
   const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
