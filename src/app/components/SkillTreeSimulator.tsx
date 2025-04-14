@@ -357,7 +357,7 @@ export function SkillTreeSimulator() {
 
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
-            <div className="space-y-2">
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-text-primary">ギルドコイン</span>
                 <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
@@ -373,7 +373,7 @@ export function SkillTreeSimulator() {
 
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">パッシブスキル上昇率</h3>
-            <div className="space-y-2">
+            <div className="space-y-2 text-sm">
               {totalStats.str > 0 && (
                 <div className="flex justify-between items-center">
                   <span className="text-text-primary">腕力</span>
