@@ -60,14 +60,14 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
   // 背景色の透明度を全体的に下げる
   const nodeBgColor = isActive
-    ? `${categoryColor}70` // alpha: 0.7 (取得済み)
+    ? `${categoryColor}80` // alpha: 0.8 (取得済み)
     : isRankMet
-    ? `${categoryColor}40` // alpha: 0.2 (ランク条件を満たしている)
-    : `${categoryColor}10`; // alpha: 0.1 (ランク条件を満たしていない)
+    ? `${categoryColor}30` // alpha: 0.3 (ランク条件を満たしている)
+    : `${categoryColor}8`; // alpha: 0.08 (ランク条件を満たしていない)
   const nodeBorderColor = isActive
     ? categoryColor
     : isRankMet
-    ? "rgba(120, 120, 140, 0.5)" // ランク条件を満たしている
+    ? "rgba(120, 120, 140, 0.9)" // ランク条件を満たしている
     : "rgba(120, 120, 140, 0.3)"; // ランク条件を満たしていない
 
   // ノードのスタイルを設定
@@ -88,7 +88,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
     backgroundColor: nodeBgColor,
-    opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.3,
+    opacity: isRankMet ? (isUnlocked ? 0.85 : 0.45) : 0.3,
     border: `${isCore ? "2px" : skill.type === "パッシブ" ? "1.5px" : "4px"} solid ${nodeBorderColor}`,
     color: "#ffffff",
     fontSize: isCore ? "12px" : "10px",
@@ -107,7 +107,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     top: `${nodeHeight / 2 + 5}px`, // topオフセットに合わせて調整
     left: "0",
     transform: "translateX(-50%)",
-    backgroundColor: "rgba(30, 30, 40, 0.95)",
+    backgroundColor: "rgba(30, 30, 40, 0.8)",
     border: `1px solid ${categoryColor}80`,
     borderRadius: "8px",
     padding: "10px",
@@ -118,7 +118,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     fontFamily: "var(--font-inter)",
     display: showTooltip ? "block" : "none",
     boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)",
-    backdropFilter: "blur(2px)",
+    backdropFilter: "blur(3px)",
   };
 
   const handleClick = (e: React.MouseEvent) => {
