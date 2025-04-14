@@ -16,30 +16,30 @@ export interface Skill {
 
 export interface SkillLevel {
   level: number;
+  description: string;
   guildCoins: number;
   materials: {
     [key: string]: number;
   };
-  description: string;
   requiredRank: number;
-  str?: number; // 腕力
-  vit?: number; // 体力
-  agi?: number; // 速さ
-  int?: number; // 知力
-  dex?: number; // 器用
-  mnd?: number; // 精神
-  def?: number; // 防御力
-  mp?: number; // MP
-  hp?: number; // HP
-  atkSpd?: number; // 攻撃速度
-  magicPower?: number; // 魔法スキル威力
-  physicalPower?: number; // 物理スキル威力
-  expGetRate?: number; // EXP獲得率
-  castSpd?: number; // 詠唱速度
-  magicCri?: number; // 魔法CRI発動率
-  physicalCri?: number; // 物理CRI発動率
-  magicCriMulti?: number; // 魔法CRI倍率
-  physicalCriMulti?: number; // 物理CRI倍率
+  str?: number;
+  vit?: number;
+  agi?: number;
+  int?: number;
+  dex?: number;
+  mnd?: number;
+  def?: number;
+  mp?: number;
+  hp?: number;
+  atkSpd?: number;
+  magicPower?: number;
+  physicalPower?: number;
+  expGetRate?: number;
+  castSpd?: number;
+  magicCri?: number;
+  physicalCri?: number;
+  magicCriMulti?: number;
+  physicalCriMulti?: number;
 }
 
 // スキル系統のカラーマッピング
