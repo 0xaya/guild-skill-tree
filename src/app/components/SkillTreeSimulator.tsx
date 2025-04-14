@@ -340,14 +340,14 @@ export function SkillTreeSimulator() {
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
-                    width: `${((guildRank - 1) / 9) * 100}%`,
+                    width: `${((guildRank - 1) / 13) * 100}%`,
                   }}
                 />
               </div>
               <input
                 type="range"
                 min="1"
-                max="10"
+                max="14"
                 value={guildRank}
                 onChange={handleRankChange}
                 className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-webkit-slider-thumb]:z-10 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative [&::-moz-range-thumb]:z-10"
