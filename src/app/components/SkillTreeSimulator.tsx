@@ -367,7 +367,7 @@ export function SkillTreeSimulator() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row gap-2 w-full h-full">
+    <div className="flex flex-col-reverse lg:flex-row gap-2 w-full h-full">
       {/* コントロールパネル */}
       <div className="w-full lg:w-1/5 rounded-lg p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
