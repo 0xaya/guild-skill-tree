@@ -252,32 +252,10 @@ export function SkillTreeSimulator() {
 
   const handleZoomIn = () => {
     setScale(prev => Math.min(prev + 0.1, 2));
-    // ズームイン時に中心を維持
-    const container = document.querySelector(".relative");
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      setPosition(prev => ({
-        x: prev.x + (centerX - prev.x) * 0.1,
-        y: prev.y + (centerY - prev.y) * 0.1,
-      }));
-    }
   };
 
   const handleZoomOut = () => {
     setScale(prev => Math.max(prev - 0.1, 0.5));
-    // ズームアウト時に中心を維持
-    const container = document.querySelector(".relative");
-    if (container) {
-      const rect = container.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      setPosition(prev => ({
-        x: prev.x - (centerX - prev.x) * 0.1,
-        y: prev.y - (centerY - prev.y) * 0.1,
-      }));
-    }
   };
 
   const handleZoomReset = () => {
