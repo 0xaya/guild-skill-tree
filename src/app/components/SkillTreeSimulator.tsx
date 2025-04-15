@@ -102,7 +102,7 @@ export function SkillTreeSimulator() {
 
       if (window.innerWidth < 640) {
         setPosition({
-          x: (containerWidth - treeWidth) / 2 - 220,
+          x: (containerWidth / 2) * -1,
           y: -50,
         });
       } else {
