@@ -530,22 +530,23 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* スキルツリー表示部分 */}
-      <div className="relative w-full lg:w-2/3 h-[450px] md:h-[800px] rounded-lg overflow-hidden lg:overflow-visible">
+      <div className="relative lg:top-[-100px] w-full lg:w-2/3 h-[450px] md:h-[800px] rounded-lg overflow-visible flex items-center justify-center">
         {error && (
           <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[70%] bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm  text-center">
             {error}
           </div>
         )}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 flex items-center justify-center"
           style={{
-            transform: `scale(${scale}) translate(${position.x}px, ${position.y}px)`,
-            transformOrigin: "center center",
+            transform: `scale(${scale})`,
+            transformOrigin: "center",
           }}
           onMouseDown={handleMouseDown}
         >
           <div
             style={{
+              transform: `translate(${position.x}px, ${position.y}px)`,
               position: "relative",
               width: "800px",
               height: "800px",
