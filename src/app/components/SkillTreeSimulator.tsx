@@ -283,6 +283,29 @@ export function SkillTreeSimulator() {
     document.addEventListener("mouseup", handleMouseUp);
   };
 
+  // タッチデバイス用
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    const startX = touch.clientX - position.x;
+    const startY = touch.clientY - position.y;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const moveTouch = e.touches[0];
+      setPosition({
+        x: moveTouch.clientX - startX,
+        y: moveTouch.clientY - startY,
+      });
+    };
+
+    const handleTouchEnd = () => {
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
+    };
+
+    document.addEventListener("touchmove", handleTouchMove);
+    document.addEventListener("touchend", handleTouchEnd);
+  };
+
   // ステータス上昇の累計を計算する関数
   const calculateTotalStats = () => {
     const stats = {
@@ -521,6 +544,7 @@ export function SkillTreeSimulator() {
             transformOrigin: "center",
           }}
           onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
         >
           <div
             style={{
