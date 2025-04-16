@@ -531,67 +531,69 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* スキルツリー表示部分 */}
-      <div className="relative lg:top-[-100px] w-full lg:w-2/3 h-[450px] md:h-[800px] rounded-lg overflow-visible flex items-center justify-center">
-        {error && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[70%] bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm  text-center">
-            {error}
-          </div>
-        )}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{
-            transform: `scale(${scale})`,
-            transformOrigin: "center",
-          }}
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleTouchStart}
-        >
+      <div className="relative w-full lg:top-[-100px] lg:w-2/3 h-[450px] md:h-[800px] rounded-lg flex items-center justify-center overflow-hidden lg:overflow-visible">
+        <div className="absolute inset-0 w-full">
+          {error && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[70%] bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm  text-center">
+              {error}
+            </div>
+          )}
           <div
+            className="absolute inset-0 flex items-center justify-center"
             style={{
-              transform: `translate(${position.x}px, ${position.y}px)`,
-              position: "relative",
-              width: "800px",
-              height: "800px",
+              transform: `scale(${scale})`,
+              transformOrigin: "center",
             }}
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
           >
-            {/* スキル接続線 */}
-            {skills.map(skill => {
-              if (!skill.parentIds) return null;
-              return skill.parentIds.map(parentId => {
-                const parent = skills.find(s => s.id === parentId);
-                if (!parent) return null;
-                return (
-                  <SkillConnection
-                    key={`${parentId}-${skill.id}`}
-                    parent={parent}
-                    child={skill}
-                    isActive={selectedSkills[skill.id] > 0 && selectedSkills[parentId] > 0}
-                  />
-                );
-              });
-            })}
+            <div
+              style={{
+                transform: `translate(${position.x}px, ${position.y}px)`,
+                position: "relative",
+                width: "800px",
+                height: "800px",
+              }}
+            >
+              {/* スキル接続線 */}
+              {skills.map(skill => {
+                if (!skill.parentIds) return null;
+                return skill.parentIds.map(parentId => {
+                  const parent = skills.find(s => s.id === parentId);
+                  if (!parent) return null;
+                  return (
+                    <SkillConnection
+                      key={`${parentId}-${skill.id}`}
+                      parent={parent}
+                      child={skill}
+                      isActive={selectedSkills[skill.id] > 0 && selectedSkills[parentId] > 0}
+                    />
+                  );
+                });
+              })}
 
-            {/* スキルノード */}
-            {skills.map(skill => (
-              <SkillNode
-                key={skill.id}
-                skill={skill}
-                selectedLevel={selectedSkills[skill.id] || 0}
-                maxLevel={skill.levels.length}
-                isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
-                guildRank={guildRank}
-                onClick={handleSkillClick}
-                onRightClick={handleSkillRightClick}
-              />
-            ))}
+              {/* スキルノード */}
+              {skills.map(skill => (
+                <SkillNode
+                  key={skill.id}
+                  skill={skill}
+                  selectedLevel={selectedSkills[skill.id] || 0}
+                  maxLevel={skill.levels.length}
+                  isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
+                  guildRank={guildRank}
+                  onClick={handleSkillClick}
+                  onRightClick={handleSkillRightClick}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* ズームコントロール */}
-        <div className="absolute bottom-4 right-4 flex gap-2">
-          <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
-          <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
-          <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
+          {/* ズームコントロール */}
+          <div className="absolute bottom-4 right-4 flex gap-2">
+            <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
+            <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
+            <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
+          </div>
         </div>
       </div>
     </div>
