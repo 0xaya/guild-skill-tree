@@ -52,6 +52,22 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   onRightClick,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
+  const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleTouchStart = () => {
+    const timer = setTimeout(() => {
+      setShowTooltip(true);
+    }, 500); // 500msの長押しで表示
+    setTouchTimer(timer);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimer) {
+      clearTimeout(touchTimer);
+      setTouchTimer(null);
+    }
+    setShowTooltip(false);
+  };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
   const isActive = selectedLevel > 0;
@@ -149,8 +165,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         top: `${skill.y || 0}px`,
         zIndex: showTooltip ? 20 : 10,
       }}
-      onMouseEnter={() => setShowTooltip(true)}
+      onMouseEnter={() => {
+        if (window.innerWidth >= 768) {
+          // PCサイズの画面でのみマウスホバーで表示
+          setShowTooltip(true);
+        }
+      }}
       onMouseLeave={() => setShowTooltip(false)}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchEnd} // タッチ中に移動した場合も非表示に
     >
       <div
         style={nodeStyle}
