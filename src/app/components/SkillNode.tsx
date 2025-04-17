@@ -261,7 +261,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         msUserSelect: "none",
       }}
       onMouseEnter={() => {
-        if (window.innerWidth >= 768 && !isDialogOpen) {
+        if (window.innerWidth >= 768 && !isDialogOpen && !isCore) {
           setShowTooltip(true);
         }
       }}
