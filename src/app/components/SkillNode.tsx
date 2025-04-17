@@ -96,18 +96,21 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowLevelPopup(true);
+    setShowTooltip(false);
   };
 
   const handleAcquiredLevelChange = (level: number) => {
     setAcquiredLevel(level);
     onAcquiredLevelChange(skill.id, level);
     setShowLevelPopup(false);
+    setShowTooltip(false);
   };
 
   const handleLevelDown = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (acquiredLevel > selectedLevel - 1) {
       setShowConfirmDialog(true);
+      setShowTooltip(false);
     } else {
       onRightClick(skill.id);
     }
