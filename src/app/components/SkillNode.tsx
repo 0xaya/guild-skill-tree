@@ -278,11 +278,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {/* チェックボックス */}
         {!isCore && selectedLevel > 0 && (
           <div
-            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2cursor-pointer flex items-center justify-center"
+            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center"
             style={{
               border: `1.5px solid ${categoryColor}`,
               backgroundColor: acquiredLevel > 0 ? categoryColor : "black",
               opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
+              cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
             }}
             onClick={handleCheckboxClick}
           >
