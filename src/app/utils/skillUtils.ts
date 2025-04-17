@@ -361,13 +361,13 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       name: "コア",
       category: "コア",
       type: "パッシブ",
-      description: "ギルドスキルの基礎となるスキル",
+      description: "",
       requiredRank: 1,
       parentIds: undefined,
       levels: [
         {
           level: 1,
-          description: "ギルドスキルの基礎となるスキル",
+          description: "",
           guildCoins: 0,
           materials: {},
           requiredRank: 1,

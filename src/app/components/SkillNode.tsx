@@ -215,7 +215,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     fontSize: "13px",
     fontWeight: "700",
     color: `${categoryColor}`,
-    opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
+    opacity: isUnlocked && isRankMet ? 1 : 0.3,
     transition: "all 0.2s ease-in-out",
   };
 
@@ -281,7 +281,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
             }}
             onClick={handleCheckboxClick}
           >
-            {acquiredLevel > 0 && <span className="text-[10px] text-white font-bold">{acquiredLevel}</span>}
+            {acquiredLevel > 0 && (
+              <span
+                className="text-[10px] text-white font-bold"
+                style={{
+                  filter: `drop-shadow(${categoryColor}FF 1px 2px 2px) drop-shadow(rgba(0, 0, 0, 0.3) 0px 0px 2px)`,
+                }}
+              >
+                {acquiredLevel}
+              </span>
+            )}
           </div>
         )}
 
@@ -315,7 +324,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       {/* レベル選択ポップアップ */}
       {showLevelPopup && (
         <div
-          className="absolute top-[-100px] left-1/2 transform -translate-x-1/2 bg-background-light border border-primary/20 rounded-lg p-2 shadow-lg"
+          className="absolute top-[-100px] left-1/2 transform -translate-x-1/2 bg-background-dark/80 border border-primary/20 rounded-lg p-2 shadow-lg"
           style={{ zIndex: 30 }}
         >
           <div className="text-xs text-text-primary mb-2">
@@ -324,9 +333,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           <div className="flex gap-1">
             <button
               className={`w-8 h-8 rounded text-xs ${
-                acquiredLevel === 0
-                  ? "bg-primary text-white"
-                  : "bg-background-light border border-primary/20 text-text-primary"
+                acquiredLevel === 0 ? "bg-primary text-white" : "border border-primary/80 text-text-primary"
               }`}
               onClick={() => handleAcquiredLevelChange(0)}
             >
@@ -336,9 +343,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               <button
                 key={level + 1}
                 className={`w-8 h-8 rounded text-xs ${
-                  level + 1 === acquiredLevel
-                    ? "bg-primary text-white"
-                    : "bg-background-light border border-primary/20 text-text-primary"
+                  level + 1 === acquiredLevel ? "bg-primary text-white" : "border border-primary/80 text-text-primary"
                 }`}
                 onClick={() => handleAcquiredLevelChange(level + 1)}
               >
@@ -463,13 +468,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {!isCore && (
             <div className="text-[10px] mt-2 text-gray-500">
               {selectedLevel === 0 ? "" : "+/- ボタンでレベルを調整"}
-            </div>
-          )}
-
-          {/* コアスキル用の特別メッセージ */}
-          {isCore && (
-            <div className="text-[10px] mt-2 text-primary">
-              ギルドスキルツリーの中心です。6つの1次スキルにつながっています。
             </div>
           )}
         </div>
