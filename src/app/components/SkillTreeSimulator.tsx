@@ -39,6 +39,7 @@ export function SkillTreeSimulator() {
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [totalStats, setTotalStats] = useState({
     str: 0,
     vit: 0,
@@ -617,6 +618,8 @@ export function SkillTreeSimulator() {
                     }
                     return true;
                   }}
+                  isConfirmDialogOpen={isConfirmDialogOpen}
+                  onConfirmDialogOpenChange={setIsConfirmDialogOpen}
                 />
               ))}
             </div>

@@ -14,6 +14,8 @@ interface SkillNodeProps {
   onRightClick: (id: string) => void;
   onAcquiredLevelChange: (id: string, level: number) => void;
   onCheckDependencies: (id: string) => boolean;
+  isConfirmDialogOpen: boolean;
+  onConfirmDialogOpenChange: (isOpen: boolean) => void;
 }
 
 // 16進数カラーコードをRGBAに変換するヘルパー関数
@@ -54,6 +56,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   onRightClick,
   onAcquiredLevelChange,
   onCheckDependencies,
+  isConfirmDialogOpen,
+  onConfirmDialogOpenChange,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
@@ -121,6 +125,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     }
 
     if (acquiredLevel > selectedLevel - 1) {
+      onConfirmDialogOpenChange(true);
       setShowConfirmDialog(true);
       setShowTooltip(false);
     } else {
@@ -133,10 +138,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     onAcquiredLevelChange(skill.id, selectedLevel - 1);
     setAcquiredLevel(selectedLevel - 1);
     setShowConfirmDialog(false);
+    onConfirmDialogOpenChange(false);
   };
 
   const handleCancelLevelDown = () => {
     setShowConfirmDialog(false);
+    onConfirmDialogOpenChange(false);
   };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
@@ -244,7 +251,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         zIndex: showTooltip || showLevelPopup || showConfirmDialog ? 20 : 10,
       }}
       onMouseEnter={() => {
-        if (window.innerWidth >= 768) {
+        if (window.innerWidth >= 768 && !isConfirmDialogOpen) {
           // PCサイズの画面でのみマウスホバーで表示
           setShowTooltip(true);
         }
