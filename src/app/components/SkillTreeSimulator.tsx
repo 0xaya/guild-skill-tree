@@ -432,18 +432,15 @@ export function SkillTreeSimulator() {
               </div>
 
               {/* ギルドコイン */}
-              {remainingMaterials.coins > 0 ||
-                (totalCost.coins > 0 && (
-                  <div className="grid grid-cols-3 gap-2 items-center">
-                    <div className="text-text-primary">ギルドコイン</div>
-                    <div className="text-right text-text-primary">
-                      {remainingMaterials.coins > 0 && `×${remainingMaterials.coins.toLocaleString()}`}
-                    </div>
-                    <div className="text-right text-text-primary">
-                      {totalCost.coins > 0 && `×${totalCost.coins.toLocaleString()}`}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-3 gap-2 items-center">
+                <div className="text-text-primary">ギルドコイン</div>
+                <div className="text-right text-text-primary">
+                  {remainingMaterials.coins > 0 && `×${remainingMaterials.coins.toLocaleString()}`}
+                </div>
+                <div className="text-right text-text-primary">
+                  {totalCost.coins > 0 && `×${totalCost.coins.toLocaleString()}`}
+                </div>
+              </div>
 
               {/* 各素材 */}
               {Object.entries(totalCost.materials)
