@@ -56,6 +56,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
   const [showLevelPopup, setShowLevelPopup] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [acquiredLevel, setAcquiredLevel] = useState(0);
 
   useEffect(() => {
@@ -101,6 +102,26 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     setAcquiredLevel(level);
     onAcquiredLevelChange(skill.id, level);
     setShowLevelPopup(false);
+  };
+
+  const handleLevelDown = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (acquiredLevel > selectedLevel - 1) {
+      setShowConfirmDialog(true);
+    } else {
+      onRightClick(skill.id);
+    }
+  };
+
+  const handleConfirmLevelDown = () => {
+    onRightClick(skill.id);
+    onAcquiredLevelChange(skill.id, selectedLevel - 1);
+    setAcquiredLevel(selectedLevel - 1);
+    setShowConfirmDialog(false);
+  };
+
+  const handleCancelLevelDown = () => {
+    setShowConfirmDialog(false);
   };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
@@ -205,7 +226,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         position: "absolute",
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
-        zIndex: showTooltip || showLevelPopup ? 20 : 10,
+        zIndex: showTooltip || showLevelPopup || showConfirmDialog ? 20 : 10,
       }}
       onMouseEnter={() => {
         if (window.innerWidth >= 768) {
@@ -248,14 +269,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {/* レベル表示とボタン - コア以外でレベル1以上のスキルのみ表示 */}
         {!isCore && selectedLevel > 0 && (
           <div className="flex items-center justify-center gap-[1rem] mb-[-3px]">
-            <button
-              style={levelButtonStyle}
-              onClick={e => {
-                e.stopPropagation();
-                onRightClick(skill.id);
-              }}
-              disabled={!isUnlocked || !isRankMet}
-            >
+            <button style={levelButtonStyle} onClick={handleLevelDown} disabled={!isUnlocked || !isRankMet}>
               -
             </button>
             <span className="text-[9px] opacity-70">Lv{selectedLevel}</span>
@@ -309,6 +323,33 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                 {level + 1}
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* 確認ダイアログ */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 w-full flex items-center justify-center z-50">
+          <div className="relative bg-background-dark/80 border border-primary/80 rounded-lg p-6 shadow-lg w-[320px]">
+            <div className="text-base text-text-primary mb-6">
+              取得済レベルが{acquiredLevel}のため、選択レベルを下げると取得済レベルも{selectedLevel - 1}に下がります。
+              <br />
+              よろしいですか？
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-4 py-2 text-sm bg-background-light rounded hover:bg-primary/10"
+                onClick={handleCancelLevelDown}
+              >
+                キャンセル
+              </button>
+              <button
+                className="px-4 py-2 text-sm bg-primary text-white rounded hover:bg-primary/90"
+                onClick={handleConfirmLevelDown}
+              >
+                OK
+              </button>
+            </div>
           </div>
         </div>
       )}
