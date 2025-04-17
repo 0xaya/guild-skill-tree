@@ -7,6 +7,7 @@ import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
 interface SkillNodeProps {
   skill: Skill;
   selectedLevel: number;
+  acquiredLevel: number;
   maxLevel: number;
   isUnlocked: boolean;
   guildRank: number;
@@ -49,6 +50,7 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
 export const SkillNode: React.FC<SkillNodeProps> = ({
   skill,
   selectedLevel,
+  acquiredLevel,
   maxLevel,
   isUnlocked,
   guildRank,
@@ -59,23 +61,12 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   isConfirmDialogOpen,
   onConfirmDialogOpenChange,
 }) => {
+  const [showLevelPopup, setShowLevelPopup] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
-  const [showLevelPopup, setShowLevelPopup] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [acquiredLevel, setAcquiredLevel] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acquiredSkills");
-      if (saved) {
-        const acquiredSkills = JSON.parse(saved);
-        setAcquiredLevel(acquiredSkills[skill.id] || 0);
-      }
-    }
-  }, [skill.id]);
-
-  // 取得済みレベルが選択済みレベルより高い場合は、選択済みレベルを更新
+  // 取得済レベルが選択済みレベルより高い場合は、選択済みレベルを更新
   useEffect(() => {
     if (acquiredLevel > selectedLevel) {
       for (let i = selectedLevel; i < acquiredLevel; i++) {
@@ -83,6 +74,14 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       }
     }
   }, [acquiredLevel, selectedLevel, onClick, skill.id]);
+
+  useEffect(() => {
+    if (isConfirmDialogOpen) {
+      setShowTooltip(true);
+    } else {
+      setShowTooltip(false);
+    }
+  }, [isConfirmDialogOpen]);
 
   const handleTouchStart = () => {
     const timer = setTimeout(() => {
@@ -106,13 +105,13 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   };
 
   const handleAcquiredLevelChange = (level: number) => {
-    setAcquiredLevel(level);
     onAcquiredLevelChange(skill.id, level);
     setShowLevelPopup(false);
     setShowTooltip(false);
   };
 
   const handleLevelDown = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
 
     // レベル1から0に下げる場合は依存関係を先にチェック
@@ -124,26 +123,33 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       }
     }
 
+    // 取得済みレベルが選択レベル-1より大きい場合は確認ダイアログを表示
     if (acquiredLevel > selectedLevel - 1) {
-      onConfirmDialogOpenChange(true);
-      setShowConfirmDialog(true);
+      setIsDialogOpen(true);
       setShowTooltip(false);
     } else {
       onRightClick(skill.id);
     }
   };
 
-  const handleConfirmLevelDown = () => {
-    onRightClick(skill.id);
+  const handleConfirmLevelDown = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     onAcquiredLevelChange(skill.id, selectedLevel - 1);
-    setAcquiredLevel(selectedLevel - 1);
-    setShowConfirmDialog(false);
-    onConfirmDialogOpenChange(false);
+    onRightClick(skill.id);
+    setIsDialogOpen(false);
+    setShowTooltip(false);
   };
 
-  const handleCancelLevelDown = () => {
-    setShowConfirmDialog(false);
-    onConfirmDialogOpenChange(false);
+  const handleCancelLevelDown = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setIsDialogOpen(false);
+    setShowTooltip(false);
   };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
@@ -248,18 +254,17 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         position: "absolute",
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
-        zIndex: showTooltip || showLevelPopup || showConfirmDialog ? 20 : 10,
+        zIndex: showTooltip || showLevelPopup || isDialogOpen ? 20 : 10,
       }}
       onMouseEnter={() => {
-        if (window.innerWidth >= 768 && !isConfirmDialogOpen) {
-          // PCサイズの画面でのみマウスホバーで表示
+        if (window.innerWidth >= 768 && !isDialogOpen) {
           setShowTooltip(true);
         }
       }}
       onMouseLeave={() => setShowTooltip(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchEnd} // タッチ中に移動した場合も非表示に
+      onTouchMove={handleTouchEnd}
     >
       <div
         style={nodeStyle}
@@ -309,6 +314,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               onClick={e => {
                 e.stopPropagation();
                 onClick(skill.id);
+                setShowTooltip(false);
               }}
               disabled={!isUnlocked || !isRankMet || selectedLevel >= maxLevel}
             >
@@ -355,9 +361,15 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       )}
 
       {/* 確認ダイアログ */}
-      {showConfirmDialog && (
-        <div className="fixed inset-0 w-full flex items-center justify-center z-50">
-          <div className="relative bg-background-dark/80 border border-primary/80 rounded-lg p-6 shadow-lg w-[320px]">
+      {isDialogOpen && (
+        <div
+          className="fixed inset-0 w-full h-full flex items-center justify-center z-50"
+          onClick={handleCancelLevelDown}
+        >
+          <div
+            className="relative bg-background-dark/80 border border-primary/80 rounded-lg p-6 shadow-lg w-[320px]"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="text-base text-text-primary mb-6">
               {selectedLevel - 1 === 0
                 ? `現在Lv${acquiredLevel}取得済みになっていますが、未取得状態になります。`

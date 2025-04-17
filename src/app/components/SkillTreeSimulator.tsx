@@ -250,12 +250,14 @@ export function SkillTreeSimulator() {
 
   const handleReset = () => {
     setSelectedSkills({ core: 1 });
+    setAcquiredSkills({});
     setGuildRank(5);
     setError(null);
     if (typeof window !== "undefined") {
       try {
         localStorage.removeItem("guildRank");
         localStorage.removeItem("selectedSkills");
+        localStorage.removeItem("acquiredSkills");
       } catch (error) {
         console.error("Error clearing saved state:", error);
       }
@@ -632,6 +634,7 @@ export function SkillTreeSimulator() {
                   key={skill.id}
                   skill={skill}
                   selectedLevel={selectedSkills[skill.id] || 0}
+                  acquiredLevel={acquiredSkills[skill.id] || 0}
                   maxLevel={skill.levels.length}
                   isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
                   guildRank={guildRank}
