@@ -39,7 +39,7 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
   // 最大レベルが0または不明な場合は何も表示しない
   if (maxLevel <= 0) return null;
   // 星のサイズをさらに小さくする
-  return <div className="flex text-[8px] mt-0.5 justify-center">{stars}</div>;
+  return <div className="flex text-[8px] justify-center">{stars}</div>;
 };
 
 export const SkillNode: React.FC<SkillNodeProps> = ({
@@ -53,6 +53,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
+  const [showLevelPopup, setShowLevelPopup] = useState(false);
+  const [acquiredLevel, setAcquiredLevel] = useState(0);
 
   const handleTouchStart = () => {
     const timer = setTimeout(() => {
@@ -67,6 +69,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       setTouchTimer(null);
     }
     setShowTooltip(false);
+  };
+
+  const handleCheckboxClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowLevelPopup(true);
+  };
+
+  const handleLevelSelect = (level: number) => {
+    setAcquiredLevel(level);
+    setShowLevelPopup(false);
   };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
@@ -92,7 +104,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const nodeStyle: React.CSSProperties = {
     width: `${nodeWidth}px`,
     height: `${nodeHeight}px`,
-    padding: isCore ? "0px" : "2px",
     borderRadius: isCore ? "50%" : "6px",
     display: "flex",
     flexDirection: "column",
@@ -104,7 +115,17 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     top: `-${nodeHeight / 2}px`,
     backgroundColor: nodeBgColor,
     opacity: isRankMet ? (isUnlocked ? 0.85 : 0.45) : 0.3,
-    border: `${isCore ? "2px" : skill.type === "パッシブ" ? "1.5px" : "4px"} solid ${nodeBorderColor}`,
+    border: `${
+      isCore
+        ? "2px solid"
+        : skill.type === "パッシブ"
+        ? acquiredLevel > 0
+          ? "2px solid"
+          : "1px solid"
+        : acquiredLevel > 0
+        ? "5px double"
+        : "3px double"
+    } ${nodeBorderColor}`,
     color: "#ffffff",
     fontSize: isCore ? "12px" : "10px",
     fontWeight: isCore ? "bold" : "normal",
@@ -113,7 +134,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       : "none",
     transition: "all 0.2s ease-in-out",
     zIndex: isCore ? 15 : 10,
-    overflow: "hidden",
     cursor: !isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "pointer" : "default",
   };
 
@@ -163,7 +183,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         position: "absolute",
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
-        zIndex: showTooltip ? 20 : 10,
+        zIndex: showTooltip || showLevelPopup ? 20 : 10,
       }}
       onMouseEnter={() => {
         if (window.innerWidth >= 768) {
@@ -185,6 +205,21 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         }}
         className={!isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "cursor-pointer" : ""}
       >
+        {/* チェックボックス */}
+        {!isCore && selectedLevel > 0 && (
+          <div
+            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2cursor-pointer flex items-center justify-center"
+            style={{
+              border: `1.5px solid ${categoryColor}`,
+              backgroundColor: acquiredLevel > 0 ? categoryColor : "black",
+              opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
+            }}
+            onClick={handleCheckboxClick}
+          >
+            {acquiredLevel > 0 && <span className="text-[10px] text-white font-bold">{acquiredLevel}</span>}
+          </div>
+        )}
+
         {/* スキル名表示 - コアは空にする */}
         {!isCore && <span className="leading-tight">{skillNameDisplay}</span>}
 
@@ -219,7 +254,44 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {!isCore && renderStars(selectedLevel, maxLevel)}
       </div>
 
-      {/* ツールチップ - コアにも表示するが内容を調整 */}
+      {/* レベル選択ポップアップ */}
+      {showLevelPopup && (
+        <div
+          className="absolute top-[-100px] left-1/2 transform -translate-x-1/2 bg-background-light border border-primary/20 rounded-lg p-2 shadow-lg"
+          style={{ zIndex: 30 }}
+        >
+          <div className="text-xs text-text-primary mb-2">
+            実際の取得済レベルを選択<span className="text-xs inline-block">（未取得は未を選択）</span>
+          </div>
+          <div className="flex gap-1">
+            <button
+              className={`w-8 h-8 rounded text-xs ${
+                acquiredLevel === 0
+                  ? "bg-primary text-white"
+                  : "bg-background-light border border-primary/20 text-text-primary"
+              }`}
+              onClick={() => handleLevelSelect(0)}
+            >
+              未
+            </button>
+            {[...Array(maxLevel)].map((_, level) => (
+              <button
+                key={level + 1}
+                className={`w-8 h-8 rounded text-xs ${
+                  level + 1 === acquiredLevel
+                    ? "bg-primary text-white"
+                    : "bg-background-light border border-primary/20 text-text-primary"
+                }`}
+                onClick={() => handleLevelSelect(level + 1)}
+              >
+                {level + 1}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ツールチップ */}
       {showTooltip && (
         <div style={tooltipStyle}>
           {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
