@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
 import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
 
@@ -12,6 +12,7 @@ interface SkillNodeProps {
   guildRank: number;
   onClick: (id: string) => void;
   onRightClick: (id: string) => void;
+  onAcquiredLevelChange: (id: string, level: number) => void;
 }
 
 // 16進数カラーコードをRGBAに変換するヘルパー関数
@@ -50,11 +51,22 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   guildRank,
   onClick,
   onRightClick,
+  onAcquiredLevelChange,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
   const [showLevelPopup, setShowLevelPopup] = useState(false);
   const [acquiredLevel, setAcquiredLevel] = useState(0);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("acquiredSkills");
+      if (saved) {
+        const acquiredSkills = JSON.parse(saved);
+        setAcquiredLevel(acquiredSkills[skill.id] || 0);
+      }
+    }
+  }, [skill.id]);
 
   const handleTouchStart = () => {
     const timer = setTimeout(() => {
@@ -76,8 +88,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     setShowLevelPopup(true);
   };
 
-  const handleLevelSelect = (level: number) => {
+  const handleAcquiredLevelChange = (level: number) => {
     setAcquiredLevel(level);
+    onAcquiredLevelChange(skill.id, level);
     setShowLevelPopup(false);
   };
 
@@ -270,7 +283,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                   ? "bg-primary text-white"
                   : "bg-background-light border border-primary/20 text-text-primary"
               }`}
-              onClick={() => handleLevelSelect(0)}
+              onClick={() => handleAcquiredLevelChange(0)}
             >
               未
             </button>
@@ -282,7 +295,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                     ? "bg-primary text-white"
                     : "bg-background-light border border-primary/20 text-text-primary"
                 }`}
-                onClick={() => handleLevelSelect(level + 1)}
+                onClick={() => handleAcquiredLevelChange(level + 1)}
               >
                 {level + 1}
               </button>

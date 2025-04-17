@@ -17,6 +17,13 @@ export function SkillTreeSimulator() {
     }
     return { core: 1 };
   });
+  const [acquiredSkills, setAcquiredSkills] = useState<{ [key: string]: number }>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("acquiredSkills");
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
   const [guildRank, setGuildRank] = useState<number>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("guildRank");
@@ -359,6 +366,16 @@ export function SkillTreeSimulator() {
     return stats;
   };
 
+  const handleAcquiredLevelChange = (skillId: string, level: number) => {
+    setAcquiredSkills(prev => {
+      const newState = { ...prev, [skillId]: level };
+      if (typeof window !== "undefined") {
+        localStorage.setItem("acquiredSkills", JSON.stringify(newState));
+      }
+      return newState;
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -589,6 +606,7 @@ export function SkillTreeSimulator() {
                   guildRank={guildRank}
                   onClick={handleSkillClick}
                   onRightClick={handleSkillRightClick}
+                  onAcquiredLevelChange={handleAcquiredLevelChange}
                 />
               ))}
             </div>
