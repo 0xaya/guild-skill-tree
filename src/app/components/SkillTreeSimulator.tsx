@@ -4,7 +4,13 @@ import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
-import { loadSkillsFromCSV, isSkillUnlocked, calculateTotalCost, SKILL_POSITIONS } from "../utils/skillUtils";
+import {
+  loadSkillsFromCSV,
+  isSkillUnlocked,
+  calculateTotalCost,
+  calculateRemainingMaterials,
+  SKILL_POSITIONS,
+} from "../utils/skillUtils";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
@@ -60,6 +66,9 @@ export function SkillTreeSimulator() {
     magicCriMulti: 0,
     physicalCriMulti: 0,
   });
+
+  // 残り必要素材を計算
+  const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
 
   useEffect(() => {
     const fetchSkills = async () => {
@@ -415,16 +424,40 @@ export function SkillTreeSimulator() {
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
             <div className="space-y-2 text-sm">
-              <div className="flex justify-between items-center">
-                <span className="text-text-primary">ギルドコイン</span>
-                <span className="text-text-primary">×{totalCost.coins.toLocaleString()}</span>
+              {/* ヘッダー行 */}
+              <div className="grid grid-cols-3 gap-2 text-text-primary/70 text-xs mb-1">
+                <div>素材名</div>
+                <div className="text-right">残り</div>
+                <div className="text-right">累計</div>
               </div>
-              {Object.entries(totalCost.materials).map(([material, count]) => (
-                <div key={material} className="flex justify-between items-center">
-                  <span className="text-text-primary">{material}</span>
-                  <span className="text-text-primary">×{count.toLocaleString()}</span>
-                </div>
-              ))}
+
+              {/* ギルドコイン */}
+              {remainingMaterials.coins > 0 ||
+                (totalCost.coins > 0 && (
+                  <div className="grid grid-cols-3 gap-2 items-center">
+                    <div className="text-text-primary">ギルドコイン</div>
+                    <div className="text-right text-text-primary">
+                      {remainingMaterials.coins > 0 && `×${remainingMaterials.coins.toLocaleString()}`}
+                    </div>
+                    <div className="text-right text-text-primary">
+                      {totalCost.coins > 0 && `×${totalCost.coins.toLocaleString()}`}
+                    </div>
+                  </div>
+                ))}
+
+              {/* 各素材 */}
+              {Object.entries(totalCost.materials)
+                .filter(([_, count]) => count > 0 || (remainingMaterials.materials[_] || 0) > 0)
+                .map(([material, count]) => (
+                  <div key={material} className="grid grid-cols-3 gap-2 items-center">
+                    <div className="text-text-primary">{material}</div>
+                    <div className="text-right text-text-primary">
+                      {(remainingMaterials.materials[material] || 0) > 0 &&
+                        `×${(remainingMaterials.materials[material] || 0).toLocaleString()}`}
+                    </div>
+                    <div className="text-right text-text-primary">{count > 0 && `×${count.toLocaleString()}`}</div>
+                  </div>
+                ))}
             </div>
           </div>
 

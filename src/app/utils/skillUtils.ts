@@ -539,3 +539,55 @@ export const calculateResourceNeeds = (
 ): { coins: number; materials: { [key: string]: number } } => {
   return calculateTotalCost(skills, selectedSkills);
 };
+
+// 残り必要素材を計算する
+export const calculateRemainingMaterials = (
+  skills: Skill[],
+  selectedSkills: { [key: string]: number },
+  acquiredSkills: { [key: string]: number }
+): { coins: number; materials: { [key: string]: number } } => {
+  let totalCoins = 0;
+  const totalMaterials: { [key: string]: number } = {};
+
+  // 選択済みスキルの必要素材を計算
+  skills.forEach(skill => {
+    const selectedLevel = selectedSkills[skill.id] || 0;
+    if (selectedLevel <= 0) return;
+
+    for (let i = 0; i < selectedLevel; i++) {
+      if (skill.levels[i]) {
+        totalCoins += skill.levels[i].guildCoins;
+        Object.entries(skill.levels[i].materials).forEach(([matName, amount]) => {
+          totalMaterials[matName] = (totalMaterials[matName] || 0) + amount;
+        });
+      }
+    }
+  });
+
+  // 取得済みスキルの必要素材を差し引く
+  skills.forEach(skill => {
+    const acquiredLevel = acquiredSkills[skill.id] || 0;
+    if (acquiredLevel <= 0) return;
+
+    for (let i = 0; i < acquiredLevel; i++) {
+      if (skill.levels[i]) {
+        totalCoins -= skill.levels[i].guildCoins;
+        Object.entries(skill.levels[i].materials).forEach(([matName, amount]) => {
+          totalMaterials[matName] = (totalMaterials[matName] || 0) - amount;
+        });
+      }
+    }
+  });
+
+  // 負の値を0に調整
+  Object.keys(totalMaterials).forEach(matName => {
+    if (totalMaterials[matName] < 0) {
+      totalMaterials[matName] = 0;
+    }
+  });
+  if (totalCoins < 0) {
+    totalCoins = 0;
+  }
+
+  return { coins: totalCoins, materials: totalMaterials };
+};
