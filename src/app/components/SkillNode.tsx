@@ -83,7 +83,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     justifyContent: "center",
     alignItems: "center",
     textAlign: "center",
-    cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
     position: "absolute",
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
@@ -99,6 +98,24 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     transition: "all 0.2s ease-in-out",
     zIndex: isCore ? 15 : 10,
     overflow: "hidden",
+    cursor: !isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "pointer" : "default",
+  };
+
+  // レベルアップ/レベルダウンボタンのスタイル
+  const levelButtonStyle: React.CSSProperties = {
+    width: "16px",
+    height: "16px",
+    borderRadius: "50%",
+    border: `2px solid ${categoryColor}`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
+    fontSize: "13px",
+    fontWeight: "700",
+    color: `${categoryColor}`,
+    opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
+    transition: "all 0.2s ease-in-out",
   };
 
   // ツールチップスタイル
@@ -121,20 +138,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     backdropFilter: "blur(3px)",
   };
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isUnlocked && isRankMet) {
-      onClick(skill.id);
-    }
-  };
-
-  const handleRightClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (isUnlocked && selectedLevel > 0 && isRankMet) {
-      onRightClick(skill.id);
-    }
-  };
-
   // スキル名略称処理
   const skillNameDisplay = skill.name.replace(/クリティカル/g, "CRI");
 
@@ -149,13 +152,43 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
     >
-      <div style={nodeStyle} onClick={handleClick} onContextMenu={handleRightClick}>
+      <div
+        style={nodeStyle}
+        onClick={() => {
+          if (!isCore && isUnlocked && isRankMet && selectedLevel === 0) {
+            onClick(skill.id);
+          }
+        }}
+        className={!isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "cursor-pointer" : ""}
+      >
         {/* スキル名表示 - コアは空にする */}
         {!isCore && <span className="leading-tight">{skillNameDisplay}</span>}
 
-        {/* レベル表示 - コア以外でレベル1以上のスキルのみ表示 */}
+        {/* レベル表示とボタン - コア以外でレベル1以上のスキルのみ表示 */}
         {!isCore && selectedLevel > 0 && (
-          <span className="text-[9px] opacity-70 ml-1 mb-[-3px]">Lv{selectedLevel}</span>
+          <div className="flex items-center justify-center gap-[1rem] mb-[-3px]">
+            <button
+              style={levelButtonStyle}
+              onClick={e => {
+                e.stopPropagation();
+                onRightClick(skill.id);
+              }}
+              disabled={!isUnlocked || !isRankMet}
+            >
+              -
+            </button>
+            <span className="text-[9px] opacity-70">Lv{selectedLevel}</span>
+            <button
+              style={levelButtonStyle}
+              onClick={e => {
+                e.stopPropagation();
+                onClick(skill.id);
+              }}
+              disabled={!isUnlocked || !isRankMet || selectedLevel >= maxLevel}
+            >
+              +
+            </button>
+          </div>
         )}
 
         {/* 星アイコン表示 - コア以外のスキルのみ */}
@@ -241,9 +274,11 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
             </div>
           )}
 
-          {/* 操作ガイド - コア以外のスキルのみ */}
+          {/* 操作ガイドを更新 */}
           {!isCore && (
-            <div className="text-[10px] mt-2 text-gray-500">左クリック: レベルアップ / 右クリック: レベルダウン</div>
+            <div className="text-[10px] mt-2 text-gray-500">
+              {selectedLevel === 0 ? "" : "+/- ボタンでレベルを調整"}
+            </div>
           )}
 
           {/* コアスキル用の特別メッセージ */}
