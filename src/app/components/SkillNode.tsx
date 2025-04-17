@@ -255,6 +255,10 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
         zIndex: showTooltip || showLevelPopup || isDialogOpen ? 20 : 10,
+        userSelect: "none",
+        WebkitUserSelect: "none",
+        MozUserSelect: "none",
+        msUserSelect: "none",
       }}
       onMouseEnter={() => {
         if (window.innerWidth >= 768 && !isDialogOpen) {
@@ -267,7 +271,13 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       onTouchMove={handleTouchEnd}
     >
       <div
-        style={nodeStyle}
+        style={{
+          ...nodeStyle,
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          MozUserSelect: "none",
+          msUserSelect: "none",
+        }}
         onClick={() => {
           if (!isCore && isUnlocked && isRankMet && selectedLevel === 0) {
             onClick(skill.id);
