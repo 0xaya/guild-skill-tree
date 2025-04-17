@@ -184,8 +184,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     position: "absolute",
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
-    backgroundColor: nodeBgColor,
-    opacity: isRankMet ? (isUnlocked ? 0.85 : 0.45) : 0.3,
+    backgroundColor: isRankMet ? nodeBgColor : "rgba(120, 120, 140, 0.1)",
+    opacity: isRankMet ? (isUnlocked ? 0.9 : 0.5) : 0.2,
     border: `${
       isCore
         ? "2px solid"
