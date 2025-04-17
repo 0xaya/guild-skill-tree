@@ -13,6 +13,7 @@ interface SkillNodeProps {
   onClick: (id: string) => void;
   onRightClick: (id: string) => void;
   onAcquiredLevelChange: (id: string, level: number) => void;
+  onCheckDependencies: (id: string) => boolean;
 }
 
 // 16進数カラーコードをRGBAに変換するヘルパー関数
@@ -52,6 +53,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   onClick,
   onRightClick,
   onAcquiredLevelChange,
+  onCheckDependencies,
 }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
@@ -108,6 +110,16 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
   const handleLevelDown = (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // レベル1から0に下げる場合は依存関係を先にチェック
+    if (selectedLevel === 1) {
+      const canLevelDown = onCheckDependencies(skill.id);
+      if (!canLevelDown) {
+        setShowTooltip(false);
+        return;
+      }
+    }
+
     if (acquiredLevel > selectedLevel - 1) {
       setShowConfirmDialog(true);
       setShowTooltip(false);
@@ -335,7 +347,11 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         <div className="fixed inset-0 w-full flex items-center justify-center z-50">
           <div className="relative bg-background-dark/80 border border-primary/80 rounded-lg p-6 shadow-lg w-[320px]">
             <div className="text-base text-text-primary mb-6">
-              取得済レベルが{acquiredLevel}のため、選択レベルを下げると取得済レベルも{selectedLevel - 1}に下がります。
+              {selectedLevel - 1 === 0
+                ? `現在Lv${acquiredLevel}取得済みになっていますが、未取得状態になります。`
+                : `取得済みレベルが${acquiredLevel}のため、選択レベルを下げると取得済みレベルも${
+                    selectedLevel - 1
+                  }に下がります。`}
               <br />
               よろしいですか？
             </div>
