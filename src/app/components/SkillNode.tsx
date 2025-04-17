@@ -278,12 +278,20 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           MozUserSelect: "none",
           msUserSelect: "none",
         }}
-        onClick={() => {
-          if (!isCore && isUnlocked && isRankMet && selectedLevel === 0) {
-            onClick(skill.id);
+        onClick={e => {
+          if (!isCore && isUnlocked && isRankMet) {
+            if (selectedLevel < maxLevel) {
+              onClick(skill.id);
+            }
           }
         }}
-        className={!isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "cursor-pointer" : ""}
+        onContextMenu={e => {
+          e.preventDefault();
+          if (!isCore && isUnlocked && isRankMet && selectedLevel > 0) {
+            handleLevelDown(e);
+          }
+        }}
+        className={!isCore && isUnlocked && isRankMet ? "cursor-pointer" : ""}
       >
         {/* チェックボックス */}
         {!isCore && selectedLevel > 0 && (
