@@ -68,6 +68,15 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     }
   }, [skill.id]);
 
+  // 取得済みレベルが選択済みレベルより高い場合は、選択済みレベルを更新
+  useEffect(() => {
+    if (acquiredLevel > selectedLevel) {
+      for (let i = selectedLevel; i < acquiredLevel; i++) {
+        onClick(skill.id);
+      }
+    }
+  }, [acquiredLevel, selectedLevel, onClick, skill.id]);
+
   const handleTouchStart = () => {
     const timer = setTimeout(() => {
       setShowTooltip(true);
