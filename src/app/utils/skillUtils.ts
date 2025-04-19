@@ -1,29 +1,6 @@
 import Papa from "papaparse";
 import { Skill, SkillLevel } from "../types/skill";
 
-// 材料名の配列（CSVヘッダーから取得する際に使用）
-const MATERIAL_COLUMNS = [
-  "記憶の書",
-  "剛力Ⅰ",
-  "剛力Ⅱ",
-  "剛力Ⅲ",
-  "鉄壁Ⅰ",
-  "鉄壁Ⅱ",
-  "鉄壁Ⅲ",
-  "魔道Ⅰ",
-  "魔道Ⅱ",
-  "魔道Ⅲ",
-  "精微Ⅰ",
-  "精微Ⅱ",
-  "精微Ⅲ",
-  "疾風Ⅰ",
-  "疾風Ⅱ",
-  "疾風Ⅲ",
-  "救済Ⅰ",
-  "救済Ⅱ",
-  "救済Ⅲ",
-];
-
 // スキル系統のカラーマッピング
 export const SKILL_COLORS = {
   strength: "#FF6B6B", // 腕力系統（赤系）
@@ -373,11 +350,8 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
           requiredRank: 1,
         },
       ],
-      isPassive: true,
       x: corePosition?.x || 400,
       y: corePosition?.y || 400,
-      radius: corePosition?.radius,
-      color: corePosition?.color,
     };
     skillsMap.set("core", coreSkill);
 
@@ -413,11 +387,8 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
           requiredRank: parseInt(rowData["必要ランク"] || "1"),
           parentIds: SKILL_PARENTS[skillId] || undefined,
           levels: [],
-          isPassive: rowData["タイプ"] === "パッシブ",
           x: position?.x || 0,
           y: position?.y || 0,
-          radius: position?.radius,
-          color: position?.color,
         };
         skillsMap.set(skillId, skill);
       }
