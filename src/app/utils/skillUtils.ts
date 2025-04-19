@@ -6,8 +6,8 @@ export const SKILL_COLORS = {
   strength: "#FF6B6B", // 腕力系統（赤系）
   vitality: "#FFA07A", // 体力系統（オレンジ系）
   agility: "#4DB6AC", // 速さ系統（青緑で明るめ）
-  intelligence: "#9370DB", // 知力系統（紫系）
-  dexterity: "#6A5ACD", // 器用系統（濃い青紫系）
+  intelligence: "#BA68C8", // 知力系統（紫系）
+  dexterity: "#7C4DFF", // 器用系統（濃い青紫系）
   mind: "#87CEEB", // 精神系統（水色系）
   core: "#0066CC", // コア（青系）
 };
