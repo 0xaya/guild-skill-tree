@@ -9,9 +9,6 @@ export interface Skill {
   x?: number;
   y?: number;
   parentIds?: string[];
-  isPassive: boolean;
-  radius?: number;
-  color?: string;
 }
 
 export interface SkillLevel {
@@ -41,14 +38,3 @@ export interface SkillLevel {
   magicCriMulti?: number;
   physicalCriMulti?: number;
 }
-
-// スキル系統のカラーマッピング
-export const CATEGORY_COLORS: { [key: string]: string } = {
-  腕力系統: "#ff0000", // 赤
-  体力系統: "#ff6600", // オレンジ
-  速さ系統: "#ffcc00", // 黄色
-  知力系統: "#00ccff", // 水色
-  器用系統: "#cc66ff", // 紫
-  精神系統: "#ff66cc", // ピンク
-  コア: "#0066cc", // 青（中心ノード用）
-};
