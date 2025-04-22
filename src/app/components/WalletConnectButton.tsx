@@ -63,7 +63,7 @@ export function WalletConnectButton() {
     <div className="relative" ref={menuRef}>
       <Button onClick={handleConnect} variant={isConnected ? "outline" : "primary"} className="flex items-center gap-2">
         <WalletIcon className="flex-shrink-0" />
-        <span className="hidden sm:inline">{isConnected ? truncatedAddress : "ウォレット接続"}</span>
+        <span className="inline">{isConnected ? truncatedAddress : "ウォレット接続"}</span>
       </Button>
       {error && (
         <div className="absolute top-full right-0 mt-2 bg-red-500/10 border border-red-500 text-red-500 px-2 py-1 rounded text-xs">
