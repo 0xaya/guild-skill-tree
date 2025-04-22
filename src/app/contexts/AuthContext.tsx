@@ -3,33 +3,105 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
-import { auth } from "../config/firebase";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { auth, db } from "../config/firebase";
+
+interface UserData {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+  authMethod: "wallet" | "google";
+  walletAddress: string | null;
+  createdAt: any;
+  updatedAt: any;
+}
 
 interface AuthState {
   user: User | { address: string } | null;
+  userData: UserData | null;
   isAuthenticated: boolean;
   authMethod: "wallet" | "google" | null;
   loading: boolean;
   logout: () => Promise<void>;
+  updateUserData: (data: Partial<UserData>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthState["user"]>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [authMethod, setAuthMethod] = useState<AuthState["authMethod"]>(null);
   const [loading, setLoading] = useState(true);
   const { address, isConnected: isWalletConnected } = useAccount();
   const { disconnect: disconnectWallet } = useDisconnect();
 
+  const saveUserData = async (user: User | { address: string }, method: "wallet" | "google") => {
+    console.log("saveUserData called with:", { user, method });
+    try {
+      const uid = "address" in user ? user.address : user.uid;
+      console.log("User ID:", uid);
+      const userRef = doc(db, "users", uid);
+      const userDoc = await getDoc(userRef);
+      console.log("Document exists:", userDoc.exists());
+
+      if (!userDoc.exists()) {
+        // 新規ユーザーの場合
+        const newUserData: UserData = {
+          uid,
+          email: "email" in user ? user.email || null : null,
+          displayName: "displayName" in user ? user.displayName || null : null,
+          photoURL: "photoURL" in user ? user.photoURL || null : null,
+          authMethod: method,
+          walletAddress: "address" in user ? user.address : null,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+        console.log("Saving new user data:", newUserData);
+        await setDoc(userRef, newUserData);
+        console.log("User data saved successfully");
+        setUserData(newUserData);
+      } else {
+        // 既存ユーザーの場合
+        const existingData = userDoc.data() as UserData;
+        console.log("Existing user data:", existingData);
+        setUserData(existingData);
+      }
+    } catch (error) {
+      console.error("Failed to save user data:", error);
+    }
+  };
+
+  const updateUserData = async (data: Partial<UserData>) => {
+    if (!user) return;
+    try {
+      const uid = "address" in user ? user.address : user.uid;
+      const userRef = doc(db, "users", uid);
+      await setDoc(
+        userRef,
+        {
+          ...data,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+      setUserData(prev => (prev ? { ...prev, ...data } : null));
+    } catch (error) {
+      console.error("Failed to update user data:", error);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribeFirebase = onAuthStateChanged(auth, firebaseUser => {
+    const unsubscribeFirebase = onAuthStateChanged(auth, async firebaseUser => {
+      console.log("Firebase auth state changed:", firebaseUser);
       if (firebaseUser) {
         setUser(firebaseUser);
         setAuthMethod("google");
+        await saveUserData(firebaseUser, "google");
       } else if (!isWalletConnected) {
-        // Only set to null if wallet isn't connected either
         setUser(null);
+        setUserData(null);
         setAuthMethod(null);
       }
       setLoading(false);
@@ -39,16 +111,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isWalletConnected]);
 
   useEffect(() => {
-    // Prioritize Firebase auth if both are somehow active
+    console.log("Wallet connection state changed:", { isWalletConnected, address, authMethod });
     if (isWalletConnected && authMethod !== "google") {
-      setUser({ address: address! });
+      const walletUser = { address: address! };
+      setUser(walletUser);
       setAuthMethod("wallet");
-      setLoading(false); // Also set loading false here
+      saveUserData(walletUser, "wallet");
+      setLoading(false);
     } else if (!isWalletConnected && authMethod === "wallet") {
-      // Wallet disconnected, but Firebase might still be loading or logged out
       setUser(null);
+      setUserData(null);
       setAuthMethod(null);
-      // setLoading(false); // Let Firebase listener handle final loading state
     }
   }, [address, isWalletConnected, authMethod]);
 
@@ -61,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         disconnectWallet();
       }
       setUser(null);
+      setUserData(null);
       setAuthMethod(null);
     } catch (error) {
       console.error("Logout failed:", error);
@@ -71,10 +145,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    userData,
     isAuthenticated: !!user,
     authMethod,
     loading,
     logout,
+    updateUserData,
   };
 
   return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
