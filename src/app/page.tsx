@@ -1,7 +1,7 @@
 "use client";
 
 import { SkillTreeSimulator } from "./components/SkillTreeSimulator";
-import { WalletConnectButton } from "./components/WalletConnectButton";
+import { AuthButton } from "./components/AuthButton";
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-primary">ギルドスキルツリーシミュレータ</h1>
           <p className="text-sm text-text-muted">元素騎士のギルドスキルのシミュレーションができます</p>
         </div>
-        <WalletConnectButton />
+        <AuthButton />
       </header>
 
       <main className="flex-1 flex justify-center px-8 lg:px-16 relative">
