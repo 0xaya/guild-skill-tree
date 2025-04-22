@@ -2,7 +2,6 @@
 
 import { SkillTreeSimulator } from "./components/SkillTreeSimulator";
 import { WalletConnectButton } from "./components/WalletConnectButton";
-import { WalletStatus } from "./components/WalletStatus";
 
 export default function Home() {
   return (
@@ -16,7 +15,6 @@ export default function Home() {
       </header>
 
       <main className="flex-1 flex justify-center px-8 lg:px-16 relative">
-        <WalletStatus />
         <SkillTreeSimulator />
       </main>
 
