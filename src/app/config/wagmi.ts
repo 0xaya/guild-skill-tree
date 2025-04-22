@@ -1,17 +1,19 @@
 "use client";
 
-import { createConfig, http } from "wagmi";
-import { mainnet } from "wagmi/chains";
+import { http, createConfig } from "wagmi";
+import { mainnet, sepolia } from "wagmi/chains";
+import { getDefaultWallets } from "@rainbow-me/rainbowkit";
 
-export const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "";
+const { connectors } = getDefaultWallets({
+  appName: "Guild Skill Tree",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID!,
+});
 
-// メインネットのみを使用する設定
-export const chains = [mainnet] as const;
-
-// Wagmiの基本設定
 export const config = createConfig({
-  chains,
+  chains: [mainnet, sepolia],
+  connectors,
   transports: {
     [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
 });
