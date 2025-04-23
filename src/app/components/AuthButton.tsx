@@ -126,9 +126,9 @@ export function AuthButton() {
             <XIcon size={16} className="flex-shrink-0" />
           )
         ) : (
-          <SignInIcon className="flex-shrink-0" />
+          <SignInIcon className="flex-shrink-0 -ml-2 md:ml-0" />
         )}
-        <span className="w-0 md:w-auto overflow-hidden md:overflow-visible whitespace-nowrap">
+        <span className="w-0 md:w-auto overflow-hidden md:overflow-visible whitespace-nowrap -mr-2 md:mr-0">
           {isAuthenticated ? getDisplayIdentifier() : "ログイン"}
         </span>
       </Button>
