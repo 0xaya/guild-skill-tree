@@ -63,7 +63,7 @@ export function CharacterSelect() {
   return (
     <div className="flex items-center gap-2">
       {isEditing ? (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Input
             value={editName}
             onChange={e => setEditName(e.target.value)}
@@ -97,7 +97,7 @@ export function CharacterSelect() {
               value: character.id,
               label: character.name,
             }))}
-            className="min-w-[200px]"
+            className="min-w-[150px] max-w-[60vw] md:max-w-[200px]"
             variant="outline"
           />
 

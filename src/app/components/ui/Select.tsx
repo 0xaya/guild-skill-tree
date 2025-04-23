@@ -65,8 +65,9 @@ export function Select({
         type="button"
         className={`${baseStyles} ${variantStyles[variant]} ${sizeStyles[size]} ${className} w-full text-left flex items-center justify-between`}
         onClick={() => setIsOpen(!isOpen)}
+        title={selectedLabel}
       >
-        <span>{selectedLabel}</span>
+        <span className="truncate">{selectedLabel}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="16"
@@ -92,11 +93,12 @@ export function Select({
             >
               <button
                 type="button"
-                className={`flex-1 text-left ${option.value === value ? "text-primary" : ""}`}
+                className={`flex-1 text-left truncate ${option.value === value ? "text-primary" : ""}`}
                 onClick={() => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
+                title={option.label}
               >
                 {option.label}
               </button>
