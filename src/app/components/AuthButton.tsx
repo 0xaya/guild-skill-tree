@@ -139,14 +139,14 @@ export function AuthButton() {
           <div className="p-2 flex flex-col gap-1">
             <button
               onClick={handleWalletConnect}
-              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+              className="flex items-center gap-2 w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
             >
               <WalletIcon size={16} />
               <span>ウォレット接続</span>
             </button>
             <button
               onClick={handleGoogleLogin}
-              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+              className="flex items-center gap-2 w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
             >
               <GoogleIcon size={16} />
               <span>Googleでログイン</span>
