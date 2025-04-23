@@ -6,6 +6,7 @@ import { RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
 import { config } from "./config/wagmi";
 import { WalletProvider } from "./contexts/WalletContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import { CharacterProvider } from "./contexts/CharacterContext";
 
 const queryClient = new QueryClient();
 
@@ -24,7 +25,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
           modalSize="compact"
         >
           <WalletProvider>
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              <CharacterProvider>{children}</CharacterProvider>
+            </AuthProvider>
           </WalletProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
