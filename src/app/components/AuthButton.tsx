@@ -103,7 +103,6 @@ export function AuthButton() {
   };
 
   if (loading) {
-    // ローディング中の表示（任意）
     return (
       <Button variant="outline" className="flex items-center gap-2" disabled>
         Loading...
@@ -116,7 +115,7 @@ export function AuthButton() {
       <Button
         onClick={handleButtonClick}
         variant={isAuthenticated ? "outline" : "primary"}
-        className="flex items-center gap-2"
+        className="flex items-center md:gap-2"
       >
         {isAuthenticated ? (
           authMethod === "wallet" ? (
@@ -129,23 +128,25 @@ export function AuthButton() {
         ) : (
           <SignInIcon className="flex-shrink-0" />
         )}
-        <span>{isAuthenticated ? getDisplayIdentifier() : "ログイン"}</span>
+        <span className="w-0 md:w-auto overflow-hidden md:overflow-visible whitespace-nowrap">
+          {isAuthenticated ? getDisplayIdentifier() : "ログイン"}
+        </span>
       </Button>
 
       {/* Sign In Menu */}
       {showSignInMenu && !isAuthenticated && (
-        <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-48 z-10">
+        <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-56 z-10">
           <div className="p-2 flex flex-col gap-1">
             <button
               onClick={handleWalletConnect}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
             >
               <WalletIcon size={16} />
               <span>ウォレット接続</span>
             </button>
             <button
               onClick={handleGoogleLogin}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
             >
               <GoogleIcon size={16} />
               <span>Googleでログイン</span>
@@ -163,11 +164,14 @@ export function AuthButton() {
 
       {/* Logout Menu */}
       {showLogoutMenu && isAuthenticated && (
-        <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-48 z-10">
+        <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-52 z-10">
           <div className="p-2">
+            <div className="px-4 py-2 text-sm text-text-primary border-b border-primary/20">
+              {getDisplayIdentifier()}
+            </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 w-full px-4 py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
             >
               <LogoutIcon size={16} />
               <span>ログアウト</span>
