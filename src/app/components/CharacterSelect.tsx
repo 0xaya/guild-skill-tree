@@ -5,6 +5,7 @@ import { useCharacter } from "../contexts/CharacterContext";
 import { Button } from "./ui/Button";
 import { PlusIcon } from "./ui/Icons";
 import { Select } from "./ui/Select";
+import { Input } from "./ui/Input";
 
 export function CharacterSelect() {
   const { characters, currentCharacter, setCurrentCharacter, addCharacter, updateCharacter } = useCharacter();
@@ -37,16 +38,13 @@ export function CharacterSelect() {
           <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
             <h3 className="text-sm font-bold mb-3">新規キャラクター</h3>
             <div className="space-y-3">
-              <div>
-                <label className="block text-xs text-text-muted mb-1">名前</label>
-                <input
-                  type="text"
-                  value={newCharacterName}
-                  onChange={e => setNewCharacterName(e.target.value)}
-                  className="w-full bg-background-dark border border-primary/80 rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="キャラクター名"
-                />
-              </div>
+              <Input
+                value={newCharacterName}
+                onChange={e => setNewCharacterName(e.target.value)}
+                variant="outline"
+                inputSize="sm"
+                placeholder="キャラクター名"
+              />
               <div className="flex justify-end gap-2">
                 <Button onClick={() => setShowAddMenu(false)} variant="outline" className="text-sm">
                   キャンセル
@@ -66,11 +64,11 @@ export function CharacterSelect() {
     <div className="flex items-center gap-2">
       {isEditing ? (
         <div className="flex items-center gap-2">
-          <input
-            type="text"
+          <Input
             value={editName}
             onChange={e => setEditName(e.target.value)}
-            className="bg-background-dark border border-primary/80 rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
+            variant="outline"
+            inputSize="md"
             placeholder="キャラクター名"
           />
           <Button onClick={handleEditName} variant="primary" className="text-sm">
@@ -113,16 +111,13 @@ export function CharacterSelect() {
         <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
           <h3 className="text-sm font-bold mb-3">新規キャラクター</h3>
           <div className="space-y-3">
-            <div>
-              <label className="block text-xs text-text-muted mb-1">名前</label>
-              <input
-                type="text"
-                value={newCharacterName}
-                onChange={e => setNewCharacterName(e.target.value)}
-                className="w-full bg-background-dark border border-primary/80 rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
-                placeholder="キャラクター名"
-              />
-            </div>
+            <Input
+              value={newCharacterName}
+              onChange={e => setNewCharacterName(e.target.value)}
+              variant="outline"
+              inputSize="md"
+              placeholder="キャラクター名"
+            />
             <div className="flex justify-end gap-2">
               <Button onClick={() => setShowAddMenu(false)} variant="outline" className="text-sm">
                 キャンセル
