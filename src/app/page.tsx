@@ -7,7 +7,7 @@ import { CharacterSelect } from "./components/CharacterSelect";
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col w-full bg-background-dark text-text-primary">
-      <header className="p-8 lg:p-16 flex justify-between items-center">
+      <header className="p-8 lg:p-16 flex flex-wrap gap-4 justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-primary">ギルドスキルツリーシミュレータ</h1>
           <p className="text-sm text-text-muted">元素騎士のギルドスキルのシミュレーションができます</p>
