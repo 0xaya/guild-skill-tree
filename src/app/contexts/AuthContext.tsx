@@ -11,7 +11,7 @@ interface UserData {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  authMethod: "wallet" | "google";
+  authMethod: "wallet" | "google" | "twitter";
   walletAddress: string | null;
   createdAt: any;
   updatedAt: any;
@@ -21,7 +21,7 @@ interface AuthState {
   user: User | { address: string } | null;
   userData: UserData | null;
   isAuthenticated: boolean;
-  authMethod: "wallet" | "google" | null;
+  authMethod: "wallet" | "google" | "twitter" | null;
   loading: boolean;
   logout: () => Promise<void>;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { address, isConnected: isWalletConnected } = useAccount();
   const { disconnect: disconnectWallet } = useDisconnect();
 
-  const saveUserData = async (user: User | { address: string }, method: "wallet" | "google") => {
+  const saveUserData = async (user: User | { address: string }, method: "wallet" | "google" | "twitter") => {
     console.log("saveUserData called with:", { user, method });
     try {
       const uid = "address" in user ? user.address : user.uid;
@@ -97,8 +97,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log("Firebase auth state changed:", firebaseUser);
       if (firebaseUser) {
         setUser(firebaseUser);
-        setAuthMethod("google");
-        await saveUserData(firebaseUser, "google");
+        const providerId = firebaseUser.providerData[0]?.providerId;
+        const method = providerId === "google.com" ? "google" : "twitter";
+        setAuthMethod(method);
+        await saveUserData(firebaseUser, method);
       } else if (!isWalletConnected) {
         setUser(null);
         setUserData(null);
@@ -112,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     console.log("Wallet connection state changed:", { isWalletConnected, address, authMethod });
-    if (isWalletConnected && authMethod !== "google") {
+    if (isWalletConnected && authMethod !== "google" && authMethod !== "twitter") {
       const walletUser = { address: address! };
       setUser(walletUser);
       setAuthMethod("wallet");
@@ -128,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
-      if (authMethod === "google") {
+      if (authMethod === "google" || authMethod === "twitter") {
         await signOut(auth);
       } else if (authMethod === "wallet") {
         disconnectWallet();

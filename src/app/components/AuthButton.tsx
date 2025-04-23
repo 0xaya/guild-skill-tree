@@ -4,9 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { useAuth } from "../contexts/AuthContext";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
-import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithPopup, GoogleAuthProvider, TwitterAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase";
-import { WalletIcon, GoogleIcon, LogoutIcon, SignInIcon } from "./ui/Icons";
+import { WalletIcon, GoogleIcon, LogoutIcon, SignInIcon, XIcon } from "./ui/Icons";
 
 export function AuthButton() {
   const { user, isAuthenticated, authMethod, logout, loading } = useAuth();
@@ -54,6 +54,18 @@ export function AuthButton() {
     }
   };
 
+  const handleTwitterLogin = async () => {
+    setError(null);
+    try {
+      const provider = new TwitterAuthProvider();
+      await signInWithPopup(auth, provider);
+      setShowSignInMenu(false);
+    } catch (err) {
+      console.error("Failed to sign in with Twitter:", err);
+      setError(err instanceof Error ? err.message : "Xログインに失敗しました");
+    }
+  };
+
   const handleLogout = async () => {
     setError(null);
     try {
@@ -84,6 +96,9 @@ export function AuthButton() {
     if (authMethod === "google" && typeof user === "object" && "displayName" in user) {
       return user.displayName || user.email || "Google User";
     }
+    if (authMethod === "twitter" && typeof user === "object" && "displayName" in user) {
+      return user.displayName || user.email || "X User";
+    }
     return "";
   };
 
@@ -106,8 +121,10 @@ export function AuthButton() {
         {isAuthenticated ? (
           authMethod === "wallet" ? (
             <WalletIcon className="flex-shrink-0" />
-          ) : (
+          ) : authMethod === "google" ? (
             <GoogleIcon className="flex-shrink-0" />
+          ) : (
+            <XIcon size={16} className="flex-shrink-0" />
           )
         ) : (
           <SignInIcon className="flex-shrink-0" />
@@ -132,6 +149,13 @@ export function AuthButton() {
             >
               <GoogleIcon size={16} />
               <span>Googleでログイン</span>
+            </button>
+            <button
+              onClick={handleTwitterLogin}
+              className="flex items-center gap-[0.7rem] w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
+            >
+              <XIcon size={12} />
+              <span>Xでログイン</span>
             </button>
           </div>
         </div>
