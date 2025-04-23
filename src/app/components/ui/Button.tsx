@@ -14,7 +14,7 @@ const iconOnlyStyles = "p-2";
 const variantStyles = {
   primary: "bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30",
   secondary: "bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/30",
-  outline: "bg-transparent hover:bg-primary/10 text-primary border border-primary/30",
+  outline: "bg-transparent hover:bg-primary/10 text-primary border border-primary/50",
 };
 
 const sizeStyles = {

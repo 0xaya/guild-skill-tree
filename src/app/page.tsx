@@ -12,7 +12,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-primary">ギルドスキルツリーシミュレータ</h1>
           <p className="text-sm text-text-muted">元素騎士のギルドスキルのシミュレーションができます</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 z-10">
           <CharacterSelect />
           <AuthButton />
         </div>

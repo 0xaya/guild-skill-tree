@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useCharacter } from "../contexts/CharacterContext";
 import { Button } from "./ui/Button";
-import { PlusIcon, PencilIcon } from "./ui/Icons";
+import { PlusIcon } from "./ui/Icons";
+import { Select } from "./ui/Select";
 
 export function CharacterSelect() {
   const { characters, currentCharacter, setCurrentCharacter, addCharacter, updateCharacter } = useCharacter();
@@ -81,31 +82,26 @@ export function CharacterSelect() {
         </div>
       ) : (
         <>
-          <select
-            value={currentCharacter?.id}
-            onChange={e => {
-              const character = characters.find(c => c.id === e.target.value);
+          <Select
+            value={currentCharacter?.id || ""}
+            onChange={value => {
+              const character = characters.find(c => c.id === value);
               setCurrentCharacter(character || null);
             }}
-            className="bg-background-dark border border-primary/80 rounded px-3 py-1.5 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
-          >
-            {characters.map(character => (
-              <option key={character.id} value={character.id}>
-                {character.name}
-              </option>
-            ))}
-          </select>
-
-          <Button
-            onClick={() => {
-              setIsEditing(true);
-              setEditName(currentCharacter?.name || "");
+            onEdit={value => {
+              const character = characters.find(c => c.id === value);
+              if (character) {
+                setIsEditing(true);
+                setEditName(character.name);
+              }
             }}
+            options={characters.map(character => ({
+              value: character.id,
+              label: character.name,
+            }))}
+            className="min-w-[200px]"
             variant="outline"
-            className="p-1.5"
-          >
-            <PencilIcon size={16} />
-          </Button>
+          />
 
           <Button onClick={() => setShowAddMenu(!showAddMenu)} variant="outline" className="p-1.5">
             <PlusIcon size={16} />
