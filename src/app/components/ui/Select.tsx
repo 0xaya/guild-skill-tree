@@ -11,6 +11,7 @@ interface SelectProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   onEdit?: (value: string) => void;
+  keepOpenOnSelect?: (value: string) => boolean;
 }
 
 const sizeStyles = {
@@ -29,6 +30,7 @@ export function Select({
   size = "md",
   className = "",
   onEdit,
+  keepOpenOnSelect,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState("");
@@ -59,6 +61,20 @@ export function Select({
     outline: "bg-transparent hover:bg-primary/10 text-primary border border-primary/50",
   };
 
+  const handleOptionClick = (optionValue: string) => {
+    console.log("Option clicked:", optionValue);
+    console.log("keepOpenOnSelect result:", keepOpenOnSelect?.(optionValue));
+
+    onChange(optionValue);
+
+    if (optionValue === "add-new") {
+      console.log("Keeping dropdown open for add-new");
+      setIsOpen(true);
+    } else {
+      setIsOpen(false);
+    }
+  };
+
   return (
     <div className="relative" ref={selectRef}>
       {label && <label className="block text-xs text-text-muted mb-1">{label}</label>}
@@ -84,10 +100,7 @@ export function Select({
                 <button
                   type="button"
                   className={`flex-1 text-left truncate ${option.value === value ? "text-primary font-bold" : ""}`}
-                  onClick={() => {
-                    onChange(option.value);
-                    setIsOpen(false);
-                  }}
+                  onClick={() => handleOptionClick(option.value)}
                   title={option.label}
                 >
                   {option.label}

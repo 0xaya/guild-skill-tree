@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCharacter } from "../contexts/CharacterContext";
 import { Button } from "./ui/Button";
 import { PlusIcon } from "./ui/Icons";
@@ -13,6 +13,7 @@ export function CharacterSelect() {
   const [newCharacterName, setNewCharacterName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
+  const [editingCharacterId, setEditingCharacterId] = useState<string | null>(null);
 
   const handleAddCharacter = async () => {
     if (!newCharacterName) return;
@@ -22,37 +23,64 @@ export function CharacterSelect() {
   };
 
   const handleEditName = async () => {
-    if (!currentCharacter || !editName) return;
-    await updateCharacter(currentCharacter.id, { name: editName });
+    if (!editingCharacterId || !editName) return;
+    await updateCharacter(editingCharacterId, { name: editName });
     setIsEditing(false);
+    setEditingCharacterId(null);
+  };
+
+  // キャラクター追加メニューを閉じる
+  const handleCloseAddMenu = () => {
+    setShowAddMenu(false);
+    setNewCharacterName("");
+  };
+
+  // キャラクター追加メニューを開く
+  const handleOpenAddMenu = () => {
+    console.log("Opening add menu");
+    setShowAddMenu(true);
+  };
+
+  // 編集をキャンセル
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingCharacterId(null);
+    setEditName("");
   };
 
   if (characters.length === 0) {
     return (
       <div className="flex items-center gap-2">
-        <Button onClick={() => setShowAddMenu(true)} variant="primary" className="text-sm">
+        <Button onClick={handleOpenAddMenu} variant="primary" className="text-sm">
           <PlusIcon />
           キャラクター追加
         </Button>
 
         {showAddMenu && (
-          <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
-            <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
-            <div className="space-y-3">
-              <Input
-                value={newCharacterName}
-                onChange={e => setNewCharacterName(e.target.value)}
-                variant="outline"
-                inputSize="sm"
-                placeholder="キャラクター名"
-              />
-              <div className="flex justify-end gap-2">
-                <Button onClick={() => setShowAddMenu(false)} variant="outline" className="text-sm">
-                  キャンセル
-                </Button>
-                <Button onClick={handleAddCharacter} variant="primary" className="text-sm" disabled={!newCharacterName}>
-                  追加
-                </Button>
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64">
+              <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
+              <div className="space-y-3">
+                <Input
+                  value={newCharacterName}
+                  onChange={e => setNewCharacterName(e.target.value)}
+                  variant="outline"
+                  inputSize="sm"
+                  placeholder="キャラクター名"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button onClick={handleCloseAddMenu} variant="outline" className="text-sm">
+                    キャンセル
+                  </Button>
+                  <Button
+                    onClick={handleAddCharacter}
+                    variant="primary"
+                    className="text-sm"
+                    disabled={!newCharacterName}
+                  >
+                    追加
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -75,7 +103,7 @@ export function CharacterSelect() {
           <Button onClick={handleEditName} variant="primary" className="text-sm">
             保存
           </Button>
-          <Button onClick={() => setIsEditing(false)} variant="outline" className="text-sm">
+          <Button onClick={handleCancelEdit} variant="outline" className="text-sm">
             キャンセル
           </Button>
         </div>
@@ -84,8 +112,9 @@ export function CharacterSelect() {
           <Select
             value={currentCharacter?.id || ""}
             onChange={value => {
+              console.log("Select onChange:", value);
               if (value === "add-new") {
-                setShowAddMenu(true);
+                handleOpenAddMenu();
               } else {
                 const character = characters.find(c => c.id === value);
                 setCurrentCharacter(character || null);
@@ -94,10 +123,12 @@ export function CharacterSelect() {
             onEdit={value => {
               const character = characters.find(c => c.id === value);
               if (character) {
-                setIsEditing(true);
+                setEditingCharacterId(character.id);
                 setEditName(character.name);
+                setIsEditing(true);
               }
             }}
+            keepOpenOnSelect={value => value === "add-new"}
             options={[
               ...characters.map(character => ({
                 value: character.id,
@@ -112,23 +143,25 @@ export function CharacterSelect() {
       )}
 
       {showAddMenu && (
-        <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
-          <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
-          <div className="space-y-3">
-            <Input
-              value={newCharacterName}
-              onChange={e => setNewCharacterName(e.target.value)}
-              variant="outline"
-              inputSize="md"
-              placeholder="キャラクター名"
-            />
-            <div className="flex justify-end gap-2">
-              <Button onClick={() => setShowAddMenu(false)} variant="outline" className="text-sm">
-                キャンセル
-              </Button>
-              <Button onClick={handleAddCharacter} variant="primary" className="text-sm" disabled={!newCharacterName}>
-                追加
-              </Button>
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64">
+            <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
+            <div className="space-y-3">
+              <Input
+                value={newCharacterName}
+                onChange={e => setNewCharacterName(e.target.value)}
+                variant="outline"
+                inputSize="md"
+                placeholder="キャラクター名"
+              />
+              <div className="flex justify-end gap-2">
+                <Button onClick={handleCloseAddMenu} variant="outline" className="text-sm">
+                  キャンセル
+                </Button>
+                <Button onClick={handleAddCharacter} variant="primary" className="text-sm" disabled={!newCharacterName}>
+                  追加
+                </Button>
+              </div>
             </div>
           </div>
         </div>
