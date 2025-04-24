@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { ChevronDownIcon, CheckIcon, PencilIcon, PlusIcon } from "./Icons";
 
 interface SelectProps {
   value: string;
@@ -67,87 +68,49 @@ export function Select({
         onClick={() => setIsOpen(!isOpen)}
         title={selectedLabel}
       >
-        <span className="truncate">{selectedLabel}</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
-        >
-          <path d="m6 9 6 6 6-6" />
-        </svg>
+        <span className="truncate flex-1">{selectedLabel}</span>
+        <ChevronDownIcon
+          size={16}
+          className={`transition-transform ${isOpen ? "rotate-180" : ""} ml-2 flex-shrink-0`}
+        />
       </button>
 
       {isOpen && (
         <div className="absolute top-full left-0 mt-1 w-full bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg z-10">
-          {options.map(option => (
-            <div
-              key={option.value}
-              className="flex items-center justify-between px-3 py-2 text-sm text-primary hover:bg-primary/20"
-            >
-              <button
-                type="button"
-                className={`flex-1 text-left truncate ${option.value === value ? "text-primary" : ""}`}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                title={option.label}
-              >
-                {option.label}
-              </button>
-              <div className="flex items-center gap-2">
-                {option.value === value && (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-primary"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-                {onEdit && (
-                  <button
-                    type="button"
-                    className="p-1 hover:bg-primary/20 rounded"
-                    onClick={e => {
-                      e.stopPropagation();
-                      onEdit(option.value);
-                      setIsOpen(false);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-primary"
+          {options.map((option, index) => (
+            <React.Fragment key={option.value}>
+              {option.value === "add-new" && <div className="h-px bg-primary/30 mx-3" />}
+              <div className="flex items-center justify-between px-3 py-2 text-sm text-primary hover:bg-primary/20">
+                <button
+                  type="button"
+                  className={`flex-1 text-left truncate ${option.value === value ? "text-primary font-bold" : ""}`}
+                  onClick={() => {
+                    onChange(option.value);
+                    setIsOpen(false);
+                  }}
+                  title={option.label}
+                >
+                  {option.label}
+                </button>
+                <div className="flex items-center gap-2">
+                  {option.value === value && <CheckIcon size={16} className="text-primary" />}
+                  {option.value === "add-new" && <PlusIcon size={16} className="text-primary" />}
+                  {onEdit && option.value !== "add-new" && (
+                    <button
+                      type="button"
+                      className="p-1 hover:bg-primary/20 rounded-lg"
+                      onClick={e => {
+                        e.stopPropagation();
+                        onEdit(option.value);
+                        setIsOpen(false);
+                      }}
                     >
-                      <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                      <path d="m15 5 4 4" />
-                    </svg>
-                  </button>
-                )}
+                      <PencilIcon size={14} className="text-primary" />
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
+            </React.Fragment>
           ))}
         </div>
       )}

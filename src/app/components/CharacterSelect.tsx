@@ -31,12 +31,13 @@ export function CharacterSelect() {
     return (
       <div className="flex items-center gap-2">
         <Button onClick={() => setShowAddMenu(true)} variant="primary" className="text-sm">
-          新規キャラクター作成
+          <PlusIcon />
+          キャラクター追加
         </Button>
 
         {showAddMenu && (
           <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
-            <h3 className="text-sm font-bold mb-3">新規キャラクター</h3>
+            <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
             <div className="space-y-3">
               <Input
                 value={newCharacterName}
@@ -83,8 +84,12 @@ export function CharacterSelect() {
           <Select
             value={currentCharacter?.id || ""}
             onChange={value => {
-              const character = characters.find(c => c.id === value);
-              setCurrentCharacter(character || null);
+              if (value === "add-new") {
+                setShowAddMenu(true);
+              } else {
+                const character = characters.find(c => c.id === value);
+                setCurrentCharacter(character || null);
+              }
             }}
             onEdit={value => {
               const character = characters.find(c => c.id === value);
@@ -93,23 +98,22 @@ export function CharacterSelect() {
                 setEditName(character.name);
               }
             }}
-            options={characters.map(character => ({
-              value: character.id,
-              label: character.name,
-            }))}
-            className="min-w-[150px] max-w-[60vw] md:max-w-[200px]"
+            options={[
+              ...characters.map(character => ({
+                value: character.id,
+                label: character.name,
+              })),
+              { value: "add-new", label: "キャラクター追加" },
+            ]}
+            className="min-w-[150px] max-w-[60vw] md:w-60 md:max-w-[240px]"
             variant="outline"
           />
-
-          <Button onClick={() => setShowAddMenu(!showAddMenu)} variant="outline" className="p-1.5">
-            <PlusIcon size={16} />
-          </Button>
         </>
       )}
 
       {showAddMenu && (
         <div className="absolute top-full left-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64 z-10">
-          <h3 className="text-sm font-bold mb-3">新規キャラクター</h3>
+          <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
           <div className="space-y-3">
             <Input
               value={newCharacterName}
