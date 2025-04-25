@@ -12,7 +12,8 @@ import {
   calculateRemainingMaterials,
   SKILL_POSITIONS,
 } from "../utils/skillUtils";
-import { loadGlobalState, saveGlobalState, getCurrentCharacter, updateCharacter } from "../utils/storageUtils";
+import { loadGlobalState, saveGlobalState } from "../utils/storageUtils";
+import { useCharacter } from "../contexts/CharacterContext";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
@@ -49,7 +50,7 @@ export function SkillTreeSimulator() {
     physicalCriMulti: 0,
   });
 
-  const currentCharacter = getCurrentCharacter(globalState);
+  const { currentCharacter, updateCharacter } = useCharacter();
   const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
   const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
   const guildRank = globalState.guildRank;
@@ -57,6 +58,7 @@ export function SkillTreeSimulator() {
   // 残り必要素材を計算
   const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
 
+  // スキルデータの読み込み
   useEffect(() => {
     const fetchSkills = async () => {
       try {
@@ -77,85 +79,13 @@ export function SkillTreeSimulator() {
     fetchSkills();
   }, []);
 
+  // コストとステータスの計算
   useEffect(() => {
     const cost = calculateTotalCost(skills, selectedSkills);
     setTotalCost(cost);
     const stats = calculateTotalStats();
     setTotalStats(stats);
   }, [skills, selectedSkills]);
-
-  useEffect(() => {
-    // クライアントサイドでのみ実行
-    if (typeof window === "undefined") return;
-
-    const updateScale = () => {
-      if (window.innerWidth < 640) {
-        setScale(0.5);
-      } else if (window.innerWidth < 768) {
-        setScale(0.6);
-      } else {
-        setScale(1);
-      }
-    };
-
-    const updatePosition = () => {
-      const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
-      const containerHeight = window.innerWidth < 768 ? 500 : 800;
-      const treeWidth = 800 * scale;
-      const treeHeight = 800 * scale;
-
-      if (window.innerWidth < 640) {
-        setPosition({
-          x: (containerWidth / 2) * -1,
-          y: -50,
-        });
-      } else {
-        setPosition({
-          x: 0,
-          y: (containerHeight - treeHeight) / 2,
-        });
-      }
-    };
-
-    // 初期値の設定
-    updateScale();
-    updatePosition();
-
-    // リサイズイベントのリスナーを設定
-    window.addEventListener("resize", () => {
-      updateScale();
-      updatePosition();
-    });
-
-    return () => {
-      window.removeEventListener("resize", updateScale);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, []);
-
-  useEffect(() => {
-    // スキルツリーの変更時の保存
-    if (currentCharacter) {
-      const updatedCharacter: Character = {
-        ...currentCharacter,
-        skillTree: {
-          ...currentCharacter.skillTree,
-          selectedSkills,
-          acquiredSkills,
-        },
-      };
-      const newState = updateCharacter(globalState, updatedCharacter);
-      setGlobalState(newState);
-      saveGlobalState(newState);
-    }
-  }, [selectedSkills, acquiredSkills]);
-
-  useEffect(() => {
-    // ギルドランクの変更時の保存
-    const newState = { ...globalState, guildRank };
-    setGlobalState(newState);
-    saveGlobalState(newState);
-  }, [guildRank]);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") return;
@@ -183,7 +113,7 @@ export function SkillTreeSimulator() {
     }
 
     if (currentCharacter) {
-      const updatedCharacter: Character = {
+      const updatedCharacter = {
         ...currentCharacter,
         skillTree: {
           ...currentCharacter.skillTree,
@@ -193,9 +123,7 @@ export function SkillTreeSimulator() {
           },
         },
       };
-      const newState = updateCharacter(globalState, updatedCharacter);
-      setGlobalState(newState);
-      saveGlobalState(newState);
+      updateCharacter(currentCharacter.id, updatedCharacter);
     }
     setError(null);
   };
@@ -209,7 +137,7 @@ export function SkillTreeSimulator() {
     // レベル2以上を下げる場合は依存関係の確認をスキップ
     if (currentLevel > 1) {
       if (currentCharacter) {
-        const updatedCharacter: Character = {
+        const updatedCharacter = {
           ...currentCharacter,
           skillTree: {
             ...currentCharacter.skillTree,
@@ -217,11 +145,13 @@ export function SkillTreeSimulator() {
               ...selectedSkills,
               [skillId]: currentLevel - 1,
             },
+            acquiredSkills: {
+              ...acquiredSkills,
+              [skillId]: currentLevel - 1,
+            },
           },
         };
-        const newState = updateCharacter(globalState, updatedCharacter);
-        setGlobalState(newState);
-        saveGlobalState(newState);
+        updateCharacter(currentCharacter.id, updatedCharacter);
       }
       setError(null);
       return;
@@ -238,7 +168,7 @@ export function SkillTreeSimulator() {
     }
 
     if (currentCharacter) {
-      const updatedCharacter: Character = {
+      const updatedCharacter = {
         ...currentCharacter,
         skillTree: {
           ...currentCharacter.skillTree,
@@ -246,11 +176,13 @@ export function SkillTreeSimulator() {
             ...selectedSkills,
             [skillId]: currentLevel - 1,
           },
+          acquiredSkills: {
+            ...acquiredSkills,
+            [skillId]: currentLevel - 1,
+          },
         },
       };
-      const newState = updateCharacter(globalState, updatedCharacter);
-      setGlobalState(newState);
-      saveGlobalState(newState);
+      updateCharacter(currentCharacter.id, updatedCharacter);
     }
     setError(null);
   };
@@ -261,12 +193,10 @@ export function SkillTreeSimulator() {
         ...currentCharacter,
         skillTree: {
           selectedSkills: { core: 1 },
-          acquiredSkills: {},
+          acquiredSkills: { core: 1 },
         },
       };
-      const newState = updateCharacter(globalState, updatedCharacter);
-      setGlobalState(newState);
-      saveGlobalState(newState);
+      updateCharacter(currentCharacter.id, updatedCharacter);
     }
     setError(null);
   };
@@ -399,9 +329,7 @@ export function SkillTreeSimulator() {
           },
         },
       };
-      const newState = updateCharacter(globalState, updatedCharacter);
-      setGlobalState(newState);
-      saveGlobalState(newState);
+      updateCharacter(currentCharacter.id, updatedCharacter);
     }
   };
 
