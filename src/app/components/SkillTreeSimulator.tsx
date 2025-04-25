@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
+import { Character, GlobalState } from "../types/character";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
 import {
@@ -11,41 +12,22 @@ import {
   calculateRemainingMaterials,
   SKILL_POSITIONS,
 } from "../utils/skillUtils";
+import { loadGlobalState, saveGlobalState, getCurrentCharacter, updateCharacter } from "../utils/storageUtils";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("selectedSkills");
-      return saved ? JSON.parse(saved) : { core: 1 };
-    }
-    return { core: 1 };
-  });
-  const [acquiredSkills, setAcquiredSkills] = useState<{ [key: string]: number }>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acquiredSkills");
-      return saved ? JSON.parse(saved) : {};
-    }
-    return {};
-  });
-  const [guildRank, setGuildRank] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("guildRank");
-      return saved ? parseInt(saved, 10) : 5;
-    }
-    return 3;
-  });
+  const [globalState, setGlobalState] = useState<GlobalState>(() => loadGlobalState());
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
-    coins: 0,
-    materials: {},
-  });
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
+    coins: 0,
+    materials: {},
+  });
   const [totalStats, setTotalStats] = useState({
     str: 0,
     vit: 0,
@@ -66,6 +48,11 @@ export function SkillTreeSimulator() {
     magicCriMulti: 0,
     physicalCriMulti: 0,
   });
+
+  const currentCharacter = getCurrentCharacter(globalState);
+  const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
+  const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
+  const guildRank = globalState.guildRank;
 
   // 残り必要素材を計算
   const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
@@ -147,42 +134,31 @@ export function SkillTreeSimulator() {
   }, []);
 
   useEffect(() => {
-    // クライアントサイドでのみ実行
-    const loadSavedState = () => {
-      try {
-        const savedSkills = localStorage.getItem("selectedSkills");
-        const savedRank = localStorage.getItem("guildRank");
-
-        if (savedSkills) {
-          setSelectedSkills(JSON.parse(savedSkills));
-        }
-        if (savedRank) {
-          setGuildRank(parseInt(savedRank, 10));
-        }
-      } catch (error) {
-        console.error("Error loading saved state:", error);
-      }
-    };
-
-    loadSavedState();
-  }, []);
+    // スキルツリーの変更時の保存
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills,
+          acquiredSkills,
+        },
+      };
+      const newState = updateCharacter(globalState, updatedCharacter);
+      setGlobalState(newState);
+      saveGlobalState(newState);
+    }
+  }, [selectedSkills, acquiredSkills]);
 
   useEffect(() => {
-    // 状態が変更されたときにLocalStorageに保存
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("guildRank", guildRank.toString());
-        localStorage.setItem("selectedSkills", JSON.stringify(selectedSkills));
-      } catch (error) {
-        console.error("Error saving state:", error);
-      }
-    }
-  }, [guildRank, selectedSkills]);
+    // ギルドランクの変更時の保存
+    const newState = { ...globalState, guildRank };
+    setGlobalState(newState);
+    saveGlobalState(newState);
+  }, [guildRank]);
 
   const handleSkillClick = (skillId: string) => {
-    if (skillId === "core") {
-      return;
-    }
+    if (skillId === "core") return;
 
     const skill = skills.find((s: Skill) => s.id === skillId);
     if (!skill) return;
@@ -206,27 +182,47 @@ export function SkillTreeSimulator() {
       return;
     }
 
-    setSelectedSkills((prev: { [key: string]: number }) => ({
-      ...prev,
-      [skillId]: currentLevel + 1,
-    }));
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel + 1,
+          },
+        },
+      };
+      const newState = updateCharacter(globalState, updatedCharacter);
+      setGlobalState(newState);
+      saveGlobalState(newState);
+    }
     setError(null);
   };
 
   const handleSkillRightClick = (skillId: string) => {
-    if (skillId === "core") {
-      return;
-    }
+    if (skillId === "core") return;
 
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
     // レベル2以上を下げる場合は依存関係の確認をスキップ
     if (currentLevel > 1) {
-      setSelectedSkills((prev: { [key: string]: number }) => ({
-        ...prev,
-        [skillId]: currentLevel - 1,
-      }));
+      if (currentCharacter) {
+        const updatedCharacter: Character = {
+          ...currentCharacter,
+          skillTree: {
+            ...currentCharacter.skillTree,
+            selectedSkills: {
+              ...selectedSkills,
+              [skillId]: currentLevel - 1,
+            },
+          },
+        };
+        const newState = updateCharacter(globalState, updatedCharacter);
+        setGlobalState(newState);
+        saveGlobalState(newState);
+      }
       setError(null);
       return;
     }
@@ -241,32 +237,45 @@ export function SkillTreeSimulator() {
       return;
     }
 
-    setSelectedSkills((prev: { [key: string]: number }) => ({
-      ...prev,
-      [skillId]: currentLevel - 1,
-    }));
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel - 1,
+          },
+        },
+      };
+      const newState = updateCharacter(globalState, updatedCharacter);
+      setGlobalState(newState);
+      saveGlobalState(newState);
+    }
     setError(null);
   };
 
   const handleReset = () => {
-    setSelectedSkills({ core: 1 });
-    setAcquiredSkills({});
-    setGuildRank(5);
-    setError(null);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem("guildRank");
-        localStorage.removeItem("selectedSkills");
-        localStorage.removeItem("acquiredSkills");
-      } catch (error) {
-        console.error("Error clearing saved state:", error);
-      }
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          selectedSkills: { core: 1 },
+          acquiredSkills: {},
+        },
+      };
+      const newState = updateCharacter(globalState, updatedCharacter);
+      setGlobalState(newState);
+      saveGlobalState(newState);
     }
+    setError(null);
   };
 
   const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newRank = parseInt(e.target.value);
-    setGuildRank(newRank);
+    const newState = { ...globalState, guildRank: newRank };
+    setGlobalState(newState);
+    saveGlobalState(newState);
   };
 
   const handleZoomIn = () => {
@@ -379,13 +388,21 @@ export function SkillTreeSimulator() {
   };
 
   const handleAcquiredLevelChange = (skillId: string, level: number) => {
-    setAcquiredSkills(prev => {
-      const newState = { ...prev, [skillId]: level };
-      if (typeof window !== "undefined") {
-        localStorage.setItem("acquiredSkills", JSON.stringify(newState));
-      }
-      return newState;
-    });
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          acquiredSkills: {
+            ...acquiredSkills,
+            [skillId]: level,
+          },
+        },
+      };
+      const newState = updateCharacter(globalState, updatedCharacter);
+      setGlobalState(newState);
+      saveGlobalState(newState);
+    }
   };
 
   if (isLoading) {
@@ -447,7 +464,7 @@ export function SkillTreeSimulator() {
               {/* 各素材 */}
               {Object.entries(totalCost.materials)
                 .filter(([_, count]) => count > 0 || (remainingMaterials.materials[_] || 0) > 0)
-                .map(([material, count]) => (
+                .map(([material, count]: [string, number]) => (
                   <div key={material} className="grid grid-cols-3 gap-2 items-center">
                     <div className="text-text-primary">{material}</div>
                     <div className="text-right text-text-primary">

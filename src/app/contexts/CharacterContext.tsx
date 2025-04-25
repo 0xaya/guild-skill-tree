@@ -26,7 +26,7 @@ interface CharacterContextType {
 
 const CharacterContext = createContext<CharacterContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = "guild-skill-tree-characters";
+const LOCAL_STORAGE_KEY = "guild-skill-tree-simulator-state";
 
 export function CharacterProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
