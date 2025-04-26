@@ -61,16 +61,9 @@ export function Select({
     outline: "bg-transparent hover:bg-primary/10 text-primary border border-primary/50",
   };
 
-  const handleOptionClick = (optionValue: string) => {
-    console.log("Option clicked:", optionValue);
-    console.log("keepOpenOnSelect result:", keepOpenOnSelect?.(optionValue));
-
-    onChange(optionValue);
-
-    if (optionValue === "add-new") {
-      console.log("Keeping dropdown open for add-new");
-      setIsOpen(true);
-    } else {
+  const handleOptionClick = (option: { value: string; label: string }) => {
+    onChange(option.value);
+    if (!keepOpenOnSelect?.(option.value)) {
       setIsOpen(false);
     }
   };
@@ -100,7 +93,7 @@ export function Select({
                 <button
                   type="button"
                   className={`flex-1 text-left truncate ${option.value === value ? "text-primary font-bold" : ""}`}
-                  onClick={() => handleOptionClick(option.value)}
+                  onClick={() => handleOptionClick(option)}
                   title={option.label}
                 >
                   {option.label}

@@ -355,10 +355,10 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
     };
     skillsMap.set("core", coreSkill);
 
-    // デバッグ用のログを追加
-    console.group("スキルデータの読み込み");
-    console.log("CSVの行数:", rows.length);
-    console.log("ヘッダー:", headers);
+    // // デバッグ用のログを追加
+    // console.group("スキルデータの読み込み");
+    // console.log("CSVの行数:", rows.length);
+    // console.log("ヘッダー:", headers);
 
     for (let i = 1; i < rows.length; i++) {
       const values = rows[i].split(",").map(value => value.trim());
@@ -394,12 +394,12 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
       }
 
       const requiredRank = parseInt(rowData["必要ランク"] || "1");
-      // デバッグ用のログを追加
-      console.group(`スキル: ${rowData["スキル名"]} (ID: ${skillId})`);
-      console.log("レベル:", level);
-      console.log("必要ランク:", requiredRank);
-      console.log("説明:", rowData["説明"]);
-      console.groupEnd();
+      // // デバッグ用のログを追加
+      // console.group(`スキル: ${rowData["スキル名"]} (ID: ${skillId})`);
+      // console.log("レベル:", level);
+      // console.log("必要ランク:", requiredRank);
+      // console.log("説明:", rowData["説明"]);
+      // console.groupEnd();
       const skillLevel: SkillLevel = {
         level: level,
         description: rowData["説明"],
@@ -441,9 +441,9 @@ export const loadSkillsFromCSV = async (): Promise<Skill[]> => {
 
     const skills = Array.from(skillsMap.values());
 
-    // デバッグ用のログを追加
-    console.log("読み込まれたスキル数:", skills.length);
-    console.groupEnd();
+    // // デバッグ用のログを追加
+    // console.log("読み込まれたスキル数:", skills.length);
+    // console.groupEnd();
 
     return skills;
   } catch (error) {

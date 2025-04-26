@@ -49,7 +49,6 @@ export function CharacterSelect() {
 
   // キャラクター追加メニューを開く
   const handleOpenAddMenu = () => {
-    console.log("Opening add menu");
     setShowAddMenu(true);
   };
 
@@ -129,7 +128,6 @@ export function CharacterSelect() {
           <Select
             value={currentCharacter?.id || ""}
             onChange={value => {
-              console.log("Select onChange:", value);
               if (value === "add-new") {
                 handleOpenAddMenu();
               } else {
