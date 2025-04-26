@@ -100,7 +100,18 @@ export function Select({
                 </button>
                 <div className="flex items-center gap-2">
                   {option.value === value && <CheckIcon size={16} className="text-primary" />}
-                  {option.value === "add-new" && <PlusIcon size={16} className="text-primary" />}
+                  {option.value === "add-new" && (
+                    <button
+                      type="button"
+                      className="p-1 hover:bg-primary/20 rounded-lg"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleOptionClick(option);
+                      }}
+                    >
+                      <PlusIcon size={16} className="text-primary" />
+                    </button>
+                  )}
                   {onEdit && option.value !== "add-new" && (
                     <button
                       type="button"
