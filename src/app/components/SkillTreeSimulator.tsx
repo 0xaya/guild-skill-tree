@@ -605,9 +605,9 @@ export function SkillTreeSimulator() {
 
           {/* ズームコントロール */}
           <div className="absolute bottom-4 right-4 flex gap-2">
-            <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
-            <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
-            <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
+            <Button onClick={handleZoomIn} icon={<ZoomInIcon />} isIconOnly />
+            <Button onClick={handleZoomOut} icon={<ZoomOutIcon />} isIconOnly />
+            <Button onClick={handleZoomReset} icon={<ResetIcon />} isIconOnly />
           </div>
         </div>
       </div>

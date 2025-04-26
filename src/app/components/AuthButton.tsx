@@ -7,6 +7,7 @@ import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { signInWithPopup, GoogleAuthProvider, TwitterAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase";
 import { WalletIcon, GoogleIcon, LogoutIcon, SignInIcon, XIcon } from "./ui/Icons";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export function AuthButton() {
   const { user, isAuthenticated, authMethod, logout, loading } = useAuth();
@@ -15,6 +16,7 @@ export function AuthButton() {
   const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { openConnectModal } = useConnectModal();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -116,6 +118,7 @@ export function AuthButton() {
         onClick={handleButtonClick}
         variant={isAuthenticated ? "outline" : "primary"}
         className="flex items-center md:gap-2"
+        isIconOnly={isMobile && isAuthenticated}
       >
         {isAuthenticated ? (
           authMethod === "wallet" ? (
@@ -126,9 +129,9 @@ export function AuthButton() {
             <XIcon size={16} className="flex-shrink-0" />
           )
         ) : (
-          <SignInIcon className="flex-shrink-0 -ml-2 md:ml-0" />
+          <SignInIcon />
         )}
-        <span className="w-0 md:w-auto overflow-hidden md:overflow-visible whitespace-nowrap -mr-2 md:mr-0">
+        <span className="w-0 md:w-auto overflow-hidden md:overflow-visible whitespace-nowrap">
           {isAuthenticated ? getDisplayIdentifier() : "ログイン"}
         </span>
       </Button>
