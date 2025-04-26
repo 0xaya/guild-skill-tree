@@ -6,10 +6,11 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "sm" | "md" | "lg";
   icon?: React.ReactNode;
   fullWidth?: boolean;
+  isIconOnly?: boolean;
 }
 
 const baseStyles = "inline-flex items-center justify-center transition-colors rounded-lg";
-const iconOnlyStyles = "p-2";
+const iconOnlyStyles = "h-10 p-2 text-base";
 
 const variantStyles = {
   primary: "bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30",
@@ -29,10 +30,10 @@ export const Button: React.FC<ButtonProps> = ({
   size = "md",
   icon,
   fullWidth = false,
+  isIconOnly = false,
   className = "",
   ...props
 }) => {
-  const isIconOnly = !children && icon;
   const buttonStyles = cn(
     baseStyles,
     variantStyles[variant],

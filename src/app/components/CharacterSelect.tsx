@@ -3,17 +3,21 @@
 import { useState, useEffect } from "react";
 import { useCharacter } from "../contexts/CharacterContext";
 import { Button } from "./ui/Button";
-import { PlusIcon } from "./ui/Icons";
+import { PlusIcon, TrashIcon } from "./ui/Icons";
 import { Select } from "./ui/Select";
 import { Input } from "./ui/Input";
+import { Dialog } from "./ui/Dialog";
+import { Tooltip } from "./ui/Tooltip";
 
 export function CharacterSelect() {
-  const { characters, currentCharacter, setCurrentCharacter, addCharacter, updateCharacter } = useCharacter();
+  const { characters, currentCharacter, setCurrentCharacter, addCharacter, updateCharacter, deleteCharacter } =
+    useCharacter();
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [newCharacterName, setNewCharacterName] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editingCharacterId, setEditingCharacterId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const handleAddCharacter = async () => {
     if (!newCharacterName) return;
@@ -27,6 +31,14 @@ export function CharacterSelect() {
     await updateCharacter(editingCharacterId, { name: editName });
     setIsEditing(false);
     setEditingCharacterId(null);
+  };
+
+  const handleDelete = async () => {
+    if (!editingCharacterId) return;
+    await deleteCharacter(editingCharacterId);
+    setIsEditing(false);
+    setEditingCharacterId(null);
+    setIsDeleteDialogOpen(false);
   };
 
   // キャラクター追加メニューを閉じる
@@ -93,6 +105,9 @@ export function CharacterSelect() {
     <div className="flex items-center gap-2">
       {isEditing ? (
         <div className="flex items-center gap-2 flex-wrap">
+          <Tooltip text="キャラクターを削除">
+            <Button onClick={() => setIsDeleteDialogOpen(true)} variant="primary" icon={<TrashIcon />} isIconOnly />
+          </Tooltip>
           <Input
             value={editName}
             onChange={e => setEditName(e.target.value)}
@@ -166,6 +181,16 @@ export function CharacterSelect() {
           </div>
         </div>
       )}
+
+      <Dialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+        title="キャラクターの削除"
+        description={`${characters.find(c => c.id === editingCharacterId)?.name}を削除してもよろしいですか？`}
+        confirmText="削除"
+        cancelText="キャンセル"
+        onConfirm={handleDelete}
+      />
     </div>
   );
 }
