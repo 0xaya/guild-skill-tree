@@ -105,9 +105,11 @@ export function CharacterSelect() {
     <div className="flex items-center gap-2">
       {isEditing ? (
         <div className="flex items-center gap-2 flex-wrap">
-          <Tooltip text="キャラクターを削除">
-            <Button onClick={() => setIsDeleteDialogOpen(true)} variant="primary" icon={<TrashIcon />} isIconOnly />
-          </Tooltip>
+          {characters.length > 1 && (
+            <Tooltip text="キャラクターを削除">
+              <Button onClick={() => setIsDeleteDialogOpen(true)} variant="primary" icon={<TrashIcon />} isIconOnly />
+            </Tooltip>
+          )}
           <Input
             value={editName}
             onChange={e => setEditName(e.target.value)}
