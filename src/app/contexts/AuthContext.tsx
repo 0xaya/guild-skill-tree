@@ -5,6 +5,8 @@ import { useAccount, useDisconnect } from "wagmi";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
+import { syncUserData, resolveSyncConflict } from "../utils/syncUtils";
+import { SyncDialog } from "../components/ui/SyncDialog";
 
 interface UserData {
   uid: string;
@@ -34,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [authMethod, setAuthMethod] = useState<AuthState["authMethod"]>(null);
   const [loading, setLoading] = useState(true);
+  const [showSyncDialog, setShowSyncDialog] = useState(false);
+  const [syncData, setSyncData] = useState<{ localData: any; serverData: any } | null>(null);
   const { address, isConnected: isWalletConnected } = useAccount();
   const { disconnect: disconnectWallet } = useDisconnect();
 
@@ -92,15 +96,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const handleSyncConflict = async (useLocalData: boolean) => {
+    if (!user || !syncData) return;
+
+    try {
+      const uid = "address" in user ? user.address : user.uid;
+      const resolvedData = await resolveSyncConflict(uid, useLocalData, syncData.localData, syncData.serverData);
+      setUserData(prev => (prev ? { ...prev, globalState: resolvedData } : null));
+    } catch (error) {
+      console.error("Failed to resolve sync conflict:", error);
+    } finally {
+      setShowSyncDialog(false);
+      setSyncData(null);
+    }
+  };
+
   useEffect(() => {
     const unsubscribeFirebase = onAuthStateChanged(auth, async firebaseUser => {
-      console.log("Firebase auth state changed:", firebaseUser);
       if (firebaseUser) {
         setUser(firebaseUser);
         const providerId = firebaseUser.providerData[0]?.providerId;
         const method = providerId === "google.com" ? "google" : "twitter";
         setAuthMethod(method);
         await saveUserData(firebaseUser, method);
+
+        // データ同期の実行
+        try {
+          const syncResult = await syncUserData(firebaseUser.uid);
+          if (syncResult.type === "conflict") {
+            setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
+            setShowSyncDialog(true);
+          }
+        } catch (error) {
+          console.error("Failed to sync data:", error);
+        }
       } else if (!isWalletConnected) {
         setUser(null);
         setUserData(null);
@@ -113,12 +142,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isWalletConnected]);
 
   useEffect(() => {
-    console.log("Wallet connection state changed:", { isWalletConnected, address, authMethod });
     if (isWalletConnected && authMethod !== "google" && authMethod !== "twitter") {
       const walletUser = { address: address! };
       setUser(walletUser);
       setAuthMethod("wallet");
       saveUserData(walletUser, "wallet");
+
+      // データ同期の実行
+      const syncData = async () => {
+        try {
+          const syncResult = await syncUserData(address!);
+          if (syncResult.type === "conflict") {
+            setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
+            setShowSyncDialog(true);
+          }
+        } catch (error) {
+          console.error("Failed to sync data:", error);
+        }
+      };
+
+      syncData();
       setLoading(false);
     } else if (!isWalletConnected && authMethod === "wallet") {
       setUser(null);
@@ -155,7 +198,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateUserData,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+      <SyncDialog open={showSyncDialog} onOpenChange={setShowSyncDialog} onConfirm={handleSyncConflict} />
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

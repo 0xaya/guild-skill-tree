@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
-import { doc, collection, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { doc, collection, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Character, GlobalState } from "../types/character";
 import {
@@ -58,24 +58,19 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const charactersRef = collection(db, "users", uid, "characters");
+      const userRef = doc(db, "users", uid);
       const newCharacter = {
+        id: `${Date.now()}`,
         name,
         skillTree: {
           selectedSkills: { core: 1 },
           acquiredSkills: {},
         },
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-
-      const docRef = await addDoc(charactersRef, newCharacter);
-      const character = {
-        id: docRef.id,
-        ...newCharacter,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       } as Character;
-
-      const newState = addCharacterToState(globalState, character);
+      const newState = addCharacterToState(globalState, newCharacter);
+      await setDoc(userRef, { globalState: newState }, { merge: true });
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -105,22 +100,12 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const characterRef = doc(db, "users", uid, "characters", id);
-      await updateDoc(characterRef, {
-        ...data,
-        updatedAt: serverTimestamp(),
-      });
-
-      const character = characters.find(char => char.id === id);
-      if (!character) return;
-
-      const updatedCharacter = {
-        ...character,
-        ...data,
-        updatedAt: new Date(),
-      };
-
-      const newState = updateCharacterInState(globalState, updatedCharacter);
+      const userRef = doc(db, "users", uid);
+      const updatedCharacters = globalState.characters.map(char =>
+        char.id === id ? { ...char, ...data, updatedAt: new Date() } : char
+      );
+      const newState = { ...globalState, characters: updatedCharacters };
+      await setDoc(userRef, { globalState: newState }, { merge: true });
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -141,10 +126,10 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const characterRef = doc(db, "users", uid, "characters", id);
-      await deleteDoc(characterRef);
-
-      const newState = deleteCharacterFromState(globalState, id);
+      const userRef = doc(db, "users", uid);
+      const updatedCharacters = globalState.characters.filter(char => char.id !== id);
+      const newState = { ...globalState, characters: updatedCharacters };
+      await setDoc(userRef, { globalState: newState }, { merge: true });
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {

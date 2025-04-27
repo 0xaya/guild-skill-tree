@@ -14,6 +14,7 @@ interface SkillNodeProps {
   onClick: (id: string) => void;
   onRightClick: (id: string) => void;
   onAcquiredLevelChange: (id: string, level: number) => void;
+  onSelectedLevelDown: (id: string) => void;
   onCheckDependencies: (id: string) => boolean;
   isConfirmDialogOpen: boolean;
   onConfirmDialogOpenChange: (isOpen: boolean) => void;
@@ -57,6 +58,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   onClick,
   onRightClick,
   onAcquiredLevelChange,
+  onSelectedLevelDown,
   onCheckDependencies,
   isConfirmDialogOpen,
   onConfirmDialogOpenChange,
@@ -137,7 +139,6 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       e.preventDefault();
       e.stopPropagation();
     }
-    onAcquiredLevelChange(skill.id, selectedLevel - 1);
     onRightClick(skill.id);
     setIsDialogOpen(false);
     setShowTooltip(false);

@@ -14,8 +14,11 @@ import {
 } from "../utils/skillUtils";
 import { loadGlobalState, saveGlobalState } from "../utils/storageUtils";
 import { useCharacter } from "../contexts/CharacterContext";
+import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -51,6 +54,7 @@ export function SkillTreeSimulator() {
   });
 
   const { currentCharacter, updateCharacter } = useCharacter();
+  const { user, isAuthenticated } = useAuth();
   const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
   const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
   const guildRank = globalState.guildRank;
@@ -134,8 +138,9 @@ export function SkillTreeSimulator() {
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
-    // レベル2以上を下げる場合は依存関係の確認をスキップ
-    if (currentLevel > 1) {
+    const acquiredLevel = acquiredSkills[skillId] || 0;
+    // acquiredLevel > currentLevel - 1 の場合は両方下げる
+    if (acquiredLevel > currentLevel - 1) {
       if (currentCharacter) {
         const updatedCharacter = {
           ...currentCharacter,
@@ -158,15 +163,17 @@ export function SkillTreeSimulator() {
     }
 
     // レベル1から0に下げる場合のみ依存関係を確認
-    const hasActiveChildren = skills.some(
-      (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
-    );
-
-    if (hasActiveChildren) {
-      setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
-      return;
+    if (currentLevel === 1) {
+      const hasActiveChildren = skills.some(
+        (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
+      );
+      if (hasActiveChildren) {
+        setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
+        return;
+      }
     }
 
+    // 通常のレベルダウン（selectedSkillsのみ下げる）
     if (currentCharacter) {
       const updatedCharacter = {
         ...currentCharacter,
@@ -178,7 +185,6 @@ export function SkillTreeSimulator() {
           },
           acquiredSkills: {
             ...acquiredSkills,
-            [skillId]: currentLevel - 1,
           },
         },
       };
@@ -206,6 +212,13 @@ export function SkillTreeSimulator() {
     const newState = { ...globalState, guildRank: newRank };
     setGlobalState(newState);
     saveGlobalState(newState);
+
+    // サーバーにも反映
+    if (user && isAuthenticated) {
+      const uid = "address" in user ? user.address : user.uid;
+      const userRef = doc(db, "users", uid);
+      setDoc(userRef, { globalState: newState }, { merge: true });
+    }
   };
 
   const handleZoomIn = () => {
@@ -326,6 +339,27 @@ export function SkillTreeSimulator() {
           acquiredSkills: {
             ...acquiredSkills,
             [skillId]: level,
+          },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
+    }
+  };
+
+  const handleSelectedLevelDown = (skillId: string) => {
+    if (currentCharacter) {
+      const currentLevel = selectedSkills[skillId] || 0;
+      if (currentLevel <= 0) return;
+      const updatedCharacter = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel - 1,
+          },
+          acquiredSkills: {
+            ...acquiredSkills,
           },
         },
       };
@@ -586,6 +620,7 @@ export function SkillTreeSimulator() {
                   onClick={handleSkillClick}
                   onRightClick={handleSkillRightClick}
                   onAcquiredLevelChange={handleAcquiredLevelChange}
+                  onSelectedLevelDown={handleSelectedLevelDown}
                   onCheckDependencies={(skillId: string) => {
                     const hasActiveChildren = skills.some(
                       (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
