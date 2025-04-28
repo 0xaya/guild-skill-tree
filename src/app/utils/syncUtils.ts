@@ -11,10 +11,13 @@ function isDataDifferent(localData: GlobalState, serverData: GlobalState): boole
   // キャラクターの比較
   if (localData.characters.length !== serverData.characters.length) return true;
 
-  // 各キャラクターの詳細比較
-  for (const localChar of localData.characters) {
+  for (let i = 0; i < localData.characters.length; i++) {
+    const localChar = localData.characters[i];
     const serverChar = serverData.characters.find(c => c.id === localChar.id);
     if (!serverChar) return true;
+
+    // createdAt, updatedAtは比較から除外
+    if (localChar.name !== serverChar.name) return true;
 
     // スキルツリーの比較
     const localSkills = localChar.skillTree.selectedSkills;
