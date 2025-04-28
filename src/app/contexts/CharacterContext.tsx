@@ -11,6 +11,7 @@ import {
   addCharacter as addCharacterToState,
   updateCharacter as updateCharacterInState,
   deleteCharacter as deleteCharacterFromState,
+  getDefaultState,
 } from "../utils/storageUtils";
 
 interface CharacterContextType {
@@ -31,7 +32,10 @@ const CharacterContext = createContext<CharacterContextType | undefined>(undefin
 
 export function CharacterProvider({ children }: { children: ReactNode }) {
   const { user, isAuthenticated } = useAuth();
-  const [globalState, setGlobalState] = useState<GlobalState>(() => loadGlobalState());
+  const [globalState, setGlobalState] = useState<GlobalState>(() => {
+    const loadedState = loadGlobalState();
+    return loadedState || getDefaultState();
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,19 +44,19 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   // 同期完了イベントをリッスン
   useEffect(() => {
-    const handleSyncComplete = () => {
-      const newState = loadGlobalState();
+    const handleSyncComplete = (event: CustomEvent) => {
+      const newState = event.detail;
       setGlobalState(newState);
     };
 
-    window.addEventListener("syncComplete", handleSyncComplete);
-    return () => window.removeEventListener("syncComplete", handleSyncComplete);
+    window.addEventListener("syncComplete", handleSyncComplete as EventListener);
+    return () => window.removeEventListener("syncComplete", handleSyncComplete as EventListener);
   }, []);
 
   // グローバルステートをリフレッシュ
   const refreshGlobalState = () => {
     const newState = loadGlobalState();
-    setGlobalState(newState);
+    setGlobalState(newState || getDefaultState());
   };
 
   // キャラクターの追加

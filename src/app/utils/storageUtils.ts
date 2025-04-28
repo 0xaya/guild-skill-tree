@@ -11,17 +11,17 @@ const createDefaultCharacter = (): Character => ({
   },
 });
 
-// デフォルトの状態を返す
-const getDefaultState = (): GlobalState => ({
+// デフォルトの状態を取得
+export const getDefaultState = (): GlobalState => ({
   guildRank: 5,
   characters: [createDefaultCharacter()],
   currentCharacterId: "1",
 });
 
 // 現在の状態を取得
-export const loadGlobalState = (): GlobalState => {
+export const loadGlobalState = (): GlobalState | null => {
   if (typeof window === "undefined") {
-    return getDefaultState();
+    return null;
   }
 
   try {
@@ -37,7 +37,7 @@ export const loadGlobalState = (): GlobalState => {
     console.error("Error loading global state:", error);
   }
 
-  return getDefaultState();
+  return null;
 };
 
 // 状態を保存
