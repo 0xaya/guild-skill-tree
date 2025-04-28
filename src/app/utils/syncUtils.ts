@@ -56,16 +56,13 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
   try {
     // ローカルデータの取得
     const localData = loadGlobalState();
-    console.log("Local data:", localData);
 
     // サーバーデータの取得
     const userRef = doc(db, "users", userId);
     const userDoc = await getDoc(userRef);
     const serverData = userDoc.exists() ? userDoc.data().globalState : null;
-    console.log("Server data:", serverData);
 
     if (!serverData) {
-      console.log("No server data, saving local data");
       // サーバーにデータが存在しない場合、ローカルデータを保存
       if (localData) {
         await setDoc(userRef, { globalState: localData }, { merge: true });
@@ -80,20 +77,16 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
 
     // ローカルデータが存在しない場合は、サーバーデータをそのまま使用
     if (!localData) {
-      console.log("No local data, using server data");
       return { type: "server-to-local", data: serverData };
     }
 
     // データの比較
     const isDifferent = isDataDifferent(localData, serverData);
-    console.log("Data is different:", isDifferent);
 
     if (isDifferent) {
-      console.log("Conflict detected");
       return { type: "conflict", localData, serverData };
     }
 
-    console.log("Data is synced");
     return { type: "synced", data: serverData };
   } catch (error) {
     console.error("Failed to sync user data:", error);

@@ -48,13 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { disconnect: disconnectWallet } = useDisconnect();
 
   const saveUserData = async (user: User | { address: string }, method: "wallet" | "google" | "twitter") => {
-    console.log("saveUserData called with:", { user, method });
     try {
       const uid = "address" in user ? user.address : user.uid;
-      console.log("User ID:", uid);
       const userRef = doc(db, "users", uid);
       const userDoc = await getDoc(userRef);
-      console.log("Document exists:", userDoc.exists());
 
       if (!userDoc.exists()) {
         // 新規ユーザーの場合
@@ -68,14 +65,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
-        console.log("Saving new user data:", newUserData);
         await setDoc(userRef, newUserData);
-        console.log("User data saved successfully");
         setUserData(newUserData);
       } else {
         // 既存ユーザーの場合
         const existingData = userDoc.data() as UserData;
-        console.log("Existing user data:", existingData);
         setUserData(existingData);
       }
     } catch (error) {
@@ -131,21 +125,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // データ同期の実行
         try {
-          console.log("Starting sync for Firebase user");
           const syncResult = await syncUserData(firebaseUser.uid);
-          console.log("Sync result:", syncResult);
 
           if (syncResult.type === "conflict") {
-            console.log("Showing sync dialog for conflict");
             setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
             setShowSyncDialog(true);
           } else if (syncResult.type === "server-to-local") {
-            console.log("Using server data directly");
             setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
             saveGlobalState(syncResult.data);
             dispatchSyncCompleteEvent(syncResult.data);
           } else if (syncResult.type === "local-to-server" || syncResult.type === "synced") {
-            console.log("Using data directly:", syncResult.type);
             setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
           }
         } catch (error) {
@@ -172,21 +161,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // データ同期の実行
       const syncData = async () => {
         try {
-          console.log("Starting sync for wallet user");
           const syncResult = await syncUserData(address!);
-          console.log("Sync result:", syncResult);
 
           if (syncResult.type === "conflict") {
-            console.log("Showing sync dialog for conflict");
             setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
             setShowSyncDialog(true);
           } else if (syncResult.type === "server-to-local") {
-            console.log("Using server data directly");
             setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
             saveGlobalState(syncResult.data);
             dispatchSyncCompleteEvent(syncResult.data);
           } else if (syncResult.type === "local-to-server" || syncResult.type === "synced") {
-            console.log("Using data directly:", syncResult.type);
             setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
           }
         } catch (error) {
