@@ -31,6 +31,11 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
+// 同期完了イベントを発火する関数
+const dispatchSyncCompleteEvent = () => {
+  window.dispatchEvent(new Event('syncComplete'));
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthState["user"]>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -103,6 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const uid = "address" in user ? user.address : user.uid;
       const resolvedData = await resolveSyncConflict(uid, useLocalData, syncData.localData, syncData.serverData);
       setUserData(prev => (prev ? { ...prev, globalState: resolvedData } : null));
+
+      // 同期完了イベントを発火
+      dispatchSyncCompleteEvent();
     } catch (error) {
       console.error("Failed to resolve sync conflict:", error);
     } finally {

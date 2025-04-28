@@ -22,7 +22,6 @@ import { db } from "../config/firebase";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [globalState, setGlobalState] = useState<GlobalState>(() => loadGlobalState());
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number>(1);
@@ -53,7 +52,7 @@ export function SkillTreeSimulator() {
     physicalCriMulti: 0,
   });
 
-  const { currentCharacter, updateCharacter } = useCharacter();
+  const { currentCharacter, updateCharacter, globalState, setGlobalState } = useCharacter();
   const { user, isAuthenticated } = useAuth();
   const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
   const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};

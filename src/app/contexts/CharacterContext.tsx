@@ -22,6 +22,9 @@ interface CharacterContextType {
   updateCharacter: (id: string, data: Partial<Character>) => Promise<void>;
   deleteCharacter: (id: string) => Promise<void>;
   setCurrentCharacter: (character: Character | null) => void;
+  globalState: GlobalState;
+  setGlobalState: (state: GlobalState) => void;
+  refreshGlobalState: () => void;
 }
 
 const CharacterContext = createContext<CharacterContextType | undefined>(undefined);
@@ -34,6 +37,23 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   const characters = globalState.characters;
   const currentCharacter = characters.find(char => char.id === globalState.currentCharacterId) || null;
+
+  // 同期完了イベントをリッスン
+  useEffect(() => {
+    const handleSyncComplete = () => {
+      const newState = loadGlobalState();
+      setGlobalState(newState);
+    };
+
+    window.addEventListener("syncComplete", handleSyncComplete);
+    return () => window.removeEventListener("syncComplete", handleSyncComplete);
+  }, []);
+
+  // グローバルステートをリフレッシュ
+  const refreshGlobalState = () => {
+    const newState = loadGlobalState();
+    setGlobalState(newState);
+  };
 
   // キャラクターの追加
   const addCharacter = async (name: string) => {
@@ -159,6 +179,9 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     updateCharacter,
     deleteCharacter,
     setCurrentCharacter,
+    globalState,
+    setGlobalState,
+    refreshGlobalState,
   };
 
   return <CharacterContext.Provider value={value}>{children}</CharacterContext.Provider>;
