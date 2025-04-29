@@ -218,7 +218,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={value}>
       {!loading && children}
-      <SyncDialog open={showSyncDialog} onOpenChange={setShowSyncDialog} onConfirm={handleSyncConflict} />
+      <SyncDialog
+        open={showSyncDialog}
+        onOpenChange={setShowSyncDialog}
+        onConfirm={handleSyncConflict}
+        onCancel={logout}
+      />
     </AuthContext.Provider>
   );
 }

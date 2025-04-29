@@ -8,15 +8,21 @@ interface SyncDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (useLocalData: boolean) => void;
+  onCancel: () => void;
 }
 
-export function SyncDialog({ open, onOpenChange, onConfirm }: SyncDialogProps) {
+export function SyncDialog({ open, onOpenChange, onConfirm, onCancel }: SyncDialogProps) {
   if (!open) return null;
 
   return (
     <Dialog
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={isOpen => {
+        if (!isOpen) {
+          onCancel();
+        }
+        onOpenChange(isOpen);
+      }}
       title="データ同期の確認"
       description={
         <>
