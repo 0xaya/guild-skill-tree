@@ -25,6 +25,7 @@ interface CharacterContextType {
   setCurrentCharacter: (character: Character | null) => void;
   globalState: GlobalState;
   setGlobalState: (state: GlobalState) => void;
+  resetState: () => void;
   refreshGlobalState: () => void;
 }
 
@@ -42,6 +43,18 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
   const characters = globalState.characters;
   const currentCharacter = characters.find(char => char.id === globalState.currentCharacterId) || null;
 
+  // 状態をリセット
+  const resetState = React.useCallback(() => {
+    console.log("CharacterContext: resetState called");
+    const defaultState = getDefaultState();
+    console.log("CharacterContext: defaultState", defaultState);
+    // LocalStorageをクリア
+    localStorage.removeItem("guild-skill-tree-simulator-state");
+    // 状態を更新
+    setGlobalState(defaultState);
+    saveGlobalState(defaultState);
+  }, [setGlobalState]);
+
   // 同期完了イベントをリッスン
   useEffect(() => {
     const handleSyncComplete = (event: CustomEvent) => {
@@ -52,6 +65,21 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     window.addEventListener("syncComplete", handleSyncComplete as EventListener);
     return () => window.removeEventListener("syncComplete", handleSyncComplete as EventListener);
   }, []);
+
+  // 状態リセットイベントをリッスン
+  useEffect(() => {
+    console.log("CharacterContext: setting up resetState event listener");
+    const handleResetState = () => {
+      console.log("CharacterContext: resetState event received");
+      resetState();
+    };
+
+    window.addEventListener("resetState", handleResetState);
+    return () => {
+      console.log("CharacterContext: removing resetState event listener");
+      window.removeEventListener("resetState", handleResetState);
+    };
+  }, [resetState]);
 
   // グローバルステートをリフレッシュ
   const refreshGlobalState = () => {
@@ -185,6 +213,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     setCurrentCharacter,
     globalState,
     setGlobalState,
+    resetState,
     refreshGlobalState,
   };
 

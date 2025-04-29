@@ -37,6 +37,12 @@ const dispatchSyncCompleteEvent = (data: any) => {
   window.dispatchEvent(new CustomEvent("syncComplete", { detail: data }));
 };
 
+// 状態リセットイベントを発火する関数
+const dispatchResetStateEvent = () => {
+  console.log("AuthContext: dispatching resetState event");
+  window.dispatchEvent(new CustomEvent("resetState", { detail: null }));
+};
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthState["user"]>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
@@ -44,8 +50,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncData, setSyncData] = useState<{ localData: any; serverData: any } | null>(null);
+  const [syncResult, setSyncResult] = useState<{ type: string; localData?: any; serverData?: any; data?: any } | null>(
+    null
+  );
   const { address, isConnected: isWalletConnected } = useAccount();
   const { disconnect: disconnectWallet } = useDisconnect();
+
+  // syncResultの変更を監視
+  useEffect(() => {
+    if (syncResult && syncResult.type === "conflict") {
+      const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
+      if (!wasLoggedOut) {
+        console.log("Showing sync dialog for conflict");
+        setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
+        setShowSyncDialog(true);
+      }
+    } else if (syncResult && syncResult.type === "server-to-local") {
+      setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
+      saveGlobalState(syncResult.data);
+      dispatchSyncCompleteEvent(syncResult.data);
+    } else if (syncResult && (syncResult.type === "local-to-server" || syncResult.type === "synced")) {
+      setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
+    }
+  }, [syncResult]);
 
   const saveUserData = async (user: User | { address: string }, method: "wallet" | "google" | "twitter") => {
     try {
@@ -125,18 +152,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // データ同期の実行
         try {
-          const syncResult = await syncUserData(firebaseUser.uid);
+          const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
+          const result = await syncUserData(firebaseUser.uid);
+          console.log("Sync result:", result);
+          setSyncResult(result);
 
-          if (syncResult.type === "conflict") {
-            setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
-            setShowSyncDialog(true);
-          } else if (syncResult.type === "server-to-local") {
-            setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
-            saveGlobalState(syncResult.data);
-            dispatchSyncCompleteEvent(syncResult.data);
-          } else if (syncResult.type === "local-to-server" || syncResult.type === "synced") {
-            setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
-          }
+          // ログアウト状態をクリア
+          localStorage.removeItem("wasLoggedOut");
         } catch (error) {
           console.error("Failed to sync data:", error);
         }
@@ -161,18 +183,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // データ同期の実行
       const syncData = async () => {
         try {
-          const syncResult = await syncUserData(address!);
+          const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
+          const result = await syncUserData(address!);
+          console.log("Sync result:", result);
+          setSyncResult(result);
 
-          if (syncResult.type === "conflict") {
-            setSyncData({ localData: syncResult.localData, serverData: syncResult.serverData });
-            setShowSyncDialog(true);
-          } else if (syncResult.type === "server-to-local") {
-            setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
-            saveGlobalState(syncResult.data);
-            dispatchSyncCompleteEvent(syncResult.data);
-          } else if (syncResult.type === "local-to-server" || syncResult.type === "synced") {
-            setUserData(prev => (prev ? { ...prev, globalState: syncResult.data } : null));
-          }
+          // ログアウト状態をクリア
+          localStorage.removeItem("wasLoggedOut");
         } catch (error) {
           console.error("Failed to sync data:", error);
         }
@@ -190,19 +207,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
+      console.log("AuthContext: logout started");
+
+      // 認証関連の処理を実行
       if (authMethod === "google" || authMethod === "twitter") {
         await signOut(auth);
       } else if (authMethod === "wallet") {
         disconnectWallet();
       }
+
+      // 状態をリセット
+      console.log("AuthContext: resetting state");
+      // LocalStorageをクリア
+      localStorage.removeItem("guild-skill-tree-simulator-state");
+      // 状態リセットイベントを発火
+      dispatchResetStateEvent();
+
+      // 状態をクリア
       setUser(null);
       setUserData(null);
       setAuthMethod(null);
+      setSyncResult(null);
+
+      // ログアウト状態を記録
+      localStorage.setItem("wasLoggedOut", "true");
     } catch (error) {
       console.error("Logout failed:", error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // 同期確認ダイアログのキャンセル時の処理
+  const handleSyncCancel = () => {
+    setShowSyncDialog(false);
+    setSyncData(null);
+    if (authMethod === "google" || authMethod === "twitter") {
+      signOut(auth);
+    } else if (authMethod === "wallet") {
+      disconnectWallet();
+    }
+    setUser(null);
+    setUserData(null);
+    setAuthMethod(null);
   };
 
   const value = {
@@ -222,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         open={showSyncDialog}
         onOpenChange={setShowSyncDialog}
         onConfirm={handleSyncConflict}
-        onCancel={logout}
+        onCancel={handleSyncCancel}
       />
     </AuthContext.Provider>
   );

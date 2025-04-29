@@ -4,25 +4,58 @@ import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
 function isDataDifferent(localData: GlobalState, serverData: GlobalState): boolean {
-  // ローカルデータが存在しない場合はfalseを返す（サーバーデータをそのまま使用）
+  console.log("Comparing data:", {
+    localData,
+    serverData,
+  });
+
+  // ローカルデータが存在しない場合はtrueを返す（同期確認ダイアログを表示）
   if (!localData || !localData.characters || localData.characters.length === 0) {
-    return false;
+    console.log("Local data is empty");
+    return true;
   }
 
   // 基本的なプロパティの比較
-  if (localData.guildRank !== serverData.guildRank) return true;
-  if (localData.currentCharacterId !== serverData.currentCharacterId) return true;
+  if (localData.guildRank !== serverData.guildRank) {
+    console.log("Guild rank is different:", {
+      local: localData.guildRank,
+      server: serverData.guildRank,
+    });
+    return true;
+  }
+  if (localData.currentCharacterId !== serverData.currentCharacterId) {
+    console.log("Current character ID is different:", {
+      local: localData.currentCharacterId,
+      server: serverData.currentCharacterId,
+    });
+    return true;
+  }
 
   // キャラクターの比較
-  if (localData.characters.length !== serverData.characters.length) return true;
+  if (localData.characters.length !== serverData.characters.length) {
+    console.log("Number of characters is different:", {
+      local: localData.characters.length,
+      server: serverData.characters.length,
+    });
+    return true;
+  }
 
   for (let i = 0; i < localData.characters.length; i++) {
     const localChar = localData.characters[i];
     const serverChar = serverData.characters.find(c => c.id === localChar.id);
-    if (!serverChar) return true;
+    if (!serverChar) {
+      console.log("Character not found in server data:", localChar.id);
+      return true;
+    }
 
     // createdAt, updatedAtは比較から除外
-    if (localChar.name !== serverChar.name) return true;
+    if (localChar.name !== serverChar.name) {
+      console.log("Character name is different:", {
+        local: localChar.name,
+        server: serverChar.name,
+      });
+      return true;
+    }
 
     // スキルツリーの比較
     const localSkills = localChar.skillTree.selectedSkills;
@@ -31,18 +64,45 @@ function isDataDifferent(localData: GlobalState, serverData: GlobalState): boole
     const serverAcquired = serverChar.skillTree.acquiredSkills;
 
     // 選択されたスキルの比較
-    if (Object.keys(localSkills).length !== Object.keys(serverSkills).length) return true;
+    if (Object.keys(localSkills).length !== Object.keys(serverSkills).length) {
+      console.log("Number of selected skills is different:", {
+        local: Object.keys(localSkills).length,
+        server: Object.keys(serverSkills).length,
+      });
+      return true;
+    }
     for (const [skillId, level] of Object.entries(localSkills)) {
-      if (serverSkills[skillId] !== level) return true;
+      if (serverSkills[skillId] !== level) {
+        console.log("Selected skill level is different:", {
+          skillId,
+          local: level,
+          server: serverSkills[skillId],
+        });
+        return true;
+      }
     }
 
     // 取得済みスキルの比較
-    if (Object.keys(localAcquired).length !== Object.keys(serverAcquired).length) return true;
+    if (Object.keys(localAcquired).length !== Object.keys(serverAcquired).length) {
+      console.log("Number of acquired skills is different:", {
+        local: Object.keys(localAcquired).length,
+        server: Object.keys(serverAcquired).length,
+      });
+      return true;
+    }
     for (const [skillId, level] of Object.entries(localAcquired)) {
-      if (serverAcquired[skillId] !== level) return true;
+      if (serverAcquired[skillId] !== level) {
+        console.log("Acquired skill level is different:", {
+          skillId,
+          local: level,
+          server: serverAcquired[skillId],
+        });
+        return true;
+      }
     }
   }
 
+  console.log("Data is identical");
   return false;
 }
 
