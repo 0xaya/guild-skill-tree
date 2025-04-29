@@ -33,7 +33,8 @@ export function SyncDialog({ open, onOpenChange, onConfirm, onCancel }: SyncDial
           <span className="block text-xs text-text-secondary my-4">
             サーバー：クラウド上の保存データ
             <br />
-            このデバイス：今お使いの端末のデータ
+            <br />
+            このデバイス：現在表示中のデータ（クラウド上のデータが上書きされます）
           </span>
         </>
       }
