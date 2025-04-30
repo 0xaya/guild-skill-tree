@@ -9,6 +9,7 @@ const createDefaultCharacter = (): Character => ({
     selectedSkills: { core: 1 },
     acquiredSkills: {},
   },
+  updatedAt: new Date(),
 });
 
 // デフォルトの状態を取得
@@ -30,6 +31,11 @@ export const loadGlobalState = (): GlobalState | null => {
       const parsed = JSON.parse(saved);
       // 必要なプロパティが存在することを確認
       if (parsed.guildRank && Array.isArray(parsed.characters) && parsed.currentCharacterId) {
+        // updatedAtをDateオブジェクトに変換
+        parsed.characters = parsed.characters.map((char: any) => ({
+          ...char,
+          updatedAt: new Date(char.updatedAt),
+        }));
         return parsed;
       }
     }

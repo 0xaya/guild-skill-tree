@@ -5,7 +5,7 @@ import { useAccount, useDisconnect } from "wagmi";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
-import { syncUserData, resolveSyncConflict } from "../utils/syncUtils";
+import { syncUserData, resolveSyncConflict, flushPendingUpdates } from "../../utils/syncUtils";
 import { SyncDialog } from "../components/ui/SyncDialog";
 import { saveGlobalState } from "../utils/storageUtils";
 
@@ -208,6 +208,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(true);
     try {
       console.log("AuthContext: logout started");
+
+      // 保留中の更新を保存
+      if (user) {
+        const uid = "address" in user ? user.address : user.uid;
+        await flushPendingUpdates();
+      }
 
       // 認証関連の処理を実行
       if (authMethod === "google" || authMethod === "twitter") {

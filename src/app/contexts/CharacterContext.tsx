@@ -13,6 +13,7 @@ import {
   deleteCharacter as deleteCharacterFromState,
   getDefaultState,
 } from "../utils/storageUtils";
+import { batchSaveCharacterData } from "../../utils/syncUtils";
 
 interface CharacterContextType {
   characters: Character[];
@@ -110,7 +111,6 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
       const newCharacter = {
         id: `${Date.now()}`,
         name,
@@ -122,7 +122,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date(),
       } as Character;
       const newState = addCharacterToState(globalState, newCharacter);
-      await setDoc(userRef, { globalState: newState }, { merge: true });
+      await batchSaveCharacterData(uid, { globalState: newState }, uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -152,12 +152,11 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
       const updatedCharacters = globalState.characters.map(char =>
         char.id === id ? { ...char, ...data, updatedAt: new Date() } : char
       );
       const newState = { ...globalState, characters: updatedCharacters };
-      await setDoc(userRef, { globalState: newState }, { merge: true });
+      await batchSaveCharacterData(uid, { globalState: newState }, uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -178,10 +177,9 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
     try {
       const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
       const updatedCharacters = globalState.characters.filter(char => char.id !== id);
       const newState = { ...globalState, characters: updatedCharacters };
-      await setDoc(userRef, { globalState: newState }, { merge: true });
+      await batchSaveCharacterData(uid, { globalState: newState }, uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -191,7 +189,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
   };
 
   // 現在のキャラクターを設定
-  const setCurrentCharacter = (character: Character | null) => {
+  const setCurrentCharacter = async (character: Character | null) => {
     if (character) {
       const newState = {
         ...globalState,
@@ -199,6 +197,12 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
       };
       setGlobalState(newState);
       saveGlobalState(newState);
+
+      // サーバーにも反映
+      if (user && isAuthenticated) {
+        const uid = "address" in user ? user.address : user.uid;
+        await batchSaveCharacterData(uid, { globalState: newState }, uid);
+      }
     }
   };
 

@@ -5,6 +5,7 @@ export interface Character {
     selectedSkills: { [key: string]: number };
     acquiredSkills: { [key: string]: number };
   };
+  updatedAt: Date;
 }
 
 export interface GlobalState {

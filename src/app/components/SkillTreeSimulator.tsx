@@ -19,6 +19,7 @@ import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { batchSaveCharacterData } from "../../utils/syncUtils";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -215,8 +216,7 @@ export function SkillTreeSimulator() {
     // サーバーにも反映
     if (user && isAuthenticated) {
       const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
-      setDoc(userRef, { globalState: newState }, { merge: true });
+      batchSaveCharacterData(uid, { globalState: newState }, uid);
     }
   };
 
