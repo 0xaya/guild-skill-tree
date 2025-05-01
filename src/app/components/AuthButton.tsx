@@ -18,7 +18,7 @@ interface UserWithId {
 }
 
 export function AuthButton() {
-  const { user, isAuthenticated, authMethod, logout, loading, deleteAccount, updateUserData, clearUserData } =
+  const { user, userData, isAuthenticated, authMethod, logout, loading, deleteAccount, updateUserData, clearUserData } =
     useAuth();
   const [showSignInMenu, setShowSignInMenu] = useState(false);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
@@ -129,16 +129,18 @@ export function AuthButton() {
 
   const getDisplayIdentifier = () => {
     if (!user) return "";
+
+    // FirestoreのdisplayNameを優先
+    if (userData?.displayName) {
+      return userData.displayName;
+    }
+
+    // ウォレット接続の場合はアドレスの短縮表示（displayNameがない場合のフォールバック）
     if (authMethod === "wallet" && typeof user === "object" && "address" in user) {
       const address = user.address;
       return `${address.slice(0, 6)}...${address.slice(-4)}`;
     }
-    if (authMethod === "google" && typeof user === "object" && "displayName" in user) {
-      return user.displayName || user.email || "Google User";
-    }
-    if (authMethod === "twitter" && typeof user === "object" && "displayName" in user) {
-      return user.displayName || user.email || "X User";
-    }
+
     return "";
   };
 
@@ -235,7 +237,8 @@ export function AuthButton() {
         <AccountDialog
           open={showAccountDialog}
           onOpenChange={setShowAccountDialog}
-          displayName={user && typeof user === "object" && "displayName" in user ? user.displayName : null}
+          displayName={getDisplayIdentifier()}
+          userData={userData}
           authMethod={authMethod}
           onUpdateDisplayName={handleUpdateDisplayName}
           onDeleteAccount={handleDeleteAccount}

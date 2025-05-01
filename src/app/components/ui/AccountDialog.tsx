@@ -9,6 +9,7 @@ interface AccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   displayName: string | null;
+  userData: { displayName: string | null } | null;
   authMethod: "wallet" | "google" | "twitter" | null;
   onUpdateDisplayName: (newName: string) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
@@ -19,13 +20,14 @@ export function AccountDialog({
   open,
   onOpenChange,
   displayName,
+  userData,
   authMethod,
   onUpdateDisplayName,
   onDeleteAccount,
   isDeleting = false,
 }: AccountDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newDisplayName, setNewDisplayName] = useState(displayName || "");
+  const [newDisplayName, setNewDisplayName] = useState(userData?.displayName || "");
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -101,7 +103,9 @@ export function AccountDialog({
                         placeholder="ユーザー名を入力"
                       />
                     ) : (
-                      <span className="text-text-primary">ユーザー名: {displayName || "未設定"}</span>
+                      <span className="text-text-primary">
+                        ユーザー名: {userData?.displayName || displayName || "未設定"}
+                      </span>
                     )}
                   </div>
                   {!isEditing ? (
@@ -115,7 +119,7 @@ export function AccountDialog({
                         size="sm"
                         onClick={() => {
                           setIsEditing(false);
-                          setNewDisplayName(displayName || "");
+                          setNewDisplayName(userData?.displayName || displayName || "");
                         }}
                         disabled={isUpdating}
                       >
