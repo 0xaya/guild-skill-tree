@@ -6,17 +6,29 @@ import { useAuth } from "../contexts/AuthContext";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { signInWithPopup, GoogleAuthProvider, TwitterAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase";
-import { WalletIcon, GoogleIcon, LogoutIcon, SignInIcon, XIcon } from "./ui/Icons";
+import { LogoutIcon, WalletIcon, GoogleIcon, XIcon, SignInIcon, PencilIcon } from "./ui/Icons";
 import { useIsMobile } from "../hooks/useIsMobile";
+import { AccountDialog } from "./ui/AccountDialog";
+import { useRouter } from "next/navigation";
+import { openDB } from "idb";
+
+interface UserWithId {
+  id: string;
+  address?: string;
+}
 
 export function AuthButton() {
-  const { user, isAuthenticated, authMethod, logout, loading } = useAuth();
+  const { user, isAuthenticated, authMethod, logout, loading, deleteAccount, updateUserData, clearUserData } =
+    useAuth();
   const [showSignInMenu, setShowSignInMenu] = useState(false);
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const { openConnectModal } = useConnectModal();
   const isMobile = useIsMobile();
+  const [showAccountDialog, setShowAccountDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -76,6 +88,32 @@ export function AuthButton() {
     } catch (err) {
       console.error("Logout failed:", err);
       setError(err instanceof Error ? err.message : "ログアウトに失敗しました");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+      await deleteAccount();
+      await clearUserData();
+      setShowAccountDialog(false);
+      setShowLogoutMenu(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      setError("アカウントの削除に失敗しました。もう一度お試しください。");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdateDisplayName = async (newName: string) => {
+    try {
+      await updateUserData({ displayName: newName });
+    } catch (error) {
+      console.error("Failed to update display name:", error);
+      setError(error instanceof Error ? error.message : "ユーザー名の更新に失敗しました");
+      throw error;
     }
   };
 
@@ -169,8 +207,17 @@ export function AuthButton() {
       {showLogoutMenu && isAuthenticated && (
         <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-52 z-10">
           <div className="p-2">
-            <div className="px-4 py-2 text-sm text-text-primary border-b border-primary/20">
-              {getDisplayIdentifier()}
+            <div className="px-4 py-2 text-sm text-text-primary border-b border-primary/20 flex items-center justify-between">
+              <span>{getDisplayIdentifier()}</span>
+              <button
+                onClick={() => {
+                  setShowAccountDialog(true);
+                  setShowLogoutMenu(false);
+                }}
+                className="p-1 hover:bg-primary/10 rounded"
+              >
+                <PencilIcon size={14} />
+              </button>
             </div>
             <button
               onClick={handleLogout}
@@ -181,6 +228,19 @@ export function AuthButton() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Account Dialog */}
+      {isAuthenticated && (
+        <AccountDialog
+          open={showAccountDialog}
+          onOpenChange={setShowAccountDialog}
+          displayName={user && typeof user === "object" && "displayName" in user ? user.displayName : null}
+          authMethod={authMethod}
+          onUpdateDisplayName={handleUpdateDisplayName}
+          onDeleteAccount={handleDeleteAccount}
+          isDeleting={isDeleting}
+        />
       )}
 
       {/* Error Message */}

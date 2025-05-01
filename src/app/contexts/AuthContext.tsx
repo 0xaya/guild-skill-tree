@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
-import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import { syncUserData, resolveSyncConflict, flushPendingUpdates } from "../../utils/syncUtils";
 import { SyncDialog } from "../components/ui/SyncDialog";
@@ -28,6 +28,8 @@ interface AuthState {
   loading: boolean;
   logout: () => Promise<void>;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
+  deleteAccount: () => Promise<void>;
+  clearUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
@@ -39,8 +41,8 @@ const dispatchSyncCompleteEvent = (data: any) => {
 
 // 状態リセットイベントを発火する関数
 const dispatchResetStateEvent = () => {
-  console.log("AuthContext: dispatching resetState event");
-  window.dispatchEvent(new CustomEvent("resetState", { detail: null }));
+  const event = new CustomEvent("reset-state");
+  window.dispatchEvent(event);
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -204,6 +206,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [address, isWalletConnected, authMethod]);
 
+  const clearUserData = async () => {
+    try {
+      // LocalStorageをクリア
+      localStorage.removeItem("guild-skill-tree-simulator-state");
+      // 状態リセットイベントを発火
+      dispatchResetStateEvent();
+      // 状態をクリア
+      setUser(null);
+      setUserData(null);
+      setAuthMethod(null);
+      setSyncResult(null);
+    } catch (error) {
+      console.error("Failed to clear user data:", error);
+    }
+  };
+
   const logout = async () => {
     setLoading(true);
     try {
@@ -222,18 +240,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         disconnectWallet();
       }
 
-      // 状態をリセット
-      console.log("AuthContext: resetting state");
-      // LocalStorageをクリア
-      localStorage.removeItem("guild-skill-tree-simulator-state");
-      // 状態リセットイベントを発火
-      dispatchResetStateEvent();
-
-      // 状態をクリア
-      setUser(null);
-      setUserData(null);
-      setAuthMethod(null);
-      setSyncResult(null);
+      // データをクリア
+      await clearUserData();
 
       // ログアウト状態を記録
       localStorage.setItem("wasLoggedOut", "true");
@@ -258,6 +266,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthMethod(null);
   };
 
+  const deleteAccount = async () => {
+    if (!user) return;
+    try {
+      const uid = "address" in user ? user.address : user.uid;
+      const userRef = doc(db, "users", uid);
+      await deleteDoc(userRef);
+
+      if (authMethod === "google" || authMethod === "twitter") {
+        await signOut(auth);
+      } else if (authMethod === "wallet") {
+        disconnectWallet();
+      }
+
+      // データをクリア
+      await clearUserData();
+    } catch (error) {
+      console.error("Failed to delete account:", error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     userData,
@@ -266,6 +295,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loading,
     logout,
     updateUserData,
+    deleteAccount,
+    clearUserData,
   };
 
   return (

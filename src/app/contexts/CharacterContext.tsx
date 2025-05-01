@@ -69,16 +69,16 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   // 状態リセットイベントをリッスン
   useEffect(() => {
-    console.log("CharacterContext: setting up resetState event listener");
+    console.log("CharacterContext: setting up reset-state event listener");
     const handleResetState = () => {
-      console.log("CharacterContext: resetState event received");
+      console.log("CharacterContext: reset-state event received");
       resetState();
     };
 
-    window.addEventListener("resetState", handleResetState);
+    window.addEventListener("reset-state", handleResetState);
     return () => {
-      console.log("CharacterContext: removing resetState event listener");
-      window.removeEventListener("resetState", handleResetState);
+      console.log("CharacterContext: removing reset-state event listener");
+      window.removeEventListener("reset-state", handleResetState);
     };
   }, [resetState]);
 
