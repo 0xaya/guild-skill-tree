@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
+import { Character, GlobalState } from "../types/character";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
 import {
@@ -11,41 +12,26 @@ import {
   calculateRemainingMaterials,
   SKILL_POSITIONS,
 } from "../utils/skillUtils";
+import { loadGlobalState, saveGlobalState } from "../utils/storageUtils";
+import { useCharacter } from "../contexts/CharacterContext";
+import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../config/firebase";
+import { batchSaveCharacterData } from "../../utils/syncUtils";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [selectedSkills, setSelectedSkills] = useState<{ [key: string]: number }>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("selectedSkills");
-      return saved ? JSON.parse(saved) : { core: 1 };
-    }
-    return { core: 1 };
-  });
-  const [acquiredSkills, setAcquiredSkills] = useState<{ [key: string]: number }>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("acquiredSkills");
-      return saved ? JSON.parse(saved) : {};
-    }
-    return {};
-  });
-  const [guildRank, setGuildRank] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("guildRank");
-      return saved ? parseInt(saved, 10) : 5;
-    }
-    return 3;
-  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
-    coins: 0,
-    materials: {},
-  });
   const [error, setError] = useState<string | null>(null);
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
+    coins: 0,
+    materials: {},
+  });
   const [totalStats, setTotalStats] = useState({
     str: 0,
     vit: 0,
@@ -67,9 +53,16 @@ export function SkillTreeSimulator() {
     physicalCriMulti: 0,
   });
 
+  const { currentCharacter, updateCharacter, globalState, setGlobalState } = useCharacter();
+  const { user, isAuthenticated } = useAuth();
+  const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
+  const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
+  const guildRank = globalState.guildRank;
+
   // 残り必要素材を計算
   const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
 
+  // スキルデータの読み込み
   useEffect(() => {
     const fetchSkills = async () => {
       try {
@@ -90,6 +83,7 @@ export function SkillTreeSimulator() {
     fetchSkills();
   }, []);
 
+  // コストとステータスの計算
   useEffect(() => {
     const cost = calculateTotalCost(skills, selectedSkills);
     setTotalCost(cost);
@@ -97,92 +91,8 @@ export function SkillTreeSimulator() {
     setTotalStats(stats);
   }, [skills, selectedSkills]);
 
-  useEffect(() => {
-    // クライアントサイドでのみ実行
-    if (typeof window === "undefined") return;
-
-    const updateScale = () => {
-      if (window.innerWidth < 640) {
-        setScale(0.5);
-      } else if (window.innerWidth < 768) {
-        setScale(0.6);
-      } else {
-        setScale(1);
-      }
-    };
-
-    const updatePosition = () => {
-      const containerWidth = window.innerWidth < 640 ? window.innerWidth : window.innerWidth * 0.67;
-      const containerHeight = window.innerWidth < 768 ? 500 : 800;
-      const treeWidth = 800 * scale;
-      const treeHeight = 800 * scale;
-
-      if (window.innerWidth < 640) {
-        setPosition({
-          x: (containerWidth / 2) * -1,
-          y: -50,
-        });
-      } else {
-        setPosition({
-          x: 0,
-          y: (containerHeight - treeHeight) / 2,
-        });
-      }
-    };
-
-    // 初期値の設定
-    updateScale();
-    updatePosition();
-
-    // リサイズイベントのリスナーを設定
-    window.addEventListener("resize", () => {
-      updateScale();
-      updatePosition();
-    });
-
-    return () => {
-      window.removeEventListener("resize", updateScale);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, []);
-
-  useEffect(() => {
-    // クライアントサイドでのみ実行
-    const loadSavedState = () => {
-      try {
-        const savedSkills = localStorage.getItem("selectedSkills");
-        const savedRank = localStorage.getItem("guildRank");
-
-        if (savedSkills) {
-          setSelectedSkills(JSON.parse(savedSkills));
-        }
-        if (savedRank) {
-          setGuildRank(parseInt(savedRank, 10));
-        }
-      } catch (error) {
-        console.error("Error loading saved state:", error);
-      }
-    };
-
-    loadSavedState();
-  }, []);
-
-  useEffect(() => {
-    // 状態が変更されたときにLocalStorageに保存
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("guildRank", guildRank.toString());
-        localStorage.setItem("selectedSkills", JSON.stringify(selectedSkills));
-      } catch (error) {
-        console.error("Error saving state:", error);
-      }
-    }
-  }, [guildRank, selectedSkills]);
-
   const handleSkillClick = (skillId: string) => {
-    if (skillId === "core") {
-      return;
-    }
+    if (skillId === "core") return;
 
     const skill = skills.find((s: Skill) => s.id === skillId);
     if (!skill) return;
@@ -206,67 +116,108 @@ export function SkillTreeSimulator() {
       return;
     }
 
-    setSelectedSkills((prev: { [key: string]: number }) => ({
-      ...prev,
-      [skillId]: currentLevel + 1,
-    }));
+    if (currentCharacter) {
+      const updatedCharacter = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel + 1,
+          },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
+    }
     setError(null);
   };
 
   const handleSkillRightClick = (skillId: string) => {
-    if (skillId === "core") {
-      return;
-    }
+    if (skillId === "core") return;
 
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
-    // レベル2以上を下げる場合は依存関係の確認をスキップ
-    if (currentLevel > 1) {
-      setSelectedSkills((prev: { [key: string]: number }) => ({
-        ...prev,
-        [skillId]: currentLevel - 1,
-      }));
+    const acquiredLevel = acquiredSkills[skillId] || 0;
+    // acquiredLevel > currentLevel - 1 の場合は両方下げる
+    if (acquiredLevel > currentLevel - 1) {
+      if (currentCharacter) {
+        const updatedCharacter = {
+          ...currentCharacter,
+          skillTree: {
+            ...currentCharacter.skillTree,
+            selectedSkills: {
+              ...selectedSkills,
+              [skillId]: currentLevel - 1,
+            },
+            acquiredSkills: {
+              ...acquiredSkills,
+              [skillId]: currentLevel - 1,
+            },
+          },
+        };
+        updateCharacter(currentCharacter.id, updatedCharacter);
+      }
       setError(null);
       return;
     }
 
     // レベル1から0に下げる場合のみ依存関係を確認
-    const hasActiveChildren = skills.some(
-      (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
-    );
-
-    if (hasActiveChildren) {
-      setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
-      return;
+    if (currentLevel === 1) {
+      const hasActiveChildren = skills.some(
+        (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
+      );
+      if (hasActiveChildren) {
+        setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
+        return;
+      }
     }
 
-    setSelectedSkills((prev: { [key: string]: number }) => ({
-      ...prev,
-      [skillId]: currentLevel - 1,
-    }));
+    // 通常のレベルダウン（selectedSkillsのみ下げる）
+    if (currentCharacter) {
+      const updatedCharacter = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel - 1,
+          },
+          acquiredSkills: {
+            ...acquiredSkills,
+          },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
+    }
     setError(null);
   };
 
   const handleReset = () => {
-    setSelectedSkills({ core: 1 });
-    setAcquiredSkills({});
-    setGuildRank(5);
-    setError(null);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.removeItem("guildRank");
-        localStorage.removeItem("selectedSkills");
-        localStorage.removeItem("acquiredSkills");
-      } catch (error) {
-        console.error("Error clearing saved state:", error);
-      }
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          selectedSkills: { core: 1 },
+          acquiredSkills: { core: 1 },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
     }
+    setError(null);
   };
 
   const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newRank = parseInt(e.target.value);
-    setGuildRank(newRank);
+    const newState = { ...globalState, guildRank: newRank };
+    setGlobalState(newState);
+    saveGlobalState(newState);
+
+    // サーバーにも反映
+    if (user && isAuthenticated) {
+      const uid = "address" in user ? user.address : user.uid;
+      batchSaveCharacterData(uid, { globalState: newState }, uid);
+    }
   };
 
   const handleZoomIn = () => {
@@ -379,13 +330,40 @@ export function SkillTreeSimulator() {
   };
 
   const handleAcquiredLevelChange = (skillId: string, level: number) => {
-    setAcquiredSkills(prev => {
-      const newState = { ...prev, [skillId]: level };
-      if (typeof window !== "undefined") {
-        localStorage.setItem("acquiredSkills", JSON.stringify(newState));
-      }
-      return newState;
-    });
+    if (currentCharacter) {
+      const updatedCharacter: Character = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          acquiredSkills: {
+            ...acquiredSkills,
+            [skillId]: level,
+          },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
+    }
+  };
+
+  const handleSelectedLevelDown = (skillId: string) => {
+    if (currentCharacter) {
+      const currentLevel = selectedSkills[skillId] || 0;
+      if (currentLevel <= 0) return;
+      const updatedCharacter = {
+        ...currentCharacter,
+        skillTree: {
+          ...currentCharacter.skillTree,
+          selectedSkills: {
+            ...selectedSkills,
+            [skillId]: currentLevel - 1,
+          },
+          acquiredSkills: {
+            ...acquiredSkills,
+          },
+        },
+      };
+      updateCharacter(currentCharacter.id, updatedCharacter);
+    }
   };
 
   if (isLoading) {
@@ -447,7 +425,7 @@ export function SkillTreeSimulator() {
               {/* 各素材 */}
               {Object.entries(totalCost.materials)
                 .filter(([_, count]) => count > 0 || (remainingMaterials.materials[_] || 0) > 0)
-                .map(([material, count]) => (
+                .map(([material, count]: [string, number]) => (
                   <div key={material} className="grid grid-cols-3 gap-2 items-center">
                     <div className="text-text-primary">{material}</div>
                     <div className="text-right text-text-primary">
@@ -641,6 +619,7 @@ export function SkillTreeSimulator() {
                   onClick={handleSkillClick}
                   onRightClick={handleSkillRightClick}
                   onAcquiredLevelChange={handleAcquiredLevelChange}
+                  onSelectedLevelDown={handleSelectedLevelDown}
                   onCheckDependencies={(skillId: string) => {
                     const hasActiveChildren = skills.some(
                       (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
@@ -660,9 +639,9 @@ export function SkillTreeSimulator() {
 
           {/* ズームコントロール */}
           <div className="absolute bottom-4 right-4 flex gap-2">
-            <Button onClick={handleZoomIn} title="拡大" icon={<ZoomInIcon />} />
-            <Button onClick={handleZoomOut} title="縮小" icon={<ZoomOutIcon />} />
-            <Button onClick={handleZoomReset} title="リセット" icon={<ResetIcon />} />
+            <Button onClick={handleZoomIn} icon={<ZoomInIcon />} isIconOnly />
+            <Button onClick={handleZoomOut} icon={<ZoomOutIcon />} isIconOnly />
+            <Button onClick={handleZoomReset} icon={<ResetIcon />} isIconOnly />
           </div>
         </div>
       </div>

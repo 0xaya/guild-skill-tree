@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
+import "@rainbow-me/rainbowkit/styles.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -15,9 +17,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja">
-      <body className={`${inter.className} min-h-screen`}>
-        {children}
+    <html lang="ja" className={inter.className}>
+      <body className="min-h-screen">
+        <Providers>{children}</Providers>
         <Analytics />
       </body>
     </html>
