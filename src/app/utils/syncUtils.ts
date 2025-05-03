@@ -114,6 +114,12 @@ type SyncResult =
 
 export async function syncUserData(userId: string): Promise<SyncResult> {
   try {
+    // ログアウト状態の場合は同期を行わない
+    const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
+    if (wasLoggedOut) {
+      return { type: "synced", data: getDefaultState() };
+    }
+
     // ローカルデータの取得
     const localData = loadGlobalState();
 
@@ -122,21 +128,19 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
     const userDoc = await getDoc(userRef);
     const serverData = userDoc.exists() ? userDoc.data().globalState : null;
 
+    // 新規アドレスの場合
     if (!serverData) {
-      // サーバーにデータが存在しない場合、ローカルデータを保存
-      if (localData) {
-        await setDoc(userRef, { globalState: localData }, { merge: true });
-        return { type: "local-to-server", data: localData };
-      } else {
-        // ローカルデータも存在しない場合はデフォルト状態を保存
-        const defaultState = getDefaultState();
-        await setDoc(userRef, { globalState: defaultState }, { merge: true });
-        return { type: "local-to-server", data: defaultState };
-      }
+      // 新規アドレスの場合は常にデフォルト状態を使用
+      const defaultState = getDefaultState();
+      await setDoc(userRef, { globalState: defaultState }, { merge: true });
+      saveGlobalState(defaultState); // ローカルストレージを更新
+      return { type: "local-to-server", data: defaultState };
     }
 
-    // ローカルデータが存在しない場合は、サーバーデータをそのまま使用
+    // 既存アドレスの場合
     if (!localData) {
+      // ローカルデータがない場合は、サーバーデータをそのまま使用
+      saveGlobalState(serverData); // ローカルストレージを更新
       return { type: "server-to-local", data: serverData };
     }
 
@@ -144,9 +148,11 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
     const isDifferent = isDataDifferent(localData, serverData);
 
     if (isDifferent) {
+      // データが異なる場合は競合として扱う
       return { type: "conflict", localData, serverData };
     }
 
+    // データが同じ場合は同期済みとして扱う
     return { type: "synced", data: serverData };
   } catch (error) {
     console.error("Failed to sync user data:", error);

@@ -16,6 +16,7 @@
     "@vercel/analytics": "^1.5.0",
     "@wagmi/core": "^2.16.7",
     "clsx": "^2.1.1",
+    "ethers": "^6.13.7",
     "firebase": "^11.6.0",
     "next": "^15.3.1",
     "papaparse": "^5.5.2",
