@@ -117,6 +117,11 @@ export function AuthButton() {
       return userData.displayName;
     }
 
+    // Firebase AuthのdisplayNameをフォールバックとして使用
+    if (user.displayName) {
+      return user.displayName;
+    }
+
     return "";
   };
 

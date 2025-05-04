@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog } from "./Dialog";
 import { Button } from "./Button";
 import { PencilIcon, CloseIcon } from "./Icons";
@@ -27,15 +27,23 @@ export function AccountDialog({
   isDeleting = false,
 }: AccountDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [newDisplayName, setNewDisplayName] = useState(userData?.displayName || "");
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [newDisplayName, setNewDisplayName] = useState(displayName || "");
+
+  useEffect(() => {
+    if (userData?.displayName) {
+      setNewDisplayName(userData.displayName);
+    }
+  }, [userData]);
 
   const handleUpdateDisplayName = async () => {
+    if (!newDisplayName.trim()) return;
     try {
       setIsUpdating(true);
       await onUpdateDisplayName(newDisplayName);
       setIsEditing(false);
+      onOpenChange(false);
     } catch (error) {
       console.error("Failed to update display name:", error);
     } finally {
