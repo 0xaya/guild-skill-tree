@@ -31,10 +31,10 @@ export function SyncDialog({ open, onOpenChange, onConfirm, onCancel }: SyncDial
           どちらのデータを使用しますか？
           <br />
           <span className="block text-xs text-text-secondary my-4">
-            サーバー：クラウド上の保存データ
+            サーバー：サーバーに保存されたあなたのスキルツリーデータ
             <br />
             <br />
-            このデバイス：現在表示中のデータ（クラウド上のデータが上書きされます）
+            このデバイス：現在表示中のスキルツリーデータ（サーバーのデータが上書きされます）
           </span>
         </>
       }
