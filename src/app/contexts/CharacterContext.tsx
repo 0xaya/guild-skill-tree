@@ -110,7 +110,6 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const uid = "address" in user ? user.address : user.uid;
       const newCharacter = {
         id: `${Date.now()}`,
         name,
@@ -122,7 +121,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
         updatedAt: new Date(),
       } as Character;
       const newState = addCharacterToState(globalState, newCharacter);
-      await batchSaveCharacterData(uid, { globalState: newState }, uid);
+      await batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -151,12 +150,11 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const uid = "address" in user ? user.address : user.uid;
       const updatedCharacters = globalState.characters.map(char =>
         char.id === id ? { ...char, ...data, updatedAt: new Date() } : char
       );
       const newState = { ...globalState, characters: updatedCharacters };
-      await batchSaveCharacterData(uid, { globalState: newState }, uid);
+      await batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -176,10 +174,9 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const uid = "address" in user ? user.address : user.uid;
       const updatedCharacters = globalState.characters.filter(char => char.id !== id);
       const newState = { ...globalState, characters: updatedCharacters };
-      await batchSaveCharacterData(uid, { globalState: newState }, uid);
+      await batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
       setGlobalState(newState);
       saveGlobalState(newState);
     } catch (err) {
@@ -200,8 +197,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
       // サーバーにも反映
       if (user && isAuthenticated) {
-        const uid = "address" in user ? user.address : user.uid;
-        await batchSaveCharacterData(uid, { globalState: newState }, uid);
+        await batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
       }
     }
   };

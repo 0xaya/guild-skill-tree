@@ -3,14 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/Button";
 import { useAuth } from "../contexts/AuthContext";
-import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { signInWithPopup, GoogleAuthProvider, TwitterAuthProvider } from "firebase/auth";
 import { auth } from "../config/firebase";
-import { LogoutIcon, WalletIcon, GoogleIcon, XIcon, SignInIcon, PencilIcon } from "./ui/Icons";
+import { LogoutIcon, GoogleIcon, XIcon, SignInIcon, PencilIcon } from "./ui/Icons";
 import { useIsMobile } from "../hooks/useIsMobile";
 import { AccountDialog } from "./ui/AccountDialog";
 import { useRouter } from "next/navigation";
-import { openDB } from "idb";
 
 interface UserWithId {
   id: string;
@@ -24,7 +22,6 @@ export function AuthButton() {
   const [showLogoutMenu, setShowLogoutMenu] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { openConnectModal } = useConnectModal();
   const isMobile = useIsMobile();
   const [showAccountDialog, setShowAccountDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -40,21 +37,6 @@ export function AuthButton() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleWalletConnect = async () => {
-    setError(null);
-    try {
-      if (openConnectModal) {
-        openConnectModal();
-        setShowSignInMenu(false);
-      } else {
-        throw new Error("Connect modal is not available");
-      }
-    } catch (err) {
-      console.error("Failed to connect wallet:", err);
-      setError(err instanceof Error ? err.message : "ウォレット接続に失敗しました");
-    }
-  };
 
   const handleGoogleLogin = async () => {
     setError(null);
@@ -135,12 +117,6 @@ export function AuthButton() {
       return userData.displayName;
     }
 
-    // ウォレット接続の場合はアドレスの短縮表示（displayNameがない場合のフォールバック）
-    if (authMethod === "wallet" && typeof user === "object" && "address" in user) {
-      const address = user.address;
-      return `${address.slice(0, 6)}...${address.slice(-4)}`;
-    }
-
     return "";
   };
 
@@ -161,9 +137,7 @@ export function AuthButton() {
         isIconOnly={isMobile && isAuthenticated}
       >
         {isAuthenticated ? (
-          authMethod === "wallet" ? (
-            <WalletIcon className="flex-shrink-0" />
-          ) : authMethod === "google" ? (
+          authMethod === "google" ? (
             <GoogleIcon className="flex-shrink-0" />
           ) : (
             <XIcon size={16} className="flex-shrink-0" />
@@ -180,13 +154,6 @@ export function AuthButton() {
       {showSignInMenu && !isAuthenticated && (
         <div className="absolute top-full right-0 mt-2 bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg w-56 z-10">
           <div className="p-2 flex flex-col gap-1">
-            <button
-              onClick={handleWalletConnect}
-              className="flex items-center gap-2 w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
-            >
-              <WalletIcon size={16} />
-              <span>ウォレット接続</span>
-            </button>
             <button
               onClick={handleGoogleLogin}
               className="flex items-center gap-2 w-full px-[1.1rem] py-2 text-sm text-text-primary hover:bg-primary/10 rounded"
