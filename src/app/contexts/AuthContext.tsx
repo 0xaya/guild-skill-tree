@@ -267,18 +267,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isWalletConnected]);
 
   const clearUserData = async () => {
-    try {
-      // LocalStorageをクリア
-      localStorage.removeItem("guild-skill-tree-simulator-state");
-      // 状態リセットイベントを発火
-      dispatchResetStateEvent();
-      // 状態をクリア
-      setUser(null);
-      setUserData(null);
-      setAuthMethod(null);
-    } catch (error) {
-      console.error("Failed to clear user data:", error);
-    }
+        try {
+          // LocalStorageをクリア
+          localStorage.removeItem("guild-skill-tree-simulator-state");
+          // 状態リセットイベントを発火
+          dispatchResetStateEvent();
+          // 状態をクリア
+          setUser(null);
+          setUserData(null);
+          setAuthMethod(null);
+        } catch (error) {
+          console.error("Failed to clear user data:", error);
+        }
   };
 
   const logout = async () => {
