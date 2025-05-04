@@ -233,34 +233,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribeFirebase = onAuthStateChanged(auth, async firebaseUser => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const providerId = firebaseUser.providerData[0]?.providerId;
-        const method = providerId === "google.com" ? "google" : "twitter";
-        setAuthMethod(method);
-        await saveUserData(firebaseUser, method);
+      try {
+        if (firebaseUser) {
+          const providerId = firebaseUser.providerData[0]?.providerId;
+          const method = providerId === "google.com" ? "google" : "twitter";
+          setUser(firebaseUser);
+          setAuthMethod(method);
+          await saveUserData(firebaseUser, method);
 
-        // データ同期の実行
-        try {
-          const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
-          const result = await syncUserData(firebaseUser.uid);
-          console.log("Sync result:", result);
+          // データ同期の実行
+          try {
+            const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
+            const result = await syncUserData(firebaseUser.uid);
+            console.log("Sync result:", result);
 
-          if (result.type === "conflict" && "localData" in result && "serverData" in result) {
-            setSyncData({ localData: result.localData, serverData: result.serverData });
+            if (result.type === "local-to-server" || result.type === "synced") {
+              setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
+            } else if (result.type === "server-to-local") {
+              setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
+              saveGlobalState(result.data);
+              dispatchSyncCompleteEvent(result.data);
+            } else if (result.type === "conflict" && "localData" in result && "serverData" in result) {
+              setSyncData({ localData: result.localData, serverData: result.serverData });
+              setShowSyncDialog(true);
+            }
+
+            // ログアウト状態をクリア
+            localStorage.removeItem("wasLoggedOut");
+          } catch (error) {
+            console.error("Failed to sync data:", error);
           }
-
-          // ログアウト状態をクリア
-          localStorage.removeItem("wasLoggedOut");
-        } catch (error) {
-          console.error("Failed to sync data:", error);
+        } else if (!isWalletConnected) {
+          setUser(null);
+          setUserData(null);
+          setAuthMethod(null);
         }
-      } else if (!isWalletConnected) {
-        setUser(null);
-        setUserData(null);
-        setAuthMethod(null);
+      } catch (error) {
+        console.error("Auth state change error:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribeFirebase();
