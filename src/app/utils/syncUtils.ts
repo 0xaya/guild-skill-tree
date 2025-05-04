@@ -186,17 +186,23 @@ export const syncUserData = async (userId: string): Promise<SyncResult> => {
 
     // 新規アドレスの場合
     if (!serverData) {
-      // 新規アドレスの場合は常にデフォルト状態を使用
-      const defaultState = getDefaultState();
-      await setDoc(userRef, { globalState: defaultState }, { merge: true });
-      saveGlobalState(defaultState); // ローカルストレージを更新
-      return { type: "local-to-server", data: defaultState };
+      if (localData) {
+        // ローカルデータがある場合は、そのデータをサーバーに保存
+        await setDoc(userRef, { globalState: localData }, { merge: true });
+        return { type: "local-to-server", data: localData };
+      } else {
+        // ローカルデータもない場合はデフォルト状態を使用
+        const defaultState = getDefaultState();
+        await setDoc(userRef, { globalState: defaultState }, { merge: true });
+        saveGlobalState(defaultState);
+        return { type: "local-to-server", data: defaultState };
+      }
     }
 
     // 既存アドレスの場合
     if (!localData) {
       // ローカルデータがない場合は、サーバーデータをそのまま使用
-      saveGlobalState(serverData); // ローカルストレージを更新
+      saveGlobalState(serverData);
       return { type: "server-to-local", data: serverData };
     }
 
