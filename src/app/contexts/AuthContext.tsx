@@ -1,31 +1,28 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-import { useAccount, useDisconnect, useSignMessage } from "wagmi";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
 import { syncUserData, resolveSyncConflict, flushPendingUpdates } from "../../utils/syncUtils";
 import { SyncDialog } from "../components/ui/SyncDialog";
 import { saveGlobalState } from "../utils/storageUtils";
-import { verifyMessage } from "ethers";
 
 interface UserData {
   uid: string;
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  authMethod: "wallet" | "google" | "twitter";
-  walletAddress: string | null;
+  authMethod: "google" | "twitter";
   createdAt: any;
   updatedAt: any;
 }
 
 interface AuthState {
-  user: User | { address: string } | null;
+  user: User | null;
   userData: UserData | null;
   isAuthenticated: boolean;
-  authMethod: "wallet" | "google" | "twitter" | null;
+  authMethod: "google" | "twitter" | null;
   loading: boolean;
   logout: () => Promise<void>;
   updateUserData: (data: Partial<UserData>) => Promise<void>;
@@ -52,133 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [showSyncDialog, setShowSyncDialog] = useState(false);
   const [syncData, setSyncData] = useState<{ localData: any; serverData: any } | null>(null);
-  const [isSigning, setIsSigning] = useState(false);
-  const { address, isConnected: isWalletConnected } = useAccount();
-  const { disconnect: disconnectWallet } = useDisconnect();
-  const { signMessageAsync } = useSignMessage();
 
-  // 署名メッセージを検証する関数
-  const verifySignature = async (address: string, signature: string) => {
+  const saveUserData = async (user: User, method: "google" | "twitter") => {
     try {
-      const message = `Sign this message to verify your ownership of the address: ${address}`;
-      const recoveredAddress = await verifyMessage(message, signature);
-      return recoveredAddress.toLowerCase() === address.toLowerCase();
-    } catch (error) {
-      console.error("Failed to verify signature:", error);
-      return false;
-    }
-  };
-
-  // アドレス変更時の処理
-  const handleWalletChange = useCallback(async () => {
-    if (isSigning) return;
-
-    try {
-      setIsSigning(true);
-      setLoading(true);
-      const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
-
-      // ウォレット切り替え時は必ずローカルストレージをクリア
-      localStorage.removeItem("guild-skill-tree-simulator-state");
-      if (wasLoggedOut) {
-        localStorage.removeItem("wasLoggedOut");
-      }
-
-      // 署名を要求
-      const message = `Sign this message to verify your ownership of the address: ${address}`;
-      const signature = await signMessageAsync({ message });
-
-      // 署名を検証
-      const isValid = await verifySignature(address!, signature);
-      if (!isValid) {
-        throw new Error("Invalid signature");
-      }
-
-      // ユーザーデータの保存と同期
-      const walletUser = { address: address! };
-      await saveUserData(walletUser, "wallet");
-
-      // データ同期の実行
-      const result = await syncUserData(address!);
-      console.log("Sync result:", result);
-
-      // 状態を一括で更新
-      if (result.type === "local-to-server" || result.type === "synced") {
-        setUser(walletUser);
-        setAuthMethod("wallet");
-        setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
-      } else if (result.type === "server-to-local") {
-        setUser(walletUser);
-        setAuthMethod("wallet");
-        setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
-        saveGlobalState(result.data);
-        dispatchSyncCompleteEvent(result.data);
-      } else if (result.type === "conflict" && "localData" in result && "serverData" in result) {
-        setSyncData({ localData: result.localData, serverData: result.serverData });
-        setShowSyncDialog(true);
-      }
-    } catch (error) {
-      console.error("Failed to handle wallet change:", error);
-      // エラー時は状態をクリア
-      setUser(null);
-      setUserData(null);
-      setAuthMethod(null);
-      // ウォレットを切断
-      disconnectWallet();
-    } finally {
-      setLoading(false);
-      setIsSigning(false);
-    }
-  }, [address, signMessageAsync, disconnectWallet]);
-
-  // ウォレット切断時の処理
-  const handleWalletDisconnect = useCallback(async () => {
-    try {
-      // 保留中の更新を保存
-      if (user) {
-        const uid = "address" in user ? user.address : user.uid;
-        await flushPendingUpdates();
-      }
-      // 状態をクリア
-      setUser(null);
-      setUserData(null);
-      setAuthMethod(null);
-
-      // ローカルストレージをクリア
-      localStorage.removeItem("guild-skill-tree-simulator-state");
-      localStorage.setItem("wasLoggedOut", "true");
-
-      // 状態リセットイベントを発火
-      dispatchResetStateEvent();
-    } catch (error) {
-      console.error("Failed to handle wallet disconnect:", error);
-    }
-  }, [user]);
-
-  // ウォレット接続状態の監視
-  useEffect(() => {
-    if (isWalletConnected && !user && authMethod !== "google" && authMethod !== "twitter") {
-      handleWalletChange();
-    } else if (!isWalletConnected && authMethod === "wallet") {
-      handleWalletDisconnect();
-    }
-  }, [isWalletConnected, authMethod, handleWalletChange, handleWalletDisconnect]);
-
-  const saveUserData = async (user: User | { address: string }, method: "wallet" | "google" | "twitter") => {
-    try {
-      const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
+      const userRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userRef);
 
       if (!userDoc.exists()) {
         // 新規ユーザーの場合
         const newUserData: UserData = {
-          uid,
-          email: "email" in user ? user.email || null : null,
-          displayName: "displayName" in user ? user.displayName || null : null,
-          photoURL: "photoURL" in user ? user.photoURL || null : null,
+          uid: user.uid,
+          email: user.email || null,
+          displayName: user.displayName || null,
+          photoURL: user.photoURL || null,
           authMethod: method,
-          walletAddress: "address" in user ? user.address : null,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -197,8 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateUserData = async (data: Partial<UserData>) => {
     if (!user) return;
     try {
-      const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
+      const userRef = doc(db, "users", user.uid);
       await setDoc(
         userRef,
         {
@@ -217,8 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user || !syncData) return;
 
     try {
-      const uid = "address" in user ? user.address : user.uid;
-      const resolvedData = await resolveSyncConflict(uid, useLocalData, syncData.localData, syncData.serverData);
+      const resolvedData = await resolveSyncConflict(user.uid, useLocalData, syncData.localData, syncData.serverData);
       setUserData(prev => (prev ? { ...prev, globalState: resolvedData } : null));
 
       // 同期完了イベントを発火
@@ -263,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } catch (error) {
             console.error("Failed to sync data:", error);
           }
-        } else if (!isWalletConnected) {
+        } else {
           setUser(null);
           setUserData(null);
           setAuthMethod(null);
@@ -276,7 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribeFirebase();
-  }, [isWalletConnected]);
+  }, []);
 
   const clearUserData = async () => {
     try {
@@ -300,16 +182,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // 保留中の更新を保存
       if (user) {
-        const uid = "address" in user ? user.address : user.uid;
         await flushPendingUpdates();
       }
 
       // 認証関連の処理を実行
-      if (authMethod === "google" || authMethod === "twitter") {
-        await signOut(auth);
-      } else if (authMethod === "wallet") {
-        disconnectWallet();
-      }
+      await signOut(auth);
 
       // データをクリア
       await clearUserData();
@@ -327,11 +204,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSyncCancel = () => {
     setShowSyncDialog(false);
     setSyncData(null);
-    if (authMethod === "google" || authMethod === "twitter") {
-      signOut(auth);
-    } else if (authMethod === "wallet") {
-      disconnectWallet();
-    }
+    signOut(auth);
     setUser(null);
     setUserData(null);
     setAuthMethod(null);
@@ -340,8 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const deleteAccount = async () => {
     if (!user) return;
     try {
-      const uid = "address" in user ? user.address : user.uid;
-      const userRef = doc(db, "users", uid);
+      const userRef = doc(db, "users", user.uid);
 
       // 先にデータをクリア
       await clearUserData();
@@ -350,9 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await deleteDoc(userRef);
 
       // 最後に認証状態をクリア
-      if (authMethod === "google" || authMethod === "twitter") {
-        await signOut(auth);
-      }
+      await signOut(auth);
     } catch (error) {
       console.error("Failed to delete account:", error);
       throw error;

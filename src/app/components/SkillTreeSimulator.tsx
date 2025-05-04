@@ -215,8 +215,7 @@ export function SkillTreeSimulator() {
 
     // サーバーにも反映
     if (user && isAuthenticated) {
-      const uid = "address" in user ? user.address : user.uid;
-      batchSaveCharacterData(uid, { globalState: newState }, uid);
+      batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
     }
   };
 
