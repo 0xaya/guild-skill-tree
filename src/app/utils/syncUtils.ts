@@ -3,7 +3,7 @@ import { loadGlobalState, saveGlobalState, getDefaultState } from "./storageUtil
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 
-function isDataDifferent(localData: GlobalState, serverData: GlobalState): boolean {
+const isDataDifferent = (localData: GlobalState, serverData: GlobalState): boolean => {
   console.log("Comparing data:", {
     localData,
     serverData,
@@ -104,7 +104,7 @@ function isDataDifferent(localData: GlobalState, serverData: GlobalState): boole
 
   console.log("Data is identical");
   return false;
-}
+};
 
 type SyncResult =
   | { type: "local-to-server"; data: GlobalState }
@@ -131,10 +131,10 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
     // 新規アドレスの場合
     if (!serverData) {
       // 新規アドレスの場合は常にデフォルト状態を使用
-        const defaultState = getDefaultState();
-        await setDoc(userRef, { globalState: defaultState }, { merge: true });
-        saveGlobalState(defaultState); // ローカルストレージを更新
-        return { type: "local-to-server", data: defaultState };
+      const defaultState = getDefaultState();
+      await setDoc(userRef, { globalState: defaultState }, { merge: true });
+      saveGlobalState(defaultState); // ローカルストレージを更新
+      return { type: "local-to-server", data: defaultState };
     }
 
     // 既存アドレスの場合
@@ -163,9 +163,9 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
 export async function resolveSyncConflict(
   userId: string,
   useLocalData: boolean,
-  localData: GlobalState,
-  serverData: GlobalState
-) {
+  localData: any,
+  serverData: any
+): Promise<any> {
   try {
     const userRef = doc(db, "users", userId);
     const dataToUse = useLocalData ? localData : serverData;
