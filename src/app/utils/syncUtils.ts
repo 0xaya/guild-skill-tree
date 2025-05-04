@@ -1,42 +1,25 @@
-import { GlobalState } from "../types/character";
-import { loadGlobalState, saveGlobalState, getDefaultState } from "./storageUtils";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
+import { loadGlobalState, saveGlobalState, getDefaultState } from "./storageUtils";
+import { Character, GlobalState } from "../types/character";
 
+// データの比較関数
 const isDataDifferent = (localData: GlobalState, serverData: GlobalState): boolean => {
-  console.log("Comparing data:", {
-    localData,
-    serverData,
-  });
-
   // ローカルデータが存在しない場合はtrueを返す（同期確認ダイアログを表示）
   if (!localData || !localData.characters || localData.characters.length === 0) {
-    console.log("Local data is empty");
     return true;
   }
 
   // 基本的なプロパティの比較
   if (localData.guildRank !== serverData.guildRank) {
-    console.log("Guild rank is different:", {
-      local: localData.guildRank,
-      server: serverData.guildRank,
-    });
     return true;
   }
   if (localData.currentCharacterId !== serverData.currentCharacterId) {
-    console.log("Current character ID is different:", {
-      local: localData.currentCharacterId,
-      server: serverData.currentCharacterId,
-    });
     return true;
   }
 
   // キャラクターの比較
   if (localData.characters.length !== serverData.characters.length) {
-    console.log("Number of characters is different:", {
-      local: localData.characters.length,
-      server: serverData.characters.length,
-    });
     return true;
   }
 
@@ -44,16 +27,11 @@ const isDataDifferent = (localData: GlobalState, serverData: GlobalState): boole
     const localChar = localData.characters[i];
     const serverChar = serverData.characters.find(c => c.id === localChar.id);
     if (!serverChar) {
-      console.log("Character not found in server data:", localChar.id);
       return true;
     }
 
     // createdAt, updatedAtは比較から除外
     if (localChar.name !== serverChar.name) {
-      console.log("Character name is different:", {
-        local: localChar.name,
-        server: serverChar.name,
-      });
       return true;
     }
 
@@ -65,45 +43,128 @@ const isDataDifferent = (localData: GlobalState, serverData: GlobalState): boole
 
     // 選択されたスキルの比較
     if (Object.keys(localSkills).length !== Object.keys(serverSkills).length) {
-      console.log("Number of selected skills is different:", {
-        local: Object.keys(localSkills).length,
-        server: Object.keys(serverSkills).length,
-      });
       return true;
     }
     for (const [skillId, level] of Object.entries(localSkills)) {
       if (serverSkills[skillId] !== level) {
-        console.log("Selected skill level is different:", {
-          skillId,
-          local: level,
-          server: serverSkills[skillId],
-        });
         return true;
       }
     }
 
     // 取得済みスキルの比較
     if (Object.keys(localAcquired).length !== Object.keys(serverAcquired).length) {
-      console.log("Number of acquired skills is different:", {
-        local: Object.keys(localAcquired).length,
-        server: Object.keys(serverAcquired).length,
-      });
       return true;
     }
     for (const [skillId, level] of Object.entries(localAcquired)) {
       if (serverAcquired[skillId] !== level) {
-        console.log("Acquired skill level is different:", {
-          skillId,
-          local: level,
-          server: serverAcquired[skillId],
-        });
         return true;
       }
     }
   }
 
-  console.log("Data is identical");
   return false;
+};
+
+// DateオブジェクトをFirestore用に変換する関数
+const convertDatesForFirestore = (data: any): any => {
+  // nullやundefinedの場合はそのまま返す
+  if (data == null) {
+    return data;
+  }
+
+  // Dateオブジェクトの場合
+  if (data instanceof Date && !isNaN(data.getTime())) {
+    try {
+      return data.toISOString();
+    } catch (error) {
+      console.error("Invalid date:", data);
+      return new Date().toISOString();
+    }
+  }
+
+  // 配列の場合
+  if (Array.isArray(data)) {
+    return data.map(item => convertDatesForFirestore(item));
+  }
+
+  // オブジェクトの場合（Dateオブジェクトは除外）
+  if (data && typeof data === "object" && !(data instanceof Date)) {
+    const converted: any = {};
+    for (const [key, value] of Object.entries(data)) {
+      converted[key] = convertDatesForFirestore(value);
+    }
+    return converted;
+  }
+
+  // その他の値はそのまま返す
+  return data;
+};
+
+// バッチ処理用の変数
+let pendingUpdate: { characterId: string; data: any; userId: string } | null = null;
+let updateTimeout: NodeJS.Timeout | null = null;
+const BATCH_DELAY = 10000; // 10秒
+
+// データを保存する関数
+const saveCharacterData = async (characterId: string, data: any, userId: string): Promise<void> => {
+  try {
+    const userRef = doc(db, "users", userId);
+
+    // データの検証
+    if (!data || typeof data !== "object") {
+      console.error("Invalid data format:", data);
+      return;
+    }
+
+    const convertedData = convertDatesForFirestore(data);
+    await setDoc(userRef, convertedData, { merge: true });
+  } catch (error) {
+    console.error("Error saving character data:", error);
+    return;
+  }
+};
+
+// バッチ処理でデータを保存
+export const batchSaveCharacterData = async (characterId: string, data: any, userId: string): Promise<void> => {
+  // 保留中の更新をキャンセル
+  if (updateTimeout) {
+    clearTimeout(updateTimeout);
+    updateTimeout = null;
+  }
+
+  // 新しい更新を保留
+  pendingUpdate = { characterId, data, userId };
+
+  // タイムアウトを設定
+  updateTimeout = setTimeout(async () => {
+    if (pendingUpdate) {
+      try {
+        await saveCharacterData(pendingUpdate.characterId, pendingUpdate.data, pendingUpdate.userId);
+        pendingUpdate = null;
+        updateTimeout = null;
+      } catch (error) {
+        console.error("Error in batch save:", error);
+        pendingUpdate = null;
+        updateTimeout = null;
+      }
+    }
+  }, BATCH_DELAY);
+};
+
+// 保留中の更新を即時保存
+export const flushPendingUpdates = async (): Promise<void> => {
+  if (pendingUpdate && updateTimeout) {
+    clearTimeout(updateTimeout);
+    try {
+      await saveCharacterData(pendingUpdate.characterId, pendingUpdate.data, pendingUpdate.userId);
+      pendingUpdate = null;
+      updateTimeout = null;
+    } catch (error) {
+      console.error("Error in flush pending updates:", error);
+      pendingUpdate = null;
+      updateTimeout = null;
+    }
+  }
 };
 
 type SyncResult =
@@ -112,14 +173,9 @@ type SyncResult =
   | { type: "conflict"; localData: GlobalState; serverData: GlobalState }
   | { type: "synced"; data: GlobalState };
 
-export async function syncUserData(userId: string): Promise<SyncResult> {
+// ユーザーデータの同期
+export const syncUserData = async (userId: string): Promise<SyncResult> => {
   try {
-    // ログアウト状態の場合は同期を行わない
-    const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
-    if (wasLoggedOut) {
-      return { type: "synced", data: getDefaultState() };
-    }
-
     // ローカルデータの取得
     const localData = loadGlobalState();
 
@@ -158,14 +214,10 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
     console.error("Failed to sync user data:", error);
     throw error;
   }
-}
+};
 
-export async function resolveSyncConflict(
-  userId: string,
-  useLocalData: boolean,
-  localData: any,
-  serverData: any
-): Promise<any> {
+// 同期の競合を解決
+export const resolveSyncConflict = async (userId: string, useLocalData: boolean, localData: any, serverData: any) => {
   try {
     const userRef = doc(db, "users", userId);
     const dataToUse = useLocalData ? localData : serverData;
@@ -181,4 +233,4 @@ export async function resolveSyncConflict(
     console.error("Failed to resolve sync conflict:", error);
     throw error;
   }
-}
+};

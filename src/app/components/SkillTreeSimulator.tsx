@@ -19,7 +19,7 @@ import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
-import { batchSaveCharacterData } from "../../utils/syncUtils";
+import { batchSaveCharacterData } from "../utils/syncUtils";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);

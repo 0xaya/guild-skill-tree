@@ -13,7 +13,7 @@ import {
   deleteCharacter as deleteCharacterFromState,
   getDefaultState,
 } from "../utils/storageUtils";
-import { batchSaveCharacterData } from "../../utils/syncUtils";
+import { batchSaveCharacterData } from "../utils/syncUtils";
 
 interface CharacterContextType {
   characters: Character[];
@@ -46,9 +46,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   // 状態をリセット
   const resetState = React.useCallback(() => {
-    console.log("CharacterContext: resetState called");
     const defaultState = getDefaultState();
-    console.log("CharacterContext: defaultState", defaultState);
     // LocalStorageをクリア
     localStorage.removeItem("guild-skill-tree-simulator-state");
     // 状態を更新
@@ -69,15 +67,12 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
 
   // 状態リセットイベントをリッスン
   useEffect(() => {
-    console.log("CharacterContext: setting up reset-state event listener");
     const handleResetState = () => {
-      console.log("CharacterContext: reset-state event received");
       resetState();
     };
 
     window.addEventListener("reset-state", handleResetState);
     return () => {
-      console.log("CharacterContext: removing reset-state event listener");
       window.removeEventListener("reset-state", handleResetState);
     };
   }, [resetState]);

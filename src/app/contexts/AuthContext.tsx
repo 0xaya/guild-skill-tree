@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { onAuthStateChanged, User, signOut } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
 import { auth, db } from "../config/firebase";
-import { syncUserData, resolveSyncConflict, flushPendingUpdates } from "../../utils/syncUtils";
+import { syncUserData, resolveSyncConflict, flushPendingUpdates } from "../utils/syncUtils";
 import { SyncDialog } from "../components/ui/SyncDialog";
 import { saveGlobalState } from "../utils/storageUtils";
 
@@ -117,6 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsubscribeFirebase = onAuthStateChanged(auth, async firebaseUser => {
       try {
         if (firebaseUser) {
+          // ログアウト状態をクリア（先に実行）
+          localStorage.removeItem("wasLoggedOut");
+
           const providerId = firebaseUser.providerData[0]?.providerId;
           const method = providerId === "google.com" ? "google" : "twitter";
           setUser(firebaseUser);
@@ -125,13 +128,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
           // データ同期の実行
           try {
-            const wasLoggedOut = localStorage.getItem("wasLoggedOut") === "true";
             const result = await syncUserData(firebaseUser.uid);
-            console.log("Sync result:", result);
 
-            if (result.type === "local-to-server" || result.type === "synced") {
+            if (result.type === "synced") {
+              // 同期済みの場合は単純にデータを設定
               setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
+              saveGlobalState(result.data);
+              dispatchSyncCompleteEvent(result.data);
+            } else if (result.type === "local-to-server") {
+              // ローカルからサーバーへの同期の場合は、サーバーに保存済みなので
+              // ローカルストレージの更新とイベント発火のみ
+              saveGlobalState(result.data);
+              dispatchSyncCompleteEvent(result.data);
             } else if (result.type === "server-to-local") {
+              // サーバーからローカルへの同期の場合は、ローカルストレージの更新と
+              // イベント発火、そしてユーザーデータの更新
               setUserData(prev => (prev ? { ...prev, globalState: result.data } : null));
               saveGlobalState(result.data);
               dispatchSyncCompleteEvent(result.data);
@@ -139,9 +150,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setSyncData({ localData: result.localData, serverData: result.serverData });
               setShowSyncDialog(true);
             }
-
-            // ログアウト状態をクリア
-            localStorage.removeItem("wasLoggedOut");
           } catch (error) {
             console.error("Failed to sync data:", error);
           }
@@ -178,8 +186,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
-      console.log("AuthContext: logout started");
-
       // 保留中の更新を保存
       if (user) {
         await flushPendingUpdates();
