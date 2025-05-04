@@ -14,7 +14,7 @@
     "@tanstack/react-query-devtools": "^5.0.0",
     "@types/papaparse": "^5.3.15",
     "@vercel/analytics": "^1.5.0",
-    "@wagmi/core": "^2.16.7",
+    "@wagmi/core": "^2.5.7",
     "clsx": "^2.1.1",
     "ethers": "^6.13.7",
     "firebase": "^11.6.0",
@@ -25,8 +25,8 @@
     "react-dom": "^18.2.0",
     "reactflow": "^11.11.4",
     "tailwind-merge": "^3.2.0",
-    "viem": "^2.27.3",
-    "wagmi": "^2.14.16"
+    "viem": "^2.7.9",
+    "wagmi": "^2.5.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

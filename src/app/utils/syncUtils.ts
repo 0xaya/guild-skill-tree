@@ -131,10 +131,10 @@ export async function syncUserData(userId: string): Promise<SyncResult> {
     // 新規アドレスの場合
     if (!serverData) {
       // 新規アドレスの場合は常にデフォルト状態を使用
-      const defaultState = getDefaultState();
-      await setDoc(userRef, { globalState: defaultState }, { merge: true });
-      saveGlobalState(defaultState); // ローカルストレージを更新
-      return { type: "local-to-server", data: defaultState };
+        const defaultState = getDefaultState();
+        await setDoc(userRef, { globalState: defaultState }, { merge: true });
+        saveGlobalState(defaultState); // ローカルストレージを更新
+        return { type: "local-to-server", data: defaultState };
     }
 
     // 既存アドレスの場合
