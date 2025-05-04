@@ -150,7 +150,7 @@ export function AccountDialog({
             onClick={handleDeleteClick}
             variant="primary"
             size="md"
-            className="w-full"
+            className={`w-full ${isEditing ? "hidden" : ""}`}
             disabled={isDeleting}
           >
             {isDeleting ? "削除中..." : "アカウントを削除"}
