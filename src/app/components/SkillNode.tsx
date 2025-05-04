@@ -497,8 +497,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
           {/* 操作ガイドを更新 */}
           {!isCore && (
-            <div className="text-[10px] mt-2 text-gray-500">
-              {selectedLevel === 0 ? "" : "+/- ボタン、または左/右クリックでレベルを調整"}
+            <div className="text-[10px] mt-2 text-text-muted">
+              {selectedLevel === 0 ? "" : "-/+ ボタン、または左/右クリックでレベルを調整できます"}
             </div>
           )}
         </div>
