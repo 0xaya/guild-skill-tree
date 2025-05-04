@@ -279,18 +279,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isWalletConnected]);
 
   const clearUserData = async () => {
-        try {
-          // LocalStorageをクリア
-          localStorage.removeItem("guild-skill-tree-simulator-state");
-          // 状態リセットイベントを発火
-          dispatchResetStateEvent();
-          // 状態をクリア
-          setUser(null);
-          setUserData(null);
-          setAuthMethod(null);
-        } catch (error) {
-          console.error("Failed to clear user data:", error);
-        }
+    try {
+      // 状態リセットイベントを発火
+      dispatchResetStateEvent();
+      // LocalStorageをクリア
+      localStorage.removeItem("guild-skill-tree-simulator-state");
+      // 状態をクリア
+      setUser(null);
+      setUserData(null);
+      setAuthMethod(null);
+    } catch (error) {
+      console.error("Failed to clear user data:", error);
+    }
   };
 
   const logout = async () => {
@@ -342,16 +342,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const uid = "address" in user ? user.address : user.uid;
       const userRef = doc(db, "users", uid);
+
+      // 先にデータをクリア
+      await clearUserData();
+
+      // その後でFirestoreのドキュメントを削除
       await deleteDoc(userRef);
 
+      // 最後に認証状態をクリア
       if (authMethod === "google" || authMethod === "twitter") {
         await signOut(auth);
-      } else if (authMethod === "wallet") {
-        disconnectWallet();
       }
-
-      // データをクリア
-      await clearUserData();
     } catch (error) {
       console.error("Failed to delete account:", error);
       throw error;
