@@ -568,7 +568,7 @@ export function SkillTreeSimulator() {
 
           {/* モバイル用の操作説明 */}
           <div className="lg:hidden absolute top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
-            スキルを長押しすると詳細を表示できます
+            スマホ、タブレットではスキルを長押しすると詳細を表示できます
           </div>
 
           <div
