@@ -28,6 +28,7 @@ export function SkillTreeSimulator() {
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
   const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
     coins: 0,
     materials: {},
@@ -90,6 +91,38 @@ export function SkillTreeSimulator() {
     const stats = calculateTotalStats();
     setTotalStats(stats);
   }, [skills, selectedSkills]);
+
+  // 初期スケールの自動調整
+  useEffect(() => {
+    if (!containerRef || !skills.length) return;
+
+    const adjustInitialScale = () => {
+      const containerWidth = containerRef.clientWidth;
+      const containerHeight = containerRef.clientHeight;
+      const treeWidth = 800; // スキルツリーの基本サイズ
+      const treeHeight = 800;
+
+      // モバイルデバイスの場合は画面幅の90%に合わせる
+      const isMobile = window.innerWidth < 768;
+      const targetWidth = isMobile ? containerWidth * 0.9 : containerWidth;
+      const targetHeight = isMobile ? containerHeight * 0.9 : containerHeight;
+
+      // コンテナのサイズに基づいて適切なスケールを計算
+      const scaleX = targetWidth / treeWidth;
+      const scaleY = targetHeight / treeHeight;
+      const newScale = Math.min(scaleX, scaleY, 1); // 1を超えないように制限
+
+      setScale(newScale);
+      setPosition({ x: 0, y: 0 });
+    };
+
+    adjustInitialScale();
+    window.addEventListener("resize", adjustInitialScale);
+
+    return () => {
+      window.removeEventListener("resize", adjustInitialScale);
+    };
+  }, [containerRef, skills]);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") return;
@@ -376,7 +409,7 @@ export function SkillTreeSimulator() {
   return (
     <div className="flex flex-col-reverse lg:flex-row gap-2 w-full h-full">
       {/* コントロールパネル */}
-      <div className="w-full lg:w-1/5 rounded-lg p-8 lg:p-4 overflow-y-auto max-h-[800px]">
+      <div className="w-full lg:w-1/5 rounded-lg p-12 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
@@ -558,8 +591,11 @@ export function SkillTreeSimulator() {
       </div>
 
       {/* スキルツリー表示部分 */}
-      <div className="relative w-full lg:top-[-100px] lg:w-2/3 h-[450px] md:h-[800px] rounded-lg flex items-center justify-center overflow-hidden lg:overflow-visible">
-        <div className="absolute inset-0 w-full">
+      <div
+        ref={setContainerRef}
+        className="relative w-full lg:top-[-100px] lg:w-2/3 h-[450px] md:h-[600px] lg:h-[800px] rounded-lg flex items-center justify-center overflow-hidden lg:overflow-visible"
+      >
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center">
           {error && (
             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-[70%] bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg text-sm  text-center">
               {error}
@@ -567,15 +603,17 @@ export function SkillTreeSimulator() {
           )}
 
           {/* モバイル用の操作説明 */}
-          <div className="lg:hidden absolute px-8 md:top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
+          <div className="lg:hidden absolute px-4 top-0 md:top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
             スマホ、タブレットではスキルを長押しすると詳細を表示できます
           </div>
 
           <div
-            className="absolute inset-0 flex items-center justify-center"
+            className="absolute flex items-center justify-center"
             style={{
               transform: `scale(${scale})`,
               transformOrigin: "center",
+              width: "800px",
+              height: "800px",
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
@@ -584,8 +622,8 @@ export function SkillTreeSimulator() {
               style={{
                 transform: `translate(${position.x}px, ${position.y}px)`,
                 position: "relative",
-                width: "800px",
-                height: "800px",
+                width: "100%",
+                height: "100%",
               }}
             >
               {/* スキル接続線 */}
@@ -637,7 +675,7 @@ export function SkillTreeSimulator() {
           </div>
 
           {/* ズームコントロール */}
-          <div className="absolute bottom-4 right-8 flex gap-2">
+          <div className="absolute bottom-0 lg:bottom-4 right-12 flex gap-2">
             <Button onClick={handleZoomIn} icon={<ZoomInIcon />} isIconOnly />
             <Button onClick={handleZoomOut} icon={<ZoomOutIcon />} isIconOnly />
             <Button onClick={handleZoomReset} icon={<ResetIcon />} isIconOnly />
