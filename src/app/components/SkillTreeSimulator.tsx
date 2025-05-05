@@ -376,7 +376,7 @@ export function SkillTreeSimulator() {
   return (
     <div className="flex flex-col-reverse lg:flex-row gap-2 w-full h-full">
       {/* コントロールパネル */}
-      <div className="w-full lg:w-1/5 rounded-lg p-4 overflow-y-auto max-h-[800px]">
+      <div className="w-full lg:w-1/5 rounded-lg p-8 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
             <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
@@ -567,7 +567,7 @@ export function SkillTreeSimulator() {
           )}
 
           {/* モバイル用の操作説明 */}
-          <div className="lg:hidden absolute top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
+          <div className="lg:hidden absolute px-8 md:top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
             スマホ、タブレットではスキルを長押しすると詳細を表示できます
           </div>
 
@@ -637,7 +637,7 @@ export function SkillTreeSimulator() {
           </div>
 
           {/* ズームコントロール */}
-          <div className="absolute bottom-4 right-4 flex gap-2">
+          <div className="absolute bottom-4 right-8 flex gap-2">
             <Button onClick={handleZoomIn} icon={<ZoomInIcon />} isIconOnly />
             <Button onClick={handleZoomOut} icon={<ZoomOutIcon />} isIconOnly />
             <Button onClick={handleZoomReset} icon={<ResetIcon />} isIconOnly />
