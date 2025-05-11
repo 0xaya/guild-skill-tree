@@ -21,6 +21,7 @@ import { Dialog } from "./ui/Dialog";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { batchSaveCharacterData } from "../utils/syncUtils";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -68,6 +69,7 @@ export function SkillTreeSimulator() {
   const { user, isAuthenticated } = useAuth();
   const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
   const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
+  const isMobile = useIsMobile();
 
   // 残り必要素材を計算
   const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
@@ -150,7 +152,7 @@ export function SkillTreeSimulator() {
     }
   }, [currentCharacter?.guildRank, isRankChanging]);
 
-  const handleSkillClick = (skillId: string) => {
+  const handleSkillClick = (skillId: string, e: React.MouseEvent | React.TouchEvent) => {
     if (skillId === "core") return;
 
     const skill = skills.find((s: Skill) => s.id === skillId);
@@ -158,6 +160,9 @@ export function SkillTreeSimulator() {
 
     const currentLevel = selectedSkills[skillId] || 0;
     const maxLevel = skill.levels.length;
+
+    // モバイル時はレベルアップ/ダウンをスキップ（プラスボタンは除く）
+    if (isMobile && currentLevel > 0 && !(e.target as HTMLElement).closest(".plus-button")) return;
 
     if (currentLevel >= maxLevel) return;
 
@@ -172,9 +177,7 @@ export function SkillTreeSimulator() {
     const nextLevelIndex = currentLevel;
     const nextLevelData = skill.levels[nextLevelIndex];
     if (nextLevelData && nextLevelData.requiredRank > (currentCharacter?.guildRank || 5)) {
-      setError(
-        `${skill.name} Lv${nextLevelIndex + 1} を取得するにはギルドランク ${nextLevelData.requiredRank} が必要です`
-      );
+      setError(`${skill.name} Lv${nextLevelIndex + 1} にはギルドランク ${nextLevelData.requiredRank} が必要です`);
       return;
     }
 
@@ -194,11 +197,14 @@ export function SkillTreeSimulator() {
     setError(null);
   };
 
-  const handleSkillRightClick = (skillId: string) => {
+  const handleSkillRightClick = (skillId: string, e: React.MouseEvent | React.TouchEvent) => {
     if (skillId === "core") return;
 
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
+
+    // モバイル時はレベルダウンをスキップ（マイナスボタンは除く）
+    if (isMobile && !(e.target as HTMLElement).closest(".minus-button")) return;
 
     const acquiredLevel = acquiredSkills[skillId] || 0;
     // acquiredLevel > currentLevel - 1 の場合は両方下げる
@@ -790,8 +796,8 @@ export function SkillTreeSimulator() {
                   maxLevel={skill.levels.length}
                   isUnlocked={isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)}
                   guildRank={currentCharacter?.guildRank || 5}
-                  onClick={handleSkillClick}
-                  onRightClick={handleSkillRightClick}
+                  onClick={(skillId, e) => handleSkillClick(skillId, e)}
+                  onRightClick={(skillId, e) => handleSkillRightClick(skillId, e)}
                   onAcquiredLevelChange={handleAcquiredLevelChange}
                   onSelectedLevelDown={handleSelectedLevelDown}
                   onCheckDependencies={(skillId: string) => {

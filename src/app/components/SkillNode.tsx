@@ -11,8 +11,8 @@ interface SkillNodeProps {
   maxLevel: number;
   isUnlocked: boolean;
   guildRank: number;
-  onClick: (id: string) => void;
-  onRightClick: (id: string) => void;
+  onClick: (id: string, e: React.MouseEvent | React.TouchEvent) => void;
+  onRightClick: (id: string, e: React.MouseEvent | React.TouchEvent) => void;
   onAcquiredLevelChange: (id: string, level: number) => void;
   onSelectedLevelDown: (id: string) => void;
   onCheckDependencies: (id: string) => boolean;
@@ -72,7 +72,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   useEffect(() => {
     if (acquiredLevel > selectedLevel) {
       for (let i = selectedLevel; i < acquiredLevel; i++) {
-        onClick(skill.id);
+        onClick(skill.id, {} as React.MouseEvent | React.TouchEvent);
       }
     }
   }, [acquiredLevel, selectedLevel, onClick, skill.id]);
@@ -112,7 +112,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     setShowTooltip(false);
   };
 
-  const handleLevelDown = (e: React.MouseEvent) => {
+  const handleLevelDown = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -130,21 +130,21 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       setIsDialogOpen(true);
       setShowTooltip(false);
     } else {
-      onRightClick(skill.id);
+      onRightClick(skill.id, e);
     }
   };
 
-  const handleConfirmLevelDown = (e?: React.MouseEvent) => {
+  const handleConfirmLevelDown = (e?: React.MouseEvent | React.TouchEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    onRightClick(skill.id);
+    onRightClick(skill.id, e || ({} as React.MouseEvent | React.TouchEvent));
     setIsDialogOpen(false);
     setShowTooltip(false);
   };
 
-  const handleCancelLevelDown = (e?: React.MouseEvent) => {
+  const handleCancelLevelDown = (e?: React.MouseEvent | React.TouchEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
@@ -284,7 +284,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         onClick={e => {
           if (!isCore && isUnlocked && isRankMet) {
             if (selectedLevel < maxLevel) {
-              onClick(skill.id);
+              onClick(skill.id, e);
             }
           }
         }}
@@ -327,15 +327,24 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {/* レベル表示とボタン - コア以外でレベル1以上のスキルのみ表示 */}
         {!isCore && selectedLevel > 0 && (
           <div className="flex items-center justify-center gap-[1rem] mb-[-3px]">
-            <button style={levelButtonStyle} onClick={handleLevelDown} disabled={!isUnlocked || !isRankMet}>
+            <button
+              className="minus-button"
+              style={levelButtonStyle}
+              onClick={e => {
+                e.stopPropagation();
+                handleLevelDown(e);
+              }}
+              disabled={!isUnlocked || !isRankMet}
+            >
               -
             </button>
             <span className="text-[9px] opacity-70">Lv{selectedLevel}</span>
             <button
+              className="plus-button"
               style={levelButtonStyle}
               onClick={e => {
                 e.stopPropagation();
-                onClick(skill.id);
+                onClick(skill.id, e);
               }}
               disabled={!isUnlocked || !isRankMet || selectedLevel >= maxLevel}
             >
