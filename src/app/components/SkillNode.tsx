@@ -224,6 +224,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     color: `${categoryColor}`,
     opacity: isUnlocked && isRankMet ? 1 : 0.3,
     transition: "all 0.2s ease-in-out",
+    position: "relative",
+    top: "6px",
   };
 
   // ツールチップスタイル
