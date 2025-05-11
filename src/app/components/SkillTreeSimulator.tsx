@@ -170,8 +170,11 @@ export function SkillTreeSimulator() {
     }
 
     const nextLevelIndex = currentLevel;
-    if (skill.levels[nextLevelIndex] && skill.requiredRank > (currentCharacter?.guildRank || 5)) {
-      setError(`スキル「${skill.name}」Lv${nextLevelIndex + 1} にはギルドランク ${skill.requiredRank} が必要です。`);
+    const nextLevelData = skill.levels[nextLevelIndex];
+    if (nextLevelData && nextLevelData.requiredRank > (currentCharacter?.guildRank || 5)) {
+      setError(
+        `${skill.name} Lv${nextLevelIndex + 1} を取得するにはギルドランク ${nextLevelData.requiredRank} が必要です`
+      );
       return;
     }
 
