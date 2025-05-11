@@ -59,6 +59,10 @@ export function SkillTreeSimulator() {
   const [affectedSkills, setAffectedSkills] = useState<
     { id: string; name: string; currentLevel: number; newLevel: number }[]
   >([]);
+  const [displayRank, setDisplayRank] = useState<number>(5);
+  const [originalRank, setOriginalRank] = useState<number>(5);
+  const [isRankChanging, setIsRankChanging] = useState<boolean>(false);
+  const [tempRank, setTempRank] = useState<number | null>(null);
 
   const { currentCharacter, updateCharacter } = useCharacter();
   const { user, isAuthenticated } = useAuth();
@@ -128,6 +132,23 @@ export function SkillTreeSimulator() {
       window.removeEventListener("resize", adjustInitialScale);
     };
   }, [containerRef, skills]);
+
+  // 現在のキャラクターのギルドランクを表示用の状態に反映
+  useEffect(() => {
+    console.log("useEffect guildRank changed:", {
+      newGuildRank: currentCharacter?.guildRank,
+      displayRank,
+      originalRank,
+      isRankChanging,
+      tempRank,
+    });
+    if (currentCharacter?.guildRank) {
+      setDisplayRank(currentCharacter.guildRank);
+      if (!isRankChanging) {
+        setOriginalRank(currentCharacter.guildRank);
+      }
+    }
+  }, [currentCharacter?.guildRank, isRankChanging]);
 
   const handleSkillClick = (skillId: string) => {
     if (skillId === "core") return;
@@ -279,8 +300,17 @@ export function SkillTreeSimulator() {
   };
 
   const handleRankChange = (newRank: number) => {
+    console.log("handleRankChange called with:", { newRank, currentRank: currentCharacter?.guildRank });
+    // 表示用の状態を即時更新
+    setDisplayRank(newRank);
+
     const currentRank = currentCharacter?.guildRank || 5;
     if (newRank < currentRank) {
+      // 最初のランク変更時にoriginalRankを設定
+      if (!isRankChanging) {
+        setOriginalRank(currentRank);
+        setIsRankChanging(true);
+      }
       const affected = findAffectedSkills(newRank);
       if (affected.length > 0) {
         setAffectedSkills(affected);
@@ -292,7 +322,30 @@ export function SkillTreeSimulator() {
     applyRankChange(newRank);
   };
 
+  const handleRankChangeCancel = () => {
+    console.log("handleRankChangeCancel called:", {
+      currentGuildRank: currentCharacter?.guildRank,
+      displayRank,
+      originalRank,
+      isRankChanging,
+      tempRank,
+    });
+    // キャンセル時は元のランクに戻す
+    setDisplayRank(originalRank);
+    setRankChangeDialogOpen(false);
+    setAffectedSkills([]);
+    setPendingRankChange(null);
+    setIsRankChanging(false);
+    setTempRank(null);
+  };
+
   const applyRankChange = (newRank: number) => {
+    console.log("applyRankChange called with:", {
+      newRank,
+      currentGuildRank: currentCharacter?.guildRank,
+      isRankChanging,
+      tempRank,
+    });
     if (!currentCharacter) return;
 
     // 影響を受けるスキルのレベルを調整
@@ -315,12 +368,8 @@ export function SkillTreeSimulator() {
     setRankChangeDialogOpen(false);
     setAffectedSkills([]);
     setPendingRankChange(null);
-  };
-
-  const handleRankChangeCancel = () => {
-    setRankChangeDialogOpen(false);
-    setAffectedSkills([]);
-    setPendingRankChange(null);
+    setIsRankChanging(false);
+    setTempRank(null);
   };
 
   const handleZoomIn = () => {
@@ -483,15 +532,13 @@ export function SkillTreeSimulator() {
       <div className="w-full lg:w-1/5 rounded-lg p-12 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">
-              ギルドランク {currentCharacter?.guildRank || 5}
-            </h3>
+            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {displayRank}</h3>
             <div className="relative h-2">
               <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
-                    width: `${((currentCharacter?.guildRank || 5 - 1) / 13) * 100}%`,
+                    width: `${((displayRank - 1) / 13) * 100}%`,
                   }}
                 />
               </div>
@@ -499,10 +546,21 @@ export function SkillTreeSimulator() {
                 type="range"
                 min="1"
                 max="14"
-                value={currentCharacter?.guildRank || 5}
+                value={displayRank}
                 onChange={e => {
                   const newRank = parseInt(e.target.value);
-                  handleRankChange(newRank);
+                  setDisplayRank(newRank);
+                  setTempRank(newRank);
+                }}
+                onMouseUp={e => {
+                  if (tempRank !== null) {
+                    handleRankChange(tempRank);
+                  }
+                }}
+                onTouchEnd={e => {
+                  if (tempRank !== null) {
+                    handleRankChange(tempRank);
+                  }
                 }}
                 className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative"
               />
@@ -762,7 +820,11 @@ export function SkillTreeSimulator() {
       {/* ランク変更確認ダイアログ */}
       <Dialog
         open={rankChangeDialogOpen}
-        onOpenChange={setRankChangeDialogOpen}
+        onOpenChange={open => {
+          if (!open) {
+            handleRankChangeCancel();
+          }
+        }}
         title="ランク変更の確認"
         description={
           <>
