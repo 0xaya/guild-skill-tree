@@ -5,11 +5,11 @@ export interface Character {
     selectedSkills: { [key: string]: number };
     acquiredSkills: { [key: string]: number };
   };
+  guildRank: number;
   updatedAt: Date;
 }
 
 export interface GlobalState {
-  guildRank: number;
   characters: Character[];
   currentCharacterId: string | null;
 }

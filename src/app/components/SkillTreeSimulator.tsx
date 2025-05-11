@@ -17,6 +17,7 @@ import { useCharacter } from "../contexts/CharacterContext";
 import { useAuth } from "../contexts/AuthContext";
 import { Button } from "./ui/Button";
 import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
+import { Dialog } from "./ui/Dialog";
 import { doc, setDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { batchSaveCharacterData } from "../utils/syncUtils";
@@ -53,12 +54,16 @@ export function SkillTreeSimulator() {
     magicCriMulti: 0,
     physicalCriMulti: 0,
   });
+  const [rankChangeDialogOpen, setRankChangeDialogOpen] = useState(false);
+  const [pendingRankChange, setPendingRankChange] = useState<number | null>(null);
+  const [affectedSkills, setAffectedSkills] = useState<
+    { id: string; name: string; currentLevel: number; newLevel: number }[]
+  >([]);
 
-  const { currentCharacter, updateCharacter, globalState, setGlobalState } = useCharacter();
+  const { currentCharacter, updateCharacter } = useCharacter();
   const { user, isAuthenticated } = useAuth();
   const selectedSkills = currentCharacter?.skillTree.selectedSkills || { core: 1 };
   const acquiredSkills = currentCharacter?.skillTree.acquiredSkills || {};
-  const guildRank = globalState.guildRank;
 
   // 残り必要素材を計算
   const remainingMaterials = calculateRemainingMaterials(skills, selectedSkills, acquiredSkills);
@@ -135,7 +140,7 @@ export function SkillTreeSimulator() {
 
     if (currentLevel >= maxLevel) return;
 
-    if (!isSkillUnlocked(skill, selectedSkills, guildRank)) {
+    if (!isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)) {
       const parentNames = skill.parentIds?.map(pId => skills.find(s => s.id === pId)?.name || pId).join(", ") || "なし";
       setError(
         `スキル「${skill.name}」はロックされています。必要ランク: ${skill.requiredRank}, 前提スキル: ${parentNames}`
@@ -144,7 +149,7 @@ export function SkillTreeSimulator() {
     }
 
     const nextLevelIndex = currentLevel;
-    if (skill.levels[nextLevelIndex] && skill.requiredRank > guildRank) {
+    if (skill.levels[nextLevelIndex] && skill.requiredRank > (currentCharacter?.guildRank || 5)) {
       setError(`スキル「${skill.name}」Lv${nextLevelIndex + 1} にはギルドランク ${skill.requiredRank} が必要です。`);
       return;
     }
@@ -240,16 +245,82 @@ export function SkillTreeSimulator() {
     setError(null);
   };
 
-  const handleRankChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newRank = parseInt(e.target.value);
-    const newState = { ...globalState, guildRank: newRank };
-    setGlobalState(newState);
-    saveGlobalState(newState);
+  // ランク条件を満たさないスキルを特定する関数
+  const findAffectedSkills = (newRank: number) => {
+    if (!currentCharacter) return [];
 
-    // サーバーにも反映
-    if (user && isAuthenticated) {
-      batchSaveCharacterData(user.uid, { globalState: newState }, user.uid);
+    const affected: { id: string; name: string; currentLevel: number; newLevel: number }[] = [];
+    skills.forEach(skill => {
+      const currentLevel = selectedSkills[skill.id] || 0;
+      if (currentLevel > 0) {
+        // 現在のレベルで必要なランクを確認
+        const levelData = skill.levels[currentLevel - 1];
+        if (levelData && levelData.requiredRank > newRank) {
+          // 新しいランクで取得可能な最大レベルを計算
+          let maxAllowedLevel = 0;
+          for (let i = 0; i < skill.levels.length; i++) {
+            if (skill.levels[i].requiredRank <= newRank) {
+              maxAllowedLevel = i + 1;
+            } else {
+              break;
+            }
+          }
+
+          affected.push({
+            id: skill.id,
+            name: skill.name,
+            currentLevel: currentLevel,
+            newLevel: maxAllowedLevel,
+          });
+        }
+      }
+    });
+    return affected;
+  };
+
+  const handleRankChange = (newRank: number) => {
+    const currentRank = currentCharacter?.guildRank || 5;
+    if (newRank < currentRank) {
+      const affected = findAffectedSkills(newRank);
+      if (affected.length > 0) {
+        setAffectedSkills(affected);
+        setPendingRankChange(newRank);
+        setRankChangeDialogOpen(true);
+        return;
+      }
     }
+    applyRankChange(newRank);
+  };
+
+  const applyRankChange = (newRank: number) => {
+    if (!currentCharacter) return;
+
+    // 影響を受けるスキルのレベルを調整
+    const updatedSelectedSkills = { ...selectedSkills };
+    affectedSkills.forEach(skill => {
+      updatedSelectedSkills[skill.id] = skill.newLevel;
+    });
+
+    const updatedCharacter = {
+      ...currentCharacter,
+      guildRank: newRank,
+      skillTree: {
+        ...currentCharacter.skillTree,
+        selectedSkills: updatedSelectedSkills,
+      },
+      updatedAt: new Date(),
+    };
+
+    updateCharacter(currentCharacter.id, updatedCharacter);
+    setRankChangeDialogOpen(false);
+    setAffectedSkills([]);
+    setPendingRankChange(null);
+  };
+
+  const handleRankChangeCancel = () => {
+    setRankChangeDialogOpen(false);
+    setAffectedSkills([]);
+    setPendingRankChange(null);
   };
 
   const handleZoomIn = () => {
@@ -412,13 +483,15 @@ export function SkillTreeSimulator() {
       <div className="w-full lg:w-1/5 rounded-lg p-12 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {guildRank}</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-4">
+              ギルドランク {currentCharacter?.guildRank || 5}
+            </h3>
             <div className="relative h-2">
               <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
-                    width: `${((guildRank - 1) / 13) * 100}%`,
+                    width: `${((currentCharacter?.guildRank || 5 - 1) / 13) * 100}%`,
                   }}
                 />
               </div>
@@ -426,8 +499,11 @@ export function SkillTreeSimulator() {
                 type="range"
                 min="1"
                 max="14"
-                value={guildRank}
-                onChange={handleRankChange}
+                value={currentCharacter?.guildRank || 5}
+                onChange={e => {
+                  const newRank = parseInt(e.target.value);
+                  handleRankChange(newRank);
+                }}
                 className="absolute inset-0 w-full h-full appearance-none cursor-pointer bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:relative [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:relative"
               />
             </div>
@@ -651,8 +727,8 @@ export function SkillTreeSimulator() {
                   selectedLevel={selectedSkills[skill.id] || 0}
                   acquiredLevel={acquiredSkills[skill.id] || 0}
                   maxLevel={skill.levels.length}
-                  isUnlocked={isSkillUnlocked(skill, selectedSkills, guildRank)}
-                  guildRank={guildRank}
+                  isUnlocked={isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)}
+                  guildRank={currentCharacter?.guildRank || 5}
                   onClick={handleSkillClick}
                   onRightClick={handleSkillRightClick}
                   onAcquiredLevelChange={handleAcquiredLevelChange}
@@ -682,6 +758,41 @@ export function SkillTreeSimulator() {
           </div>
         </div>
       </div>
+
+      {/* ランク変更確認ダイアログ */}
+      <Dialog
+        open={rankChangeDialogOpen}
+        onOpenChange={setRankChangeDialogOpen}
+        title="ランク変更の確認"
+        description={
+          <>
+            <p className="text-text-secondary mb-4">
+              ランクを{currentCharacter?.guildRank || 5}から{pendingRankChange}
+              に下げると、以下のスキルに影響があります：
+            </p>
+            <div className="max-h-40 overflow-y-auto mb-4">
+              {affectedSkills.map(skill => (
+                <div key={skill.id} className="mb-2">
+                  <p className="text-text-primary">
+                    {skill.name}:
+                    {skill.newLevel === 0 ? (
+                      <span className="text-red-500"> 選択解除</span>
+                    ) : (
+                      <span className="text-yellow-500">
+                        {" "}
+                        Lv{skill.currentLevel} → Lv{skill.newLevel}
+                      </span>
+                    )}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        }
+        confirmText="OK"
+        cancelText="キャンセル"
+        onConfirm={() => pendingRankChange && applyRankChange(pendingRankChange)}
+      />
     </div>
   );
 }

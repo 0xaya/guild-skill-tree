@@ -11,9 +11,6 @@ const isDataDifferent = (localData: GlobalState, serverData: GlobalState): boole
   }
 
   // 基本的なプロパティの比較
-  if (localData.guildRank !== serverData.guildRank) {
-    return true;
-  }
   if (localData.currentCharacterId !== serverData.currentCharacterId) {
     return true;
   }

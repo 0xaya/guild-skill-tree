@@ -9,12 +9,12 @@ const createDefaultCharacter = (): Character => ({
     selectedSkills: { core: 1 },
     acquiredSkills: {},
   },
+  guildRank: 5,
   updatedAt: new Date(),
 });
 
 // デフォルトの状態を取得
 export const getDefaultState = (): GlobalState => ({
-  guildRank: 5,
   characters: [createDefaultCharacter()],
   currentCharacterId: "1",
 });
@@ -30,11 +30,13 @@ export const loadGlobalState = (): GlobalState | null => {
     if (saved) {
       const parsed = JSON.parse(saved);
       // 必要なプロパティが存在することを確認
-      if (parsed.guildRank && Array.isArray(parsed.characters) && parsed.currentCharacterId) {
+      if (Array.isArray(parsed.characters) && parsed.currentCharacterId) {
         // updatedAtをDateオブジェクトに変換
         parsed.characters = parsed.characters.map((char: any) => ({
           ...char,
           updatedAt: new Date(char.updatedAt),
+          // 古いデータの場合はデフォルトのギルドランクを設定
+          guildRank: char.guildRank || 5,
         }));
         return parsed;
       }
@@ -52,7 +54,7 @@ export const saveGlobalState = (state: GlobalState): void => {
 
   try {
     // 状態の整合性を確認
-    if (!state.guildRank || !Array.isArray(state.characters) || !state.currentCharacterId) {
+    if (!Array.isArray(state.characters) || !state.currentCharacterId) {
       console.error("Invalid state structure:", state);
       return;
     }

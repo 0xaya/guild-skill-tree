@@ -94,6 +94,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
           selectedSkills: { core: 1 },
           acquiredSkills: {},
         },
+        guildRank: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Character;
@@ -112,6 +113,7 @@ export function CharacterProvider({ children }: { children: ReactNode }) {
           selectedSkills: { core: 1 },
           acquiredSkills: {},
         },
+        guildRank: 5,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Character;
