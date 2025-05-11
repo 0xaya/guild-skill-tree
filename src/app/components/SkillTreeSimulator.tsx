@@ -168,16 +168,16 @@ export function SkillTreeSimulator() {
 
     if (!isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)) {
       const parentNames = skill.parentIds?.map(pId => skills.find(s => s.id === pId)?.name || pId).join(", ") || "なし";
-      setError(
-        `スキル「${skill.name}」はロックされています。必要ランク: ${skill.requiredRank}, 前提スキル: ${parentNames}`
-      );
+      setError(`${skill.name}はロックされています。必要ランク: ${skill.requiredRank}, 前提スキル: ${parentNames}`);
       return;
     }
 
     const nextLevelIndex = currentLevel;
     const nextLevelData = skill.levels[nextLevelIndex];
     if (nextLevelData && nextLevelData.requiredRank > (currentCharacter?.guildRank || 5)) {
-      setError(`${skill.name} Lv${nextLevelIndex + 1} にはギルドランク ${nextLevelData.requiredRank} が必要です`);
+      setError(
+        `${skill.name} Lv${nextLevelIndex + 1} を取得するにはギルドランク ${nextLevelData.requiredRank} が必要です`
+      );
       return;
     }
 
@@ -747,7 +747,7 @@ export function SkillTreeSimulator() {
 
           {/* モバイル用の操作説明 */}
           <div className="lg:hidden absolute px-4 top-0 md:top-4 left-1/2 transform -translate-x-1/2 w-[90%] text-text-primary/70 text-xs text-center">
-            スマホ、タブレットではスキルを長押しすると詳細を表示できます
+            スマホ、タブレットではスキルを長押しすると詳細が表示されます
           </div>
 
           <div
