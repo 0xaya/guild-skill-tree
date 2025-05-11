@@ -532,13 +532,13 @@ export function SkillTreeSimulator() {
       <div className="w-full lg:w-1/5 rounded-lg p-12 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {displayRank}</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {tempRank ?? displayRank}</h3>
             <div className="relative h-2">
               <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
                   className="absolute inset-y-0 left-0 bg-primary"
                   style={{
-                    width: `${((displayRank - 1) / 13) * 100}%`,
+                    width: `${(((tempRank ?? displayRank) - 1) / 13) * 100}%`,
                   }}
                 />
               </div>
@@ -546,7 +546,7 @@ export function SkillTreeSimulator() {
                 type="range"
                 min="1"
                 max="14"
-                value={displayRank}
+                value={tempRank ?? displayRank}
                 onChange={e => {
                   const newRank = parseInt(e.target.value);
                   setDisplayRank(newRank);
