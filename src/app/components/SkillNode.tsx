@@ -48,6 +48,62 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
   return <div className="flex text-[8px] justify-center">{stars}</div>;
 };
 
+// パッシブスキルの効果範囲を計算する関数
+const calculatePassiveSkillRange = (skill: Skill) => {
+  const effects: { [key: string]: { min: number; max: number } } = {};
+  
+  skill.levels.forEach(level => {
+    Object.entries(level).forEach(([key, value]) => {
+      if (typeof value === 'number' && value !== 0 && 
+          ['str', 'vit', 'agi', 'int', 'dex', 'mnd', 'def', 'mp', 'hp', 
+           'atkSpd', 'magicPower', 'physicalPower', 'expGetRate', 'castSpd',
+           'magicCri', 'physicalCri', 'magicCriMulti', 'physicalCriMulti'].includes(key)) {
+        if (!effects[key]) {
+          effects[key] = { min: value, max: value };
+        } else {
+          effects[key].min = Math.min(effects[key].min, value);
+          effects[key].max = Math.max(effects[key].max, value);
+        }
+      }
+    });
+  });
+  
+  return effects;
+};
+
+// 効果の表示名を取得する関数
+const getEffectDisplayName = (key: string): string => {
+  const effectNames: { [key: string]: string } = {
+    str: '腕力',
+    vit: '体力',
+    agi: '速さ',
+    int: '知力',
+    dex: '器用',
+    mnd: '精神',
+    def: '防御力',
+    mp: 'MP',
+    hp: 'HP',
+    atkSpd: '攻撃速度',
+    magicPower: '魔法スキル威力',
+    physicalPower: '物理スキル威力',
+    expGetRate: 'EXP獲得率',
+    castSpd: '詠唱速度',
+    magicCri: '魔法CRI発動率',
+    physicalCri: '物理CRI発動率',
+    magicCriMulti: '魔法CRI倍率',
+    physicalCriMulti: '物理CRI倍率'
+  };
+  return effectNames[key] || key;
+};
+
+// 効果の表示形式を取得する関数
+const getEffectDisplay = (key: string, value: number): string => {
+  const isPercentage = ['str', 'vit', 'agi', 'int', 'dex', 'mnd', 'def', 'mp', 'hp', 
+                       'magicPower', 'physicalPower', 'expGetRate', 'castSpd',
+                       'magicCri', 'physicalCri', 'magicCriMulti', 'physicalCriMulti'].includes(key);
+  return `${value}${isPercentage ? '%' : ''}`;
+};
+
 export const SkillNode: React.FC<SkillNodeProps> = ({
   skill,
   selectedLevel,
@@ -431,44 +487,181 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       {showTooltip && (
         <div style={tooltipStyle}>
           {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
-          <div className="text-xs mb-2 text-gray-300">
-            {selectedLevel > 0 ? skill.levels[selectedLevel - 1].description : skill.levels[0].description}
-          </div>
 
-          {/* コア以外のスキルのみレベル情報を表示 */}
-          {!isCore && selectedLevel > 0 && (
-            <div className="mt-2 pt-1 border-t border-gray-700">
-              <div className="mt-1 text-xs font-bold text-secondary">現在: Lv{selectedLevel}</div>
-              {/* 必要素材 */}
-              {Object.keys(skill.levels[selectedLevel - 1]?.materials || {}).length > 0 && (
-                <div className="mt-1">
-                  {/* <div className="text-xs text-secondary">必要素材:</div> */}
-                  <div className="grid grid-cols-2 gap-x-8 text-xs mt-1">
-                    {Object.entries(skill.levels[selectedLevel - 1]?.materials || {}).map(([name, amount]) => (
-                      <div key={name} className="flex justify-between">
-                        <span className="text-gray-300">{name}</span>
-                        <span className="text-gray-300">×{amount}</span>
-                      </div>
-                    ))}
+          {/* パッシブスキルの場合、全レベルの効果範囲を表示 */}
+          {!isCore && skill.type === "パッシブ" && (
+            <div className="text-sm mb-2 text-gray-300">
+              {Object.entries(calculatePassiveSkillRange(skill)).map(([key, range]) => {
+                const isPercentage = [
+                  "str",
+                  "vit",
+                  "agi",
+                  "int",
+                  "dex",
+                  "mnd",
+                  "def",
+                  "mp",
+                  "hp",
+                  "magicPower",
+                  "physicalPower",
+                  "expGetRate",
+                  "castSpd",
+                  "magicCri",
+                  "physicalCri",
+                  "magicCriMulti",
+                  "physicalCriMulti",
+                ].includes(key);
+                return (
+                  <div key={key}>
+                    {getEffectDisplayName(key)}を{range.min}～{range.max}
+                    {isPercentage ? "%" : ""}増加
                   </div>
-                </div>
-              )}
-              {/* コイン消費 */}
-              <div className="mt-1 flex justify-between text-xs">
-                <span className="text-gray-300">ギルドコイン:</span>
-                <span className="text-yellow-300">×{skill.levels[selectedLevel - 1]?.guildCoins || 0}</span>
-              </div>
+                );
+              })}
             </div>
           )}
 
-          {/* 次のレベル情報 - コア以外で最大レベルに達していないスキルのみ */}
+          {/* 現在のレベル情報 */}
+          {!isCore && selectedLevel > 0 && (
+            <div className="mt-2 pt-1 border-t border-gray-700">
+              <div className="mt-1 text-sm font-bold text-secondary">Lv{selectedLevel}</div>
+              {skill.type === "パッシブ" ? (
+                // パッシブスキルの場合、現在の効果のみ表示
+                <div className="mt-1">
+                  {Object.entries(skill.levels[selectedLevel - 1]).map(([key, value]) => {
+                    if (
+                      typeof value === "number" &&
+                      value !== 0 &&
+                      [
+                        "str",
+                        "vit",
+                        "agi",
+                        "int",
+                        "dex",
+                        "mnd",
+                        "def",
+                        "mp",
+                        "hp",
+                        "atkSpd",
+                        "magicPower",
+                        "physicalPower",
+                        "expGetRate",
+                        "castSpd",
+                        "magicCri",
+                        "physicalCri",
+                        "magicCriMulti",
+                        "physicalCriMulti",
+                      ].includes(key)
+                    ) {
+                      return (
+                        <div key={key} className="text-sm font-bold text-gray-300">
+                          {getEffectDisplayName(key)}を{value}
+                          {[
+                            "str",
+                            "vit",
+                            "agi",
+                            "int",
+                            "dex",
+                            "mnd",
+                            "def",
+                            "mp",
+                            "hp",
+                            "magicPower",
+                            "physicalPower",
+                            "expGetRate",
+                            "castSpd",
+                            "magicCri",
+                            "physicalCri",
+                            "magicCriMulti",
+                            "physicalCriMulti",
+                          ].includes(key)
+                            ? "%"
+                            : ""}
+                          増加
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              ) : (
+                // アクティブスキルの場合、従来通りの表示
+                <div className="text-xs mb-2 text-gray-300">{skill.levels[selectedLevel - 1].description}</div>
+              )}
+            </div>
+          )}
+
+          {/* 次のレベル情報 */}
           {!isCore && selectedLevel < maxLevel && (
             <div className="mt-2 pt-1 border-t border-gray-700">
               <div className="mt-1 text-xs font-bold text-secondary">次のレベル: Lv{selectedLevel + 1}</div>
-              {/* 必要素材 */}
+              {skill.type === "パッシブ" ? (
+                // パッシブスキルの場合、次のレベルの効果を表示
+                <div className="mt-1">
+                  {Object.entries(skill.levels[selectedLevel]).map(([key, value]) => {
+                    if (
+                      typeof value === "number" &&
+                      value !== 0 &&
+                      [
+                        "str",
+                        "vit",
+                        "agi",
+                        "int",
+                        "dex",
+                        "mnd",
+                        "def",
+                        "mp",
+                        "hp",
+                        "atkSpd",
+                        "magicPower",
+                        "physicalPower",
+                        "expGetRate",
+                        "castSpd",
+                        "magicCri",
+                        "physicalCri",
+                        "magicCriMulti",
+                        "physicalCriMulti",
+                      ].includes(key)
+                    ) {
+                      return (
+                        <div key={key} className="text-xs font-bold text-gray-300">
+                          {getEffectDisplayName(key)}を{value}
+                          {[
+                            "str",
+                            "vit",
+                            "agi",
+                            "int",
+                            "dex",
+                            "mnd",
+                            "def",
+                            "mp",
+                            "hp",
+                            "magicPower",
+                            "physicalPower",
+                            "expGetRate",
+                            "castSpd",
+                            "magicCri",
+                            "physicalCri",
+                            "magicCriMulti",
+                            "physicalCriMulti",
+                          ].includes(key)
+                            ? "%"
+                            : ""}
+                          増加
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+              ) : (
+                // アクティブスキルの場合、従来通りの表示
+                <div className="text-xs mb-2 text-gray-300">{skill.levels[selectedLevel].description}</div>
+              )}
+
+              {/* 必要素材情報 */}
               {Object.keys(skill.levels[selectedLevel]?.materials || {}).length > 0 && (
                 <div className="mt-2">
-                  {/* <div className="text-xs text-secondary">必要素材:</div> */}
                   <div className="grid grid-cols-2 gap-x-8 text-xs mt-1">
                     {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
                       <div key={name} className="flex justify-between">
