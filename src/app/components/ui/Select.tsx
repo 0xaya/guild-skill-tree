@@ -56,9 +56,9 @@ export function Select({
 
   const baseStyles = "inline-flex items-center justify-center transition-colors rounded-lg";
   const variantStyles = {
-    primary: "bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30",
-    secondary: "bg-secondary/20 hover:bg-secondary/30 text-secondary border border-secondary/30",
-    outline: "bg-transparent hover:bg-primary/10 text-primary border border-primary/50",
+    primary: "bg-primary/20 hover:bg-primary/30 text-primary border-[0.15rem] border-primary/80",
+    secondary: "bg-secondary/20 hover:bg-secondary/30 text-secondary border-[0.15rem] border-secondary/80",
+    outline: "bg-transparent hover:bg-primary/10 text-primary border-[0.15rem] border-primary/80",
   };
 
   const handleOptionClick = (option: { value: string; label: string }) => {

@@ -157,31 +157,42 @@ export function CharacterSelect() {
         </>
       )}
 
-      {showAddMenu && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-background-dark/80 border border-primary/80 rounded-lg shadow-lg p-4 w-64">
-            <h3 className="text-sm font-bold mb-3">キャラクターを追加</h3>
-            <div className="space-y-3">
-              <Input
-                value={newCharacterName}
-                onChange={e => setNewCharacterName(e.target.value)}
-                variant="outline"
-                inputSize="md"
-                placeholder="キャラクター名"
-              />
-              <div className="flex justify-end gap-2">
-                <Button onClick={handleCloseAddMenu} variant="outline" className="text-sm">
-                  キャンセル
-                </Button>
-                <Button onClick={handleAddCharacter} variant="primary" className="text-sm" disabled={!newCharacterName}>
-                  追加
-                </Button>
-              </div>
-            </div>
+      {/* キャラクター追加ダイアログ */}
+      <Dialog
+        open={showAddMenu}
+        onOpenChange={setShowAddMenu}
+        title="キャラクターを追加"
+        description={
+          <div className="space-y-3">
+            <Input
+              value={newCharacterName}
+              onChange={e => setNewCharacterName(e.target.value)}
+              variant="outline"
+              inputSize="md"
+              placeholder="キャラクター名"
+            />
           </div>
-        </div>
-      )}
+        }
+        confirmText="追加"
+        cancelText="キャンセル"
+        onConfirm={handleAddCharacter}
+        actions={[
+          <Button key="cancel" onClick={handleCloseAddMenu} variant="outline" className="text-sm">
+            キャンセル
+          </Button>,
+          <Button
+            key="confirm"
+            onClick={handleAddCharacter}
+            variant="primary"
+            className="text-sm"
+            disabled={!newCharacterName}
+          >
+            追加
+          </Button>,
+        ]}
+      />
 
+      {/* キャラクター削除確認ダイアログ */}
       <Dialog
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}

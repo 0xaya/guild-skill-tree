@@ -12,9 +12,9 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const baseStyles = "w-full rounded-lg transition-colors text-white placeholder-white/50";
 
 const variantStyles = {
-  primary: "bg-primary/20 hover:bg-primary/30 border border-primary/30",
-  secondary: "bg-secondary/20 hover:bg-secondary/30 border border-secondary/30",
-  outline: "bg-transparent hover:bg-primary/10 border border-primary/50",
+  primary: "bg-primary/20 hover:bg-primary/30 border-[0.15rem] border-primary/30",
+  secondary: "bg-secondary/20 hover:bg-secondary/30 border-[0.15rem] border-secondary/30",
+  outline: "bg-transparent hover:bg-primary/10 border-[0.15rem] border-primary/50",
 };
 
 const sizeStyles = {
