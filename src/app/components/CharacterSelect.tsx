@@ -151,7 +151,7 @@ export function CharacterSelect() {
               })),
               { value: "add-new", label: "キャラクター追加" },
             ]}
-            className="min-w-[150px] max-w-[60vw] md:w-60 md:max-w-[240px]"
+            className="min-w-[180px] max-w-[60vw] md:w-60 md:max-w-[240px]"
             variant="outline"
           />
         </>
