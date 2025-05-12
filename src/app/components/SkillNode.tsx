@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
 import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
+import { Dialog } from "./ui/Dialog";
 
 interface SkillNodeProps {
   skill: Skill;
@@ -51,13 +52,33 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
 // パッシブスキルの効果範囲を計算する関数
 const calculatePassiveSkillRange = (skill: Skill) => {
   const effects: { [key: string]: { min: number; max: number } } = {};
-  
+
   skill.levels.forEach(level => {
     Object.entries(level).forEach(([key, value]) => {
-      if (typeof value === 'number' && value !== 0 && 
-          ['str', 'vit', 'agi', 'int', 'dex', 'mnd', 'def', 'mp', 'hp', 
-           'atkSpd', 'magicPower', 'physicalPower', 'expGetRate', 'castSpd',
-           'magicCri', 'physicalCri', 'magicCriMulti', 'physicalCriMulti'].includes(key)) {
+      if (
+        typeof value === "number" &&
+        value !== 0 &&
+        [
+          "str",
+          "vit",
+          "agi",
+          "int",
+          "dex",
+          "mnd",
+          "def",
+          "mp",
+          "hp",
+          "atkSpd",
+          "magicPower",
+          "physicalPower",
+          "expGetRate",
+          "castSpd",
+          "magicCri",
+          "physicalCri",
+          "magicCriMulti",
+          "physicalCriMulti",
+        ].includes(key)
+      ) {
         if (!effects[key]) {
           effects[key] = { min: value, max: value };
         } else {
@@ -67,41 +88,57 @@ const calculatePassiveSkillRange = (skill: Skill) => {
       }
     });
   });
-  
+
   return effects;
 };
 
 // 効果の表示名を取得する関数
 const getEffectDisplayName = (key: string): string => {
   const effectNames: { [key: string]: string } = {
-    str: '腕力',
-    vit: '体力',
-    agi: '速さ',
-    int: '知力',
-    dex: '器用',
-    mnd: '精神',
-    def: '防御力',
-    mp: 'MP',
-    hp: 'HP',
-    atkSpd: '攻撃速度',
-    magicPower: '魔法スキル威力',
-    physicalPower: '物理スキル威力',
-    expGetRate: 'EXP獲得率',
-    castSpd: '詠唱速度',
-    magicCri: '魔法CRI発動率',
-    physicalCri: '物理CRI発動率',
-    magicCriMulti: '魔法CRI倍率',
-    physicalCriMulti: '物理CRI倍率'
+    str: "腕力",
+    vit: "体力",
+    agi: "速さ",
+    int: "知力",
+    dex: "器用",
+    mnd: "精神",
+    def: "防御力",
+    mp: "MP",
+    hp: "HP",
+    atkSpd: "攻撃速度",
+    magicPower: "魔法スキル威力",
+    physicalPower: "物理スキル威力",
+    expGetRate: "EXP獲得率",
+    castSpd: "詠唱速度",
+    magicCri: "魔法CRI発動率",
+    physicalCri: "物理CRI発動率",
+    magicCriMulti: "魔法CRI倍率",
+    physicalCriMulti: "物理CRI倍率",
   };
   return effectNames[key] || key;
 };
 
 // 効果の表示形式を取得する関数
 const getEffectDisplay = (key: string, value: number): string => {
-  const isPercentage = ['str', 'vit', 'agi', 'int', 'dex', 'mnd', 'def', 'mp', 'hp', 
-                       'magicPower', 'physicalPower', 'expGetRate', 'castSpd',
-                       'magicCri', 'physicalCri', 'magicCriMulti', 'physicalCriMulti'].includes(key);
-  return `${value}${isPercentage ? '%' : ''}`;
+  const isPercentage = [
+    "str",
+    "vit",
+    "agi",
+    "int",
+    "dex",
+    "mnd",
+    "def",
+    "mp",
+    "hp",
+    "magicPower",
+    "physicalPower",
+    "expGetRate",
+    "castSpd",
+    "magicCri",
+    "physicalCri",
+    "magicCriMulti",
+    "physicalCriMulti",
+  ].includes(key);
+  return `${value}${isPercentage ? "%" : ""}`;
 };
 
 export const SkillNode: React.FC<SkillNodeProps> = ({
@@ -447,41 +484,21 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       )}
 
       {/* 確認ダイアログ */}
-      {isDialogOpen && (
-        <div
-          className="fixed inset-0 w-full h-full flex items-center justify-center z-50"
-          onClick={handleCancelLevelDown}
-        >
-          <div
-            className="relative bg-background-dark/80 border border-primary/80 rounded-lg p-6 shadow-lg w-[320px]"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="text-base text-text-primary mb-6">
-              {selectedLevel - 1 === 0
-                ? `現在Lv${acquiredLevel}取得済みになっていますが、未取得状態になります。`
-                : `取得済みレベルが${acquiredLevel}のため、選択レベルを下げると取得済みレベルも${
-                    selectedLevel - 1
-                  }に下がります。`}
-              <br />
-              よろしいですか？
-            </div>
-            <div className="flex justify-end gap-3">
-              <button
-                className="px-4 py-2 text-sm bg-background-light rounded hover:bg-primary/10"
-                onClick={handleCancelLevelDown}
-              >
-                キャンセル
-              </button>
-              <button
-                className="px-4 py-2 text-sm bg-primary text-white rounded hover:bg-primary/90"
-                onClick={handleConfirmLevelDown}
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        title="レベル変更の確認"
+        description={
+          selectedLevel - 1 === 0
+            ? `現在Lv${acquiredLevel}取得済みになっていますが、未取得状態になります。\nよろしいですか？`
+            : `取得済みレベルが${acquiredLevel}のため、選択レベルを下げると取得済みレベルも${
+                selectedLevel - 1
+              }に下がります。\nよろしいですか？`
+        }
+        confirmText="OK"
+        cancelText="キャンセル"
+        onConfirm={handleConfirmLevelDown}
+      />
 
       {/* ツールチップ */}
       {showTooltip && (
