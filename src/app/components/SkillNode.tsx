@@ -392,25 +392,34 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {/* チェックボックス */}
         {!isCore && selectedLevel > 0 && (
           <div
-            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center"
+            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center group transition-all duration-200 hover:scale-110 hover:shadow-lg"
             style={{
               border: `1.5px solid ${categoryColor}`,
               backgroundColor: acquiredLevel > 0 ? categoryColor : "black",
               opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
               cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
+              boxShadow: "0 0 0 0 rgba(0,0,0,0)",
             }}
             onClick={handleCheckboxClick}
           >
-            {acquiredLevel > 0 && (
+            {acquiredLevel > 0 ? (
               <span
-                className="text-[10px] text-white font-bold"
+                className="text-[10px] text-white font-heavy group-hover:text-yellow-200 transition-colors duration-200"
                 style={{
                   filter: `drop-shadow(${categoryColor}FF 1px 2px 2px) drop-shadow(rgba(0, 0, 0, 0.3) 0px 0px 2px)`,
                 }}
               >
                 {acquiredLevel}
               </span>
+            ) : (
+              <span className="text-[9px] text-gray-400 group-hover:text-white transition-colors duration-200 font-heavy">
+                ?
+              </span>
             )}
+            {/* ホバー時のツールチップ */}
+            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-black/90 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+              実際の取得済みレベルを設定
+            </div>
           </div>
         )}
 
@@ -535,6 +544,13 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* 取得済みレベル設定の説明を追加 */}
+          {!isCore && selectedLevel > 0 && (
+            <div className="text-[10px] text-yellow-300 mb-2">
+              右上ボックスで実際の取得済みレベルを設定すると残りの必要素材数が計算されます
             </div>
           )}
 
@@ -692,7 +708,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               {/* コイン消費 */}
               <div className="mt-1 flex justify-between text-xs">
                 <span className="text-gray-300">ギルドコイン:</span>
-                <span className="text-yellow-300">×{skill.levels[selectedLevel]?.guildCoins || 0}</span>
+                <span className="text-gray-300">×{skill.levels[selectedLevel]?.guildCoins || 0}</span>
               </div>
             </div>
           )}
