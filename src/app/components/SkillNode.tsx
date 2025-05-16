@@ -321,7 +321,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     top: "6px",
   };
 
-  // ツールチップスタイル
+  // スキル詳細表示スタイル
   const tooltipStyle: React.CSSProperties = {
     position: "absolute",
     top: `${nodeHeight / 2 + 5}px`, // topオフセットに合わせて調整
@@ -509,7 +509,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         onConfirm={handleConfirmLevelDown}
       />
 
-      {/* ツールチップ */}
+      {/* スキル詳細表示 */}
       {showTooltip && (
         <div style={tooltipStyle}>
           {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
