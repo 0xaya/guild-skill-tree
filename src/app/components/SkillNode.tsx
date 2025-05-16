@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Skill } from "../types/skill";
 import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
 import { Dialog } from "./ui/Dialog";
+import { Tooltip } from "./ui/Tooltip";
 
 interface SkillNodeProps {
   skill: Skill;
@@ -253,7 +254,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
   // 背景色の透明度を全体的に下げる
   const nodeBgColor = isActive
-    ? `${categoryColor}80` // alpha: 0.8 (取得済み)
+    ? `${categoryColor}99` // alpha: 1 (取得済み)
     : isRankMet
     ? `${categoryColor}30` // alpha: 0.3 (ランク条件を満たしている)
     : `${categoryColor}8`; // alpha: 0.08 (ランク条件を満たしていない)
@@ -279,7 +280,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
     backgroundColor: isRankMet ? nodeBgColor : "rgba(120, 120, 140, 0.1)",
-    opacity: isRankMet ? (isUnlocked ? 0.9 : 0.5) : 0.2,
+    opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.2,
     border: `${
       isCore
         ? "2px solid"
@@ -392,7 +393,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         {/* チェックボックス */}
         {!isCore && selectedLevel > 0 && (
           <div
-            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center group transition-all duration-200 hover:scale-110 hover:shadow-lg"
+            className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center group transition-all duration-200 hover:scale-110 hover:shadow-lg z-10"
             style={{
               border: `1.5px solid ${categoryColor}`,
               backgroundColor: acquiredLevel > 0 ? categoryColor : "black",
@@ -417,9 +418,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               </span>
             )}
             {/* ホバー時のツールチップ */}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-black/90 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-              実際の取得済みレベルを設定
-            </div>
+            <Tooltip text="実際の取得済みレベルを設定" position="top">
+              <div className="w-full h-full" />
+            </Tooltip>
           </div>
         )}
 
