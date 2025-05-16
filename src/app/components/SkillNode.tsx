@@ -157,7 +157,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   onConfirmDialogOpenChange,
 }) => {
   const [showLevelPopup, setShowLevelPopup] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
+  const [showSkillDetails, setShowSkillDetails] = useState(false);
   const [touchTimer, setTouchTimer] = useState<NodeJS.Timeout | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -172,15 +172,15 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
 
   useEffect(() => {
     if (isConfirmDialogOpen) {
-      setShowTooltip(true);
+      setShowSkillDetails(true);
     } else {
-      setShowTooltip(false);
+      setShowSkillDetails(false);
     }
   }, [isConfirmDialogOpen]);
 
   const handleTouchStart = () => {
     const timer = setTimeout(() => {
-      setShowTooltip(true);
+      setShowSkillDetails(true);
     }, 500); // 500msの長押しで表示
     setTouchTimer(timer);
   };
@@ -190,19 +190,19 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       clearTimeout(touchTimer);
       setTouchTimer(null);
     }
-    setShowTooltip(false);
+    setShowSkillDetails(false);
   };
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowLevelPopup(true);
-    setShowTooltip(false);
+    setShowSkillDetails(false);
   };
 
   const handleAcquiredLevelChange = (level: number) => {
     onAcquiredLevelChange(skill.id, level);
     setShowLevelPopup(false);
-    setShowTooltip(false);
+    setShowSkillDetails(false);
   };
 
   const handleLevelDown = (e: React.MouseEvent | React.TouchEvent) => {
@@ -213,7 +213,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     if (selectedLevel === 1) {
       const canLevelDown = onCheckDependencies(skill.id);
       if (!canLevelDown) {
-        setShowTooltip(false);
+        setShowSkillDetails(false);
         return;
       }
     }
@@ -221,7 +221,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     // 取得済みレベルが選択レベル-1より大きい場合は確認ダイアログを表示
     if (acquiredLevel > selectedLevel - 1) {
       setIsDialogOpen(true);
-      setShowTooltip(false);
+      setShowSkillDetails(false);
     } else {
       onRightClick(skill.id, e);
     }
@@ -234,7 +234,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     }
     onRightClick(skill.id, e || ({} as React.MouseEvent | React.TouchEvent));
     setIsDialogOpen(false);
-    setShowTooltip(false);
+    setShowSkillDetails(false);
   };
 
   const handleCancelLevelDown = (e?: React.MouseEvent | React.TouchEvent) => {
@@ -243,7 +243,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       e.stopPropagation();
     }
     setIsDialogOpen(false);
-    setShowTooltip(false);
+    setShowSkillDetails(false);
   };
 
   const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
@@ -322,7 +322,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   };
 
   // スキル詳細表示スタイル
-  const tooltipStyle: React.CSSProperties = {
+  const skillDetailsStyle: React.CSSProperties = {
     position: "absolute",
     top: `${nodeHeight / 2 + 5}px`, // topオフセットに合わせて調整
     left: "0",
@@ -336,7 +336,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     color: "#ffffff",
     fontSize: "12px",
     fontFamily: "var(--font-inter)",
-    display: showTooltip ? "block" : "none",
+    display: showSkillDetails ? "block" : "none",
     boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)",
     backdropFilter: "blur(3px)",
   };
@@ -350,7 +350,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
         position: "absolute",
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
-        zIndex: showTooltip || showLevelPopup || isDialogOpen ? 20 : 10,
+        zIndex: showSkillDetails || showLevelPopup || isDialogOpen ? 20 : 10,
         userSelect: "none",
         WebkitUserSelect: "none",
         MozUserSelect: "none",
@@ -358,10 +358,10 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       }}
       onMouseEnter={() => {
         if (window.innerWidth >= 768 && !isDialogOpen && !isCore) {
-          setShowTooltip(true);
+          setShowSkillDetails(true);
         }
       }}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseLeave={() => setShowSkillDetails(false)}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
@@ -510,8 +510,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       />
 
       {/* スキル詳細表示 */}
-      {showTooltip && (
-        <div style={tooltipStyle}>
+      {showSkillDetails && (
+        <div style={skillDetailsStyle}>
           {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
 
           {/* パッシブスキルの場合、全レベルの効果範囲を表示 */}
