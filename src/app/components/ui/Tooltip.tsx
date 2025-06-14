@@ -23,7 +23,7 @@ export function Tooltip({ children, text, position = "top", className }: Tooltip
       {children}
       <span
         className={cn(
-          "absolute bg-background-dark/90 text-text-primary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap",
+          'absolute bg-background-dark/90 text-text-primary text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none',
           positionStyles[position],
           className
         )}
