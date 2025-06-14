@@ -574,7 +574,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* 現在のレベル情報 */}
           {!isCore && selectedLevel > 0 && (
             <div className="mt-2 pt-1 border-t border-gray-700">
-              <div className="mt-1 text-sm font-bold text-secondary">Lv{selectedLevel}</div>
+              <div className="mt-1 text-base font-bold text-primary">Lv{selectedLevel}</div>
               {skill.type === 'パッシブ' ? (
                 // パッシブスキルの場合、現在の効果のみ表示
                 <div className="mt-1">
