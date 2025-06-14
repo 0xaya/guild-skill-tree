@@ -5,6 +5,7 @@ import { Skill } from "../types/skill";
 import { SKILL_COLORS, CATEGORY_MAPPING } from "../utils/skillUtils";
 import { Dialog } from "./ui/Dialog";
 import { Tooltip } from "./ui/Tooltip";
+import { CloseIcon } from './ui/Icons';
 
 interface SkillNodeProps {
   skill: Skill;
@@ -39,8 +40,8 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
   const stars = [];
   for (let i = 1; i <= maxLevel; i++) {
     stars.push(
-      <span key={i} className={`mr-px ${i <= currentLevel ? "text-yellow-400" : "text-white-500"}`}>
-        {i <= currentLevel ? "★" : "☆"} {/* Use ☆ for unfilled */}
+      <span key={i} className={`mr-px ${i <= currentLevel ? 'text-yellow-400' : 'text-white-500'}`}>
+        {i <= currentLevel ? '★' : '☆'} {/* Use ☆ for unfilled */}
       </span>
     );
   }
@@ -54,30 +55,30 @@ const renderStars = (currentLevel: number, maxLevel: number) => {
 const calculatePassiveSkillRange = (skill: Skill) => {
   const effects: { [key: string]: { min: number; max: number } } = {};
 
-  skill.levels.forEach(level => {
+  skill.levels.forEach((level) => {
     Object.entries(level).forEach(([key, value]) => {
       if (
-        typeof value === "number" &&
+        typeof value === 'number' &&
         value !== 0 &&
         [
-          "str",
-          "vit",
-          "agi",
-          "int",
-          "dex",
-          "mnd",
-          "def",
-          "mp",
-          "hp",
-          "atkSpd",
-          "magicPower",
-          "physicalPower",
-          "expGetRate",
-          "castSpd",
-          "magicCri",
-          "physicalCri",
-          "magicCriMulti",
-          "physicalCriMulti",
+          'str',
+          'vit',
+          'agi',
+          'int',
+          'dex',
+          'mnd',
+          'def',
+          'mp',
+          'hp',
+          'atkSpd',
+          'magicPower',
+          'physicalPower',
+          'expGetRate',
+          'castSpd',
+          'magicCri',
+          'physicalCri',
+          'magicCriMulti',
+          'physicalCriMulti',
         ].includes(key)
       ) {
         if (!effects[key]) {
@@ -96,24 +97,24 @@ const calculatePassiveSkillRange = (skill: Skill) => {
 // 効果の表示名を取得する関数
 const getEffectDisplayName = (key: string): string => {
   const effectNames: { [key: string]: string } = {
-    str: "腕力",
-    vit: "体力",
-    agi: "速さ",
-    int: "知力",
-    dex: "器用",
-    mnd: "精神",
-    def: "防御力",
-    mp: "MP",
-    hp: "HP",
-    atkSpd: "攻撃速度",
-    magicPower: "魔法スキル威力",
-    physicalPower: "物理スキル威力",
-    expGetRate: "EXP獲得率",
-    castSpd: "詠唱速度",
-    magicCri: "魔法CRI発動率",
-    physicalCri: "物理CRI発動率",
-    magicCriMulti: "魔法CRI倍率",
-    physicalCriMulti: "物理CRI倍率",
+    str: '腕力',
+    vit: '体力',
+    agi: '速さ',
+    int: '知力',
+    dex: '器用',
+    mnd: '精神',
+    def: '防御力',
+    mp: 'MP',
+    hp: 'HP',
+    atkSpd: '攻撃速度',
+    magicPower: '魔法スキル威力',
+    physicalPower: '物理スキル威力',
+    expGetRate: 'EXP獲得率',
+    castSpd: '詠唱速度',
+    magicCri: '魔法CRI発動率',
+    physicalCri: '物理CRI発動率',
+    magicCriMulti: '魔法CRI倍率',
+    physicalCriMulti: '物理CRI倍率',
   };
   return effectNames[key] || key;
 };
@@ -121,25 +122,25 @@ const getEffectDisplayName = (key: string): string => {
 // 効果の表示形式を取得する関数
 const getEffectDisplay = (key: string, value: number): string => {
   const isPercentage = [
-    "str",
-    "vit",
-    "agi",
-    "int",
-    "dex",
-    "mnd",
-    "def",
-    "mp",
-    "hp",
-    "magicPower",
-    "physicalPower",
-    "expGetRate",
-    "castSpd",
-    "magicCri",
-    "physicalCri",
-    "magicCriMulti",
-    "physicalCriMulti",
+    'str',
+    'vit',
+    'agi',
+    'int',
+    'dex',
+    'mnd',
+    'def',
+    'mp',
+    'hp',
+    'magicPower',
+    'physicalPower',
+    'expGetRate',
+    'castSpd',
+    'magicCri',
+    'physicalCri',
+    'magicCriMulti',
+    'physicalCriMulti',
   ].includes(key);
-  return `${value}${isPercentage ? "%" : ""}`;
+  return `${value}${isPercentage ? '%' : ''}`;
 };
 
 export const SkillNode: React.FC<SkillNodeProps> = ({
@@ -247,9 +248,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
     setShowSkillDetails(false);
   };
 
-  const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || "strength"];
+  const categoryColor = SKILL_COLORS[CATEGORY_MAPPING[skill.category] || 'strength'];
   const isActive = selectedLevel > 0;
-  const isCore = skill.id === "core";
+  const isCore = skill.id === 'core';
   const isRankMet = guildRank >= skill.requiredRank;
 
   // 背景色の透明度を全体的に下げる
@@ -261,8 +262,8 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const nodeBorderColor = isActive
     ? categoryColor
     : isRankMet
-    ? "rgba(120, 120, 140, 0.9)" // ランク条件を満たしている
-    : "rgba(120, 120, 140, 0.3)"; // ランク条件を満たしていない
+    ? 'rgba(120, 120, 140, 0.9)' // ランク条件を満たしている
+    : 'rgba(120, 120, 140, 0.3)'; // ランク条件を満たしていない
 
   // ノードのスタイルを設定
   const nodeWidth = isCore ? 60 : 90;
@@ -270,92 +271,94 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
   const nodeStyle: React.CSSProperties = {
     width: `${nodeWidth}px`,
     height: `${nodeHeight}px`,
-    borderRadius: isCore ? "50%" : "6px",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    textAlign: "center",
-    position: "absolute",
+    borderRadius: isCore ? '50%' : '6px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    position: 'absolute',
     left: `-${nodeWidth / 2}px`,
     top: `-${nodeHeight / 2}px`,
-    backgroundColor: isRankMet ? nodeBgColor : "rgba(120, 120, 140, 0.1)",
+    backgroundColor: isRankMet ? nodeBgColor : 'rgba(120, 120, 140, 0.1)',
     opacity: isRankMet ? (isUnlocked ? 1 : 0.5) : 0.2,
     border: `${
       isCore
-        ? "2px solid"
-        : skill.type === "パッシブ"
+        ? '2px solid'
+        : skill.type === 'パッシブ'
         ? acquiredLevel > 0
-          ? "2px solid"
-          : "1px solid"
+          ? '2px solid'
+          : '1px solid'
         : acquiredLevel > 0
-        ? "5px double"
-        : "3px double"
+        ? '5px double'
+        : '3px double'
     } ${nodeBorderColor}`,
-    color: "#ffffff",
-    fontSize: isCore ? "12px" : "10px",
-    fontWeight: isCore ? "bold" : "normal",
+    color: '#ffffff',
+    fontSize: isCore ? '12px' : '10px',
+    fontWeight: isCore ? 'bold' : 'normal',
     boxShadow: isActive
-      ? `0 0 ${isCore ? "15px" : "8px"} ${categoryColor}70, 0 0 ${isCore ? "8px" : "4px"} ${categoryColor}50`
-      : "none",
-    transition: "all 0.2s ease-in-out",
+      ? `0 0 ${isCore ? '15px' : '8px'} ${categoryColor}70, 0 0 ${
+          isCore ? '8px' : '4px'
+        } ${categoryColor}50`
+      : 'none',
+    transition: 'all 0.2s ease-in-out',
     zIndex: isCore ? 15 : 10,
-    cursor: !isCore && isUnlocked && isRankMet && selectedLevel === 0 ? "pointer" : "default",
+    cursor: !isCore && isUnlocked && isRankMet && selectedLevel === 0 ? 'pointer' : 'default',
   };
 
   // レベルアップ/レベルダウンボタンのスタイル
   const levelButtonStyle: React.CSSProperties = {
-    width: "16px",
-    height: "16px",
-    borderRadius: "50%",
+    width: '16px',
+    height: '16px',
+    borderRadius: '50%',
     border: `2px solid ${categoryColor}`,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
-    fontSize: "13px",
-    fontWeight: "700",
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: isUnlocked && isRankMet ? 'pointer' : 'not-allowed',
+    fontSize: '13px',
+    fontWeight: '700',
     color: `${categoryColor}`,
     opacity: isUnlocked && isRankMet ? 1 : 0.3,
-    transition: "all 0.2s ease-in-out",
-    position: "relative",
-    top: "6px",
+    transition: 'all 0.2s ease-in-out',
+    position: 'relative',
+    top: '6px',
   };
 
   // スキル詳細表示スタイル
   const skillDetailsStyle: React.CSSProperties = {
-    position: "absolute",
+    position: 'absolute',
     top: `${nodeHeight / 2 + 5}px`, // topオフセットに合わせて調整
-    left: "0",
-    transform: "translateX(-50%)",
-    backgroundColor: "rgba(30, 30, 40, 0.8)",
+    left: '0',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'rgba(30, 30, 40, 0.8)',
     border: `1px solid ${categoryColor}80`,
-    borderRadius: "8px",
-    padding: "10px",
+    borderRadius: '8px',
+    padding: '10px',
     zIndex: 100,
-    width: "240px",
-    color: "#ffffff",
-    fontSize: "12px",
-    fontFamily: "var(--font-inter)",
-    display: showSkillDetails ? "block" : "none",
-    boxShadow: "0 0 15px rgba(0, 0, 0, 0.7)",
-    backdropFilter: "blur(3px)",
+    width: '240px',
+    color: '#ffffff',
+    fontSize: '12px',
+    fontFamily: 'var(--font-inter)',
+    display: showSkillDetails ? 'block' : 'none',
+    boxShadow: '0 0 15px rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(3px)',
   };
 
   // スキル名略称処理
-  const skillNameDisplay = skill.name.replace(/クリティカル/g, "CRI");
+  const skillNameDisplay = skill.name.replace(/クリティカル/g, 'CRI');
 
   return (
     <div
       style={{
-        position: "absolute",
+        position: 'absolute',
         left: `${skill.x || 0}px`,
         top: `${skill.y || 0}px`,
         zIndex: showSkillDetails || showLevelPopup || isDialogOpen ? 20 : 10,
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        MozUserSelect: "none",
-        msUserSelect: "none",
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
       }}
       onMouseEnter={() => {
         if (window.innerWidth >= 768 && !isDialogOpen && !isCore) {
@@ -370,25 +373,25 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
       <div
         style={{
           ...nodeStyle,
-          userSelect: "none",
-          WebkitUserSelect: "none",
-          MozUserSelect: "none",
-          msUserSelect: "none",
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
         }}
-        onClick={e => {
+        onClick={(e) => {
           if (!isCore && isUnlocked && isRankMet) {
             if (selectedLevel < maxLevel) {
               onClick(skill.id, e);
             }
           }
         }}
-        onContextMenu={e => {
+        onContextMenu={(e) => {
           e.preventDefault();
           if (!isCore && isUnlocked && isRankMet && selectedLevel > 0) {
             handleLevelDown(e);
           }
         }}
-        className={!isCore && isUnlocked && isRankMet ? "cursor-pointer" : ""}
+        className={!isCore && isUnlocked && isRankMet ? 'cursor-pointer' : ''}
       >
         {/* チェックボックス */}
         {!isCore && selectedLevel > 0 && (
@@ -396,10 +399,10 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
             className="absolute top-[-5px] right-[-8px] w-4 h-4 rounded-md border-2 cursor-pointer flex items-center justify-center group transition-all duration-200 hover:scale-110 hover:shadow-lg z-10"
             style={{
               border: `1.5px solid ${categoryColor}`,
-              backgroundColor: acquiredLevel > 0 ? categoryColor : "black",
+              backgroundColor: acquiredLevel > 0 ? categoryColor : 'black',
               opacity: isUnlocked && isRankMet ? 0.8 : 0.3,
-              cursor: isUnlocked && isRankMet ? "pointer" : "not-allowed",
-              boxShadow: "0 0 0 0 rgba(0,0,0,0)",
+              cursor: isUnlocked && isRankMet ? 'pointer' : 'not-allowed',
+              boxShadow: '0 0 0 0 rgba(0,0,0,0)',
             }}
             onClick={handleCheckboxClick}
           >
@@ -433,7 +436,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
             <button
               className="minus-button"
               style={levelButtonStyle}
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 handleLevelDown(e);
               }}
@@ -445,7 +448,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
             <button
               className="plus-button"
               style={levelButtonStyle}
-              onClick={e => {
+              onClick={(e) => {
                 e.stopPropagation();
                 onClick(skill.id, e);
               }}
@@ -466,13 +469,24 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           className="absolute top-[-100px] left-1/2 transform -translate-x-1/2 bg-background-dark/80 border border-primary/20 rounded-lg p-2 shadow-lg"
           style={{ zIndex: 30 }}
         >
-          <div className="text-xs text-text-primary mb-2">
-            実際の取得済レベルを選択<span className="text-xs inline-block">（未取得は未を選択）</span>
+          <div className="relative">
+            <button
+              className="absolute -top-1 -right-1 w-5 h-5 hover:bg-primary/10 rounded-full transition-colors"
+              onClick={() => setShowLevelPopup(false)}
+            >
+              <CloseIcon size={14} className="text-primary" />
+            </button>
+            <div className="text-xs text-text-primary mb-2 pr-6">
+              実際の取得済レベルを選択
+              <span className="text-xs inline-block">（未取得は未を選択）</span>
+            </div>
           </div>
           <div className="flex gap-1">
             <button
               className={`w-8 h-8 rounded text-xs ${
-                acquiredLevel === 0 ? "bg-primary text-white" : "border border-primary/80 text-text-primary"
+                acquiredLevel === 0
+                  ? 'bg-primary text-white'
+                  : 'border border-primary/80 text-text-primary'
               }`}
               onClick={() => handleAcquiredLevelChange(0)}
             >
@@ -482,7 +496,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
               <button
                 key={level + 1}
                 className={`w-8 h-8 rounded text-xs ${
-                  level + 1 === acquiredLevel ? "bg-primary text-white" : "border border-primary/80 text-text-primary"
+                  level + 1 === acquiredLevel
+                    ? 'bg-primary text-white'
+                    : 'border border-primary/80 text-text-primary'
                 }`}
                 onClick={() => handleAcquiredLevelChange(level + 1)}
               >
@@ -516,32 +532,32 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {!isCore && <div className="font-bold mb-1 text-[16px] text-primary">{skill.name}</div>}
 
           {/* パッシブスキルの場合、全レベルの効果範囲を表示 */}
-          {!isCore && skill.type === "パッシブ" && (
+          {!isCore && skill.type === 'パッシブ' && (
             <div className="text-sm mb-2 text-gray-300">
               {Object.entries(calculatePassiveSkillRange(skill)).map(([key, range]) => {
                 const isPercentage = [
-                  "str",
-                  "vit",
-                  "agi",
-                  "int",
-                  "dex",
-                  "mnd",
-                  "def",
-                  "mp",
-                  "hp",
-                  "magicPower",
-                  "physicalPower",
-                  "expGetRate",
-                  "castSpd",
-                  "magicCri",
-                  "physicalCri",
-                  "magicCriMulti",
-                  "physicalCriMulti",
+                  'str',
+                  'vit',
+                  'agi',
+                  'int',
+                  'dex',
+                  'mnd',
+                  'def',
+                  'mp',
+                  'hp',
+                  'magicPower',
+                  'physicalPower',
+                  'expGetRate',
+                  'castSpd',
+                  'magicCri',
+                  'physicalCri',
+                  'magicCriMulti',
+                  'physicalCriMulti',
                 ].includes(key);
                 return (
                   <div key={key}>
                     {getEffectDisplayName(key)}を{range.min}～{range.max}
-                    {isPercentage ? "%" : ""}増加
+                    {isPercentage ? '%' : ''}増加
                   </div>
                 );
               })}
@@ -559,58 +575,58 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {!isCore && selectedLevel > 0 && (
             <div className="mt-2 pt-1 border-t border-gray-700">
               <div className="mt-1 text-sm font-bold text-secondary">Lv{selectedLevel}</div>
-              {skill.type === "パッシブ" ? (
+              {skill.type === 'パッシブ' ? (
                 // パッシブスキルの場合、現在の効果のみ表示
                 <div className="mt-1">
                   {Object.entries(skill.levels[selectedLevel - 1]).map(([key, value]) => {
                     if (
-                      typeof value === "number" &&
+                      typeof value === 'number' &&
                       value !== 0 &&
                       [
-                        "str",
-                        "vit",
-                        "agi",
-                        "int",
-                        "dex",
-                        "mnd",
-                        "def",
-                        "mp",
-                        "hp",
-                        "atkSpd",
-                        "magicPower",
-                        "physicalPower",
-                        "expGetRate",
-                        "castSpd",
-                        "magicCri",
-                        "physicalCri",
-                        "magicCriMulti",
-                        "physicalCriMulti",
+                        'str',
+                        'vit',
+                        'agi',
+                        'int',
+                        'dex',
+                        'mnd',
+                        'def',
+                        'mp',
+                        'hp',
+                        'atkSpd',
+                        'magicPower',
+                        'physicalPower',
+                        'expGetRate',
+                        'castSpd',
+                        'magicCri',
+                        'physicalCri',
+                        'magicCriMulti',
+                        'physicalCriMulti',
                       ].includes(key)
                     ) {
                       return (
                         <div key={key} className="text-sm font-bold text-gray-300">
                           {getEffectDisplayName(key)}を{value}
                           {[
-                            "str",
-                            "vit",
-                            "agi",
-                            "int",
-                            "dex",
-                            "mnd",
-                            "def",
-                            "mp",
-                            "hp",
-                            "magicPower",
-                            "physicalPower",
-                            "expGetRate",
-                            "castSpd",
-                            "magicCri",
-                            "physicalCri",
-                            "magicCriMulti",
-                            "physicalCriMulti",
+                            'str',
+                            'vit',
+                            'agi',
+                            'int',
+                            'dex',
+                            'mnd',
+                            'def',
+                            'mp',
+                            'hp',
+                            'magicPower',
+                            'physicalPower',
+                            'expGetRate',
+                            'castSpd',
+                            'magicCri',
+                            'physicalCri',
+                            'magicCriMulti',
+                            'physicalCriMulti',
                           ].includes(key)
-                            ? "%"
-                            : ""}
+                            ? '%'
+                            : ''}
                           増加
                         </div>
                       );
@@ -620,7 +636,9 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                 </div>
               ) : (
                 // アクティブスキルの場合、従来通りの表示
-                <div className="text-xs mb-2 text-gray-300">{skill.levels[selectedLevel - 1].description}</div>
+                <div className="text-xs mb-2 text-gray-300">
+                  {skill.levels[selectedLevel - 1].description}
+                </div>
               )}
             </div>
           )}
@@ -628,59 +646,61 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* 次のレベル情報 */}
           {!isCore && selectedLevel < maxLevel && (
             <div className="mt-2 pt-1 border-t border-gray-700">
-              <div className="mt-1 text-xs font-bold text-secondary">次のレベル: Lv{selectedLevel + 1}</div>
-              {skill.type === "パッシブ" ? (
+              <div className="mt-1 text-xs font-bold text-secondary">
+                次のレベル: Lv{selectedLevel + 1}
+              </div>
+              {skill.type === 'パッシブ' ? (
                 // パッシブスキルの場合、次のレベルの効果を表示
                 <div className="mt-1">
                   {Object.entries(skill.levels[selectedLevel]).map(([key, value]) => {
                     if (
-                      typeof value === "number" &&
+                      typeof value === 'number' &&
                       value !== 0 &&
                       [
-                        "str",
-                        "vit",
-                        "agi",
-                        "int",
-                        "dex",
-                        "mnd",
-                        "def",
-                        "mp",
-                        "hp",
-                        "atkSpd",
-                        "magicPower",
-                        "physicalPower",
-                        "expGetRate",
-                        "castSpd",
-                        "magicCri",
-                        "physicalCri",
-                        "magicCriMulti",
-                        "physicalCriMulti",
+                        'str',
+                        'vit',
+                        'agi',
+                        'int',
+                        'dex',
+                        'mnd',
+                        'def',
+                        'mp',
+                        'hp',
+                        'atkSpd',
+                        'magicPower',
+                        'physicalPower',
+                        'expGetRate',
+                        'castSpd',
+                        'magicCri',
+                        'physicalCri',
+                        'magicCriMulti',
+                        'physicalCriMulti',
                       ].includes(key)
                     ) {
                       return (
                         <div key={key} className="text-xs font-bold text-gray-300">
                           {getEffectDisplayName(key)}を{value}
                           {[
-                            "str",
-                            "vit",
-                            "agi",
-                            "int",
-                            "dex",
-                            "mnd",
-                            "def",
-                            "mp",
-                            "hp",
-                            "magicPower",
-                            "physicalPower",
-                            "expGetRate",
-                            "castSpd",
-                            "magicCri",
-                            "physicalCri",
-                            "magicCriMulti",
-                            "physicalCriMulti",
+                            'str',
+                            'vit',
+                            'agi',
+                            'int',
+                            'dex',
+                            'mnd',
+                            'def',
+                            'mp',
+                            'hp',
+                            'magicPower',
+                            'physicalPower',
+                            'expGetRate',
+                            'castSpd',
+                            'magicCri',
+                            'physicalCri',
+                            'magicCriMulti',
+                            'physicalCriMulti',
                           ].includes(key)
-                            ? "%"
-                            : ""}
+                            ? '%'
+                            : ''}
                           増加
                         </div>
                       );
@@ -690,26 +710,32 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                 </div>
               ) : (
                 // アクティブスキルの場合、従来通りの表示
-                <div className="text-xs mb-2 text-gray-300">{skill.levels[selectedLevel].description}</div>
+                <div className="text-xs mb-2 text-gray-300">
+                  {skill.levels[selectedLevel].description}
+                </div>
               )}
 
               {/* 必要素材情報 */}
               {Object.keys(skill.levels[selectedLevel]?.materials || {}).length > 0 && (
                 <div className="mt-2">
                   <div className="grid grid-cols-2 gap-x-8 text-xs mt-1">
-                    {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(([name, amount]) => (
-                      <div key={name} className="flex justify-between">
-                        <span className="text-gray-300">{name}</span>
-                        <span className="text-gray-300">×{amount}</span>
-                      </div>
-                    ))}
+                    {Object.entries(skill.levels[selectedLevel]?.materials || {}).map(
+                      ([name, amount]) => (
+                        <div key={name} className="flex justify-between">
+                          <span className="text-gray-300">{name}</span>
+                          <span className="text-gray-300">×{amount}</span>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               )}
               {/* コイン消費 */}
               <div className="mt-1 flex justify-between text-xs">
                 <span className="text-gray-300">ギルドコイン:</span>
-                <span className="text-gray-300">×{skill.levels[selectedLevel]?.guildCoins || 0}</span>
+                <span className="text-gray-300">
+                  ×{skill.levels[selectedLevel]?.guildCoins || 0}
+                </span>
               </div>
             </div>
           )}
@@ -723,7 +749,11 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
                   {skill.levels.map((level, index) => (
                     <div key={index} className="flex justify-between">
                       <span className="text-gray-300">Lv{index + 1}:</span>
-                      <span className={level.requiredRank > guildRank ? "text-red-500 font-bold" : "text-white"}>
+                      <span
+                        className={
+                          level.requiredRank > guildRank ? 'text-red-500 font-bold' : 'text-white'
+                        }
+                      >
                         {level.requiredRank}
                       </span>
                     </div>
@@ -736,7 +766,7 @@ export const SkillNode: React.FC<SkillNodeProps> = ({
           {/* 操作ガイドを更新 */}
           {!isCore && (
             <div className="text-[10px] mt-2 text-text-muted">
-              {selectedLevel === 0 ? "" : "-/+ ボタン、または左/右クリックでレベルを調整できます"}
+              {selectedLevel === 0 ? '' : '-/+ ボタン、または左/右クリックでレベルを調整できます'}
             </div>
           )}
         </div>
