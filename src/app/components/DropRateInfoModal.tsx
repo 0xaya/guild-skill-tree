@@ -108,43 +108,66 @@ interface DropRateTableProps {
 }
 
 const DropRateTable: React.FC<DropRateTableProps> = ({ title, titleColor, items, currentRank }) => {
+  const tableRef = React.useRef<HTMLDivElement>(null);
+
+  // ランクが変更された時にスクロール
+  React.useEffect(() => {
+    if (tableRef.current) {
+      const table = tableRef.current;
+      const columnWidth = 50; // ランク列の幅（w-[50px]）
+      const scrollPosition = columnWidth * (currentRank - 1); // 0-based indexなので-1
+
+      // スムーズスクロール
+      table.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth',
+      });
+    }
+  }, [currentRank]);
+
   return (
     <div className="pt-2">
       <h4 className={`text-md font-bold mb-2 ${titleColor}`}>{title}</h4>
-      <table className="w-full text-left table-fixed text-sm bg-gray-800 rounded">
-        <thead>
-          <tr className="bg-gray-700">
-            <th className="w-32 px-4 py-2 border-b border-gray-600">アイテム名</th>
-            {[...Array(9)].map((_, i) => (
-              <th
-                key={i}
-                className={`w-[50px] px-4 py-2 border-b border-gray-600 ${
-                  i + 1 === currentRank ? 'bg-primary/70' : ''
-                } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright]`}
-              >
-                ランク{i + 1}
+      <div ref={tableRef} className="relative overflow-x-auto rounded">
+        <table className="w-full text-left table-fixed text-sm bg-gray-800">
+          <thead>
+            <tr className="bg-gray-700">
+              <th className="sticky left-0 z-10 w-32 px-4 py-2 border-b border-gray-600 bg-gray-700">
+                アイテム名
               </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-gray-700 last:border-b-0">
-              <td className="px-4 py-2 font-bold">{row.item}</td>
-              {row.ranks.map((rate, colIndex) => (
-                <td
-                  key={colIndex}
-                  className={`px-4 py-2 text-center ${
-                    colIndex + 1 === currentRank ? 'bg-primary/70' : ''
-                  }`}
+              {[...Array(9)].map((_, i) => (
+                <th
+                  key={i}
+                  className={`w-[50px] px-4 py-2 border-b border-gray-600 ${
+                    i + 1 === currentRank ? 'bg-primary/70' : ''
+                  } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright]`}
                 >
-                  {rate}
-                </td>
+                  ランク{i + 1}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {items.map((row, rowIndex) => (
+              <tr key={rowIndex} className="border-b border-gray-700 last:border-b-0">
+                <td className="sticky left-0 z-10 px-4 py-2 font-bold bg-gray-800 border-r border-gray-700">
+                  {row.item}
+                </td>
+                {row.ranks.map((rate, colIndex) => (
+                  <td
+                    key={colIndex}
+                    className={`px-4 py-2 text-center ${
+                      colIndex + 1 === currentRank ? 'bg-primary/70' : ''
+                    }`}
+                  >
+                    {rate}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
@@ -217,19 +240,19 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
     <Dialog
       open={isOpen}
       onOpenChange={onOpenChange}
-      title="ドロップ率情報"
+      title="素材ドロップ率計算ツール"
       className="max-w-3xl"
       description={
         <div className="p-4 text-white max-h-[80vh] overflow-y-auto">
-          <h3 className="font-bold mb-3 text-primary">素材ドロップ率計算</h3>
           <p className="text-sm text-text-muted mb-4">
-            オシャレ装備のレアリティと強化レベルからドロップ率とランクを計算します。
+            オシャレ装備のレアリティと強化レベルからランクを計算します。
           </p>
+          <h3 className="font-bold mb-3 text-primary">ドロップ率計算</h3>
 
           <div className="space-y-4">
             {equipmentList.map((equipment, index) => (
               <div key={equipment.id} className="flex items-center space-x-2">
-                <span className="text-sm text-gray-300 text-nowrap">装備{index + 1}</span>
+                <div className="w-40 text-xs text-gray-300 whitespace-nowrap">装備{index + 1}</div>
                 <select
                   value={equipment.rarity}
                   onChange={(e) =>
@@ -271,14 +294,17 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
           </div>
           <Button
             onClick={handleAddEquipment}
-            className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors"
+            className="mt-4 font-bold py-2 px-4 rounded transition-colors"
           >
             装備を追加
           </Button>
 
           <div className="mt-6">
-            <p className="font-bold">合計ドロップ率: {totalRondDropRate}%</p>
-            <p className="font-bold mt-2">現在のランク: ランク{currentRank}</p>
+            <p>
+              <span className="">合計ドロップ率: </span>
+              {totalRondDropRate}%
+            </p>
+            <p className="text-primary mt-2 font-bold">現在のランク: {currentRank}</p>
           </div>
 
           <h3
