@@ -192,7 +192,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
       level: 0,
     }))
   );
-  const [showRondDetails, setShowRondDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   // 装備1点あたりのRONDドロップ率を計算する関数
   const calculateSingleEquipmentDropRate = (equipment: Equipment) => {
@@ -257,11 +257,11 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
             <div className="relative">
               <button
                 type="button"
-                onClick={() => setShowRondDetails(!showRondDetails)}
+                onClick={() => setShowDetails(!showDetails)}
                 className="flex items-center gap-1 px-2 py-1 text-xs text-primary rounded-full transition-colors hover:bg-primary/10"
-                aria-label={showRondDetails ? 'ドロップ率仕様を閉じる' : 'ドロップ率仕様を表示'}
+                aria-label={showDetails ? '仕様を閉じる' : '仕様を表示'}
               >
-                {showRondDetails ? (
+                {showDetails ? (
                   <>
                     <Icons.X className="w-4 h-4" />
                     <span>閉じる</span>
@@ -276,34 +276,64 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
             </div>
           </div>
 
-          {showRondDetails && (
+          {showDetails && (
             <div className="relative mb-6">
               <div className="absolute -top-[7px] left-[calc(8rem+1rem)] w-4 h-4 bg-background-dark border-t border-l border-primary/80 rotate-45"></div>
               <div className="p-4 bg-background-dark rounded-lg border border-primary/80 shadow-lg">
-                <div className="relative">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs md:text-sm">
-                      <thead>
-                        <tr className="border-b border-primary/20">
-                          <th className="px-4 py-2 font-bold text-primary/80">レアリティ</th>
-                          <th className="px-4 py-2 font-bold text-primary/80">装備1点あたり</th>
-                          <th className="px-4 py-2 font-bold text-primary/80">Lv1で上昇</th>
-                          <th className="px-4 py-2 font-bold text-primary/80">最大Lv</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-primary/10">
-                        {Object.entries(ROND_DROP_RATES).map(([rarity, data]) => (
-                          <tr key={rarity} className="hover:bg-primary/5 transition-colors">
-                            <td className="px-4 py-2 font-medium">{rarity}</td>
-                            <td className="px-4 py-2">{data.base}%</td>
-                            <td className="px-4 py-2">{data.perLevel.toFixed(5)}%</td>
-                            <td className="px-4 py-2">
-                              {data.base + data.perLevel * data.maxLevel}%
-                            </td>
+                <div className="relative space-y-6">
+                  {/* RONDドロップ率テーブル */}
+                  <div>
+                    <h4 className="font-bold text-primary/80 mb-3">鉱石ドロップ率仕様</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-primary/20">
+                            <th className="py-2 font-bold text-primary/80">レアリティ</th>
+                            <th className="px-4 py-2 font-bold text-primary/80">装備1点あたり</th>
+                            <th className="px-4 py-2 font-bold text-primary/80">Lv1で上昇</th>
+                            <th className="px-4 py-2 font-bold text-primary/80">最大Lv</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-primary/10">
+                          {Object.entries(ROND_DROP_RATES).map(([rarity, data]) => (
+                            <tr key={rarity} className="hover:bg-primary/5 transition-colors">
+                              <td className="py-2 font-medium">{rarity}</td>
+                              <td className="px-4 py-2">{data.base}%</td>
+                              <td className="px-4 py-2">{data.perLevel.toFixed(5)}%</td>
+                              <td className="px-4 py-2">
+                                {data.base + data.perLevel * data.maxLevel}%
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* ランク閾値テーブル */}
+                  <div>
+                    <h4 className="font-bold text-primary/80 mb-3">宝箱ランク閾値</h4>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left table-auto text-xs md:text-sm">
+                        <thead>
+                          <tr className="border-b border-primary/20">
+                            <th className="py-2 font-bold text-primary/80">ランク</th>
+                            <th className="px-4 py-2 font-bold text-primary/80">ドロップ率</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-primary/10">
+                          {RANK_THRESHOLDS.map((threshold) => (
+                            <tr
+                              key={threshold.rank}
+                              className="hover:bg-primary/5 transition-colors"
+                            >
+                              <td className="py-2 font-medium">{threshold.rank}</td>
+                              <td className="px-4 py-2">{threshold.display}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -359,24 +389,6 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
             </p>
             <p className="mt-2 font-bold">現在のランク: {currentRank}</p>
           </div>
-
-          <h3 className="font-bold mt-8 mb-3 text-primary">ランク閾値</h3>
-          <table className="w-full text-left table-auto text-sm bg-gray-800 rounded">
-            <thead>
-              <tr className="bg-gray-700">
-                <th className="px-4 py-2 border-b border-gray-600">ランク</th>
-                <th className="px-4 py-2 border-b border-gray-600">ドロップ率</th>
-              </tr>
-            </thead>
-            <tbody className="text-xs">
-              {RANK_THRESHOLDS.map((threshold) => (
-                <tr key={threshold.rank} className="border-b border-gray-700 last:border-b-0">
-                  <td className="px-4 py-2">{threshold.rank}</td>
-                  <td className="px-4 py-2">{threshold.display}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
 
           <div className="mt-8 space-y-6">
             {Object.entries(CHEST_DROP_RATES).map(([key, data]) => (
