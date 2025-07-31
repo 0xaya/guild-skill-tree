@@ -1,91 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 import { Icons, PlusIcon } from './ui/Icons';
-
-// ROND鉱石ドロップ率データ
-const ROND_DROP_RATES = {
-  N: { base: 0.1, perLevel: (0.4 - 0.1) / 20, maxLevel: 20 },
-  R: { base: 0.4, perLevel: (1.2 - 0.4) / 30, maxLevel: 30 },
-  SR: { base: 1.5, perLevel: (3 - 1.5) / 45, maxLevel: 45 },
-  'SR (setup)': { base: 10.5, perLevel: (21 - 10.5) / 45, maxLevel: 45 },
-  LR: { base: 5.0, perLevel: (8.5 - 5) / 80, maxLevel: 80 },
-};
-
-// ランク閾値データ
-const RANK_THRESHOLDS = [
-  { rank: 1, lower: 0, upper: 0.4, display: '0.0% ～ 0.4%未満' },
-  { rank: 2, lower: 0.4, upper: 1.0, display: '0.4% ～ 1.0%未満' },
-  { rank: 3, lower: 1.0, upper: 2.4, display: '1.0% ～ 2.4%未満' },
-  { rank: 4, lower: 2.4, upper: 4.8, display: '2.4% ～ 4.8%未満' },
-  { rank: 5, lower: 4.8, upper: 13.0, display: '4.8% ～ 13.0%未満' },
-  { rank: 6, lower: 13.0, upper: 17.0, display: '13.0% ～ 17.0%未満' },
-  { rank: 7, lower: 17.0, upper: 21.0, display: '17.0% ～ 21.0%未満' },
-  { rank: 8, lower: 21.0, upper: 47.0, display: '21.0% ～ 47.0%未満' },
-  { rank: 9, lower: 47.0, upper: Infinity, display: '47.0%以上' },
-];
-
-// 宝箱のドロップ率データ
-const CHEST_DROP_RATES = {
-  gold: {
-    title: '防衛戦宝箱 (金)',
-    titleColor: 'text-yellow-400',
-    items: [
-      { item: 'いずれかインクⅠ', ranks: ['高', '高', '高', '高', '高', '高', '中', '中', '中'] },
-      { item: 'いずれかインクⅡ', ranks: ['低', '低', '中', '中', '中', '中', '中', '中', '中'] },
-      { item: 'いずれかインクⅢ', ranks: ['稀', '低', '低', '低', '低', '中', '高', '高', '高'] },
-      { item: '記憶の書', ranks: ['高', '高', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: 'ギルドコイン', ranks: ['高', '高', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: '高濃度コンパクトポーション', ranks: ['-', '-', '-', '-', '-', '-', '-', '-', '-'] },
-      {
-        item: '高濃度コンパクトマナポーション',
-        ranks: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      },
-    ],
-  },
-  silver: {
-    title: '防衛戦宝箱 (銀)',
-    titleColor: 'text-gray-200',
-    items: [
-      { item: 'いずれかインクⅠ', ranks: ['中', '高', '高', '高', '高', '高', '高', '中', '中'] },
-      {
-        item: 'いずれかインクⅡ',
-        ranks: ['低', '中', '中', '中', '中', '高', '中', 'やや高', 'やや高'],
-      },
-      {
-        item: 'いずれかインクⅢ',
-        ranks: ['稀', '稀', '稀', '稀', '稀', '低', '中', '中', 'やや高'],
-      },
-      { item: '記憶の書', ranks: ['高', '高', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: 'ギルドコイン', ranks: ['高', '高', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: '高濃度コンパクトポーション', ranks: ['-', '-', '-', '-', '-', '-', '-', '-', '-'] },
-      {
-        item: '高濃度コンパクトマナポーション',
-        ranks: ['-', '-', '-', '-', '-', '-', '-', '-', '-'],
-      },
-    ],
-  },
-  bronze: {
-    title: '防衛戦宝箱 (銅)',
-    titleColor: 'text-amber-600',
-    items: [
-      { item: 'いずれかインクⅠ', ranks: ['中', '中', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: 'いずれかインクⅡ', ranks: ['稀', '低', '低', '低', '低', '中', '中', '中', '中'] },
-      { item: 'いずれかインクⅢ', ranks: ['稀', '稀', '稀', '稀', '稀', '低', '低', '低', '中'] },
-      { item: '記憶の書', ranks: ['低', '中', '高', '高', '高', '高', '高', '高', '高'] },
-      { item: 'ギルドコイン', ranks: ['低', '中', '高', '高', '高', '高', '高', '高', '高'] },
-      {
-        item: '高濃度コンパクトポーション',
-        ranks: ['高', '高', '高', '中', '中', '中', '低', '低', '低'],
-      },
-      {
-        item: '高濃度コンパクトマナポーション',
-        ranks: ['高', '高', '高', '中', '中', '中', '低', '低', '低'],
-      },
-    ],
-  },
-} as const;
+import { fetchCSV, RondDropRate, ChestDropRate, RankThreshold } from '../utils/csvUtils';
 
 // 装備部位の定義
 const EQUIPMENT_SLOTS = [
@@ -106,7 +24,7 @@ interface DropRateInfoModalProps {
 
 interface Equipment {
   id: string;
-  rarity?: keyof typeof ROND_DROP_RATES;
+  rarity?: string;
   level: number;
 }
 
@@ -193,14 +111,75 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
     }))
   );
   const [showDetails, setShowDetails] = useState(false);
+  const [rondDropRates, setRondDropRates] = useState<Record<string, RondDropRate>>({});
+  const [chestDropRates, setChestDropRates] = useState<Record<string, any>>({});
+  const [rankThresholds, setRankThresholds] = useState<RankThreshold[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // CSVファイルからデータを読み込む
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+
+        // 鉱石ドロップ率データを読み込み
+        const rondData = await fetchCSV<RondDropRate>('/data/rond-drop-rates.csv');
+        const rondRatesMap: Record<string, RondDropRate> = {};
+        rondData.forEach((item) => {
+          rondRatesMap[item.rarity] = item;
+        });
+        setRondDropRates(rondRatesMap);
+
+        // 宝箱ドロップ率データを読み込み
+        const chestData = await fetchCSV<ChestDropRate>('/data/chest-drop-rates.csv');
+        const chestRatesMap: Record<string, any> = {};
+
+        chestData.forEach((item) => {
+          if (!chestRatesMap[item.chest_type]) {
+            chestRatesMap[item.chest_type] = {
+              title: item.title,
+              titleColor: item.title_color,
+              items: [],
+            };
+          }
+
+          chestRatesMap[item.chest_type].items.push({
+            item: item.item,
+            ranks: [
+              item.rank1,
+              item.rank2,
+              item.rank3,
+              item.rank4,
+              item.rank5,
+              item.rank6,
+              item.rank7,
+              item.rank8,
+              item.rank9,
+            ],
+          });
+        });
+
+        setChestDropRates(chestRatesMap);
+
+        // ランク閾値データを読み込み
+        const rankData = await fetchCSV<RankThreshold>('/data/rank-thresholds.csv');
+        setRankThresholds(rankData);
+      } catch (error) {
+        console.error('Error loading CSV data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // 装備1点あたりのRONDドロップ率を計算する関数
   const calculateSingleEquipmentDropRate = (equipment: Equipment) => {
-    if (!equipment.rarity) return 0;
-    const data = ROND_DROP_RATES[equipment.rarity];
-    if (!data) return 0;
+    if (!equipment.rarity || !rondDropRates[equipment.rarity]) return 0;
+    const data = rondDropRates[equipment.rarity];
     const actualLevel = Math.min(equipment.level, data.maxLevel);
-    return data.base + actualLevel * data.perLevel;
+    return Math.round((data.base + actualLevel * data.perLevel) * 100) / 100;
   };
 
   // 合計RONDドロップ率を計算する関数
@@ -210,7 +189,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
   // 合計ドロップ率に基づいてランクを決定する関数
   const getRank = (totalDropRate: number) => {
-    for (const threshold of RANK_THRESHOLDS) {
+    for (const threshold of rankThresholds) {
       if (totalDropRate >= threshold.lower && totalDropRate < threshold.upper) {
         return threshold.rank;
       }
@@ -239,6 +218,22 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
   const totalRondDropRate = calculateTotalRondDropRate();
   const currentRank =
     typeof getRank(totalRondDropRate) === 'number' ? (getRank(totalRondDropRate) as number) : 1;
+
+  if (isLoading) {
+    return (
+      <Dialog
+        open={isOpen}
+        onOpenChange={onOpenChange}
+        title=""
+        className="max-w-[350px] md:max-w-2xl"
+        description={
+          <div className="p-4 text-white">
+            <p>データを読み込み中...</p>
+          </div>
+        }
+      />
+    );
+  }
 
   return (
     <Dialog
@@ -295,13 +290,15 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-primary/10">
-                          {Object.entries(ROND_DROP_RATES).map(([rarity, data]) => (
+                          {Object.entries(rondDropRates).map(([rarity, data]) => (
                             <tr key={rarity} className="hover:bg-primary/5 transition-colors">
                               <td className="py-2 font-medium">{rarity}</td>
                               <td className="px-4 py-2">{data.base}%</td>
                               <td className="px-4 py-2">{data.perLevel.toFixed(5)}%</td>
                               <td className="px-4 py-2">
-                                {data.base + data.perLevel * data.maxLevel}%
+                                {Math.round((data.base + data.perLevel * data.maxLevel) * 100) /
+                                  100}
+                                %
                               </td>
                             </tr>
                           ))}
@@ -322,7 +319,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-primary/10">
-                          {RANK_THRESHOLDS.map((threshold) => (
+                          {rankThresholds.map((threshold) => (
                             <tr
                               key={threshold.rank}
                               className="hover:bg-primary/5 transition-colors"
@@ -360,7 +357,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                     }`}
                   >
                     <option value="">レアリティを選択</option>
-                    {Object.keys(ROND_DROP_RATES).map((rarity) => (
+                    {Object.keys(rondDropRates).map((rarity) => (
                       <option key={rarity} value={rarity}>
                         {rarity}
                       </option>
@@ -373,7 +370,11 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                       handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value) || 0)
                     }
                     min="0"
-                    max={equipment.rarity ? ROND_DROP_RATES[equipment.rarity].maxLevel : 0}
+                    max={
+                      equipment.rarity && rondDropRates[equipment.rarity]
+                        ? rondDropRates[equipment.rarity].maxLevel
+                        : 0
+                    }
                     className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <span className="text-gray-300">Lv</span>
@@ -391,7 +392,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
           </div>
 
           <div className="mt-8 space-y-6">
-            {Object.entries(CHEST_DROP_RATES).map(([key, data]) => (
+            {Object.entries(chestDropRates).map(([key, data]) => (
               <DropRateTable
                 key={key}
                 title={data.title}
