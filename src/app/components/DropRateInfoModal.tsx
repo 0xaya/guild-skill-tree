@@ -227,6 +227,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
         // ランク閾値データを読み込み
         const rankData = await fetchCSV<RankThreshold>(`/data/rank-thresholds.csv?t=${timestamp}`);
+        console.log('Loaded rank thresholds:', rankData); // デバッグ用ログ
         setRankThresholds(rankData);
       } catch (error) {
         console.error('Error loading CSV data:', error);
@@ -383,15 +384,18 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-primary/10">
-                          {rankThresholds.map((threshold) => (
-                            <tr
-                              key={threshold.rank}
-                              className="hover:bg-primary/5 transition-colors"
-                            >
-                              <td className="py-2 font-medium">{threshold.rank}</td>
-                              <td className="px-4 py-2">{threshold.display}</td>
-                            </tr>
-                          ))}
+                          {rankThresholds.map((threshold) => {
+                            console.log('Rendering threshold:', threshold); // デバッグ用ログ
+                            return (
+                              <tr
+                                key={threshold.rank}
+                                className="hover:bg-primary/5 transition-colors"
+                              >
+                                <td className="py-2 font-medium">{threshold.rank}</td>
+                                <td className="px-4 py-2">{threshold.display}</td>
+                              </tr>
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>

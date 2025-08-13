@@ -36,9 +36,16 @@ function parseCSV<T>(csvText: string): T[] {
 
     headers.forEach((header, index) => {
       const value = values[index] || '';
-      // 数値に変換できる場合は数値に変換
-      const numValue = parseFloat(value);
-      row[header.trim()] = isNaN(numValue) ? value : numValue;
+      const headerName = header.trim();
+
+      // displayフィールドは常に文字列として扱う
+      if (headerName === 'display') {
+        row[headerName] = value;
+      } else {
+        // 数値に変換できる場合は数値に変換
+        const numValue = parseFloat(value);
+        row[headerName] = isNaN(numValue) ? value : numValue;
+      }
     });
 
     data.push(row as T);
