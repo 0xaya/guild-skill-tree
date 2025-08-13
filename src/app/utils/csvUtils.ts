@@ -1,7 +1,13 @@
 // CSVファイルを読み込んでパースする関数
 export async function fetchCSV<T>(url: string): Promise<T[]> {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      cache: 'no-cache', // キャッシュを無効化
+      headers: {
+        'Cache-Control': 'no-cache',
+        Pragma: 'no-cache',
+      },
+    });
     if (!response.ok) {
       throw new Error(`Failed to fetch CSV: ${response.statusText}`);
     }
@@ -64,6 +70,7 @@ export interface ChestDropRate {
   rank7: string;
   rank8: string;
   rank9: string;
+  rank10?: string;
 }
 
 // ランク閾値データの型定義

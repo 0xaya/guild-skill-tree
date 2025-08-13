@@ -30,23 +30,31 @@ interface Equipment {
 
 interface DropRateTableProps {
   title: string;
-  titleColor: string;
+  titleStyle?: string;
   items: ReadonlyArray<{
     readonly item: string;
     readonly ranks: ReadonlyArray<string>;
   }>;
   currentRank: number;
+  chestType?: string;
 }
 
-const DropRateTable: React.FC<DropRateTableProps> = ({ title, titleColor, items, currentRank }) => {
+const DropRateTable: React.FC<DropRateTableProps> = ({
+  title,
+  titleStyle,
+  items,
+  currentRank,
+  chestType,
+}) => {
   const tableRef = React.useRef<HTMLDivElement>(null);
 
   // ランクが変更された時にスクロール
   React.useEffect(() => {
-    if (tableRef.current) {
+    if (tableRef.current && items.length > 0) {
       const table = tableRef.current;
-      const columnWidth = 50; // ランク列の幅（w-[50px]）
-      const scrollPosition = columnWidth * (currentRank - 1); // 0-based indexなので-1
+      const columnWidth = 40; // ランク列の幅（w-[40px]）
+      const maxRank = items[0].ranks.length;
+      const scrollPosition = columnWidth * Math.min(currentRank - 1, maxRank - 1); // 0-based indexなので-1
 
       // スムーズスクロール
       table.scrollTo({
@@ -54,40 +62,73 @@ const DropRateTable: React.FC<DropRateTableProps> = ({ title, titleColor, items,
         behavior: 'smooth',
       });
     }
-  }, [currentRank]);
+  }, [currentRank, items]);
+
+  // 画像パスをchestTypeに応じて組み立て
+  const getChestImagePath = (type?: string) => {
+    if (!type) return undefined;
+    return `/images/defencebattle_box-${type}.png`;
+  };
 
   return (
     <div className="pt-2">
-      <h4 className={`text-md font-bold mb-2 ${titleColor}`}>{title}</h4>
+      <h4
+        className="text-md font-bold mb-2 flex items-center"
+        style={{
+          color: titleStyle ? titleStyle.replace('color: ', '').replace(';', '') : '#ffffff',
+        }}
+      >
+        {chestType && (
+          <img
+            src={getChestImagePath(chestType)}
+            alt={title}
+            className="inline-block w-6 h-6 mr-2 align-middle"
+            style={{ objectFit: 'contain' }}
+          />
+        )}
+        {title}
+      </h4>
       <div ref={tableRef} className="relative overflow-x-auto rounded">
-        <table className="w-full text-left table-fixed text-sm bg-gray-800">
+        <table className="w-full text-left table-fixed text-xs bg-gray-800">
           <thead>
             <tr className="bg-gray-700">
-              <th className="sticky left-0 z-10 w-32 px-4 py-2 border-b border-gray-600 bg-gray-700">
+              <th className="sticky left-0 z-10 w-32 px-4 py-2 border-b border-gray-600 bg-gray-700 text-xs">
                 アイテム名
               </th>
-              {[...Array(9)].map((_, i) => (
-                <th
-                  key={i}
-                  className={`w-[50px] px-4 py-2 border-b border-gray-600 ${
-                    i + 1 === currentRank ? 'bg-primary/70' : ''
-                  } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright]`}
-                >
-                  ランク{i + 1}
-                </th>
-              ))}
+              {items.length > 0 &&
+                items[0].ranks.map((_, i) => (
+                  <th
+                    key={i}
+                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs content-center ${
+                      i + 1 === currentRank ? 'bg-primary/70' : ''
+                    } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright]`}
+                  >
+                    {i + 1 === 10 ? (
+                      <>
+                        <span className="[writing-mode:vertical-rl] [text-orientation:upright]">
+                          ランク
+                        </span>
+                        <span className="[writing-mode:horizontal-tb] [text-orientation:upright]">
+                          10
+                        </span>
+                      </>
+                    ) : (
+                      `ランク${i + 1}`
+                    )}
+                  </th>
+                ))}
             </tr>
           </thead>
           <tbody>
             {items.map((row, rowIndex) => (
               <tr key={rowIndex} className="border-b border-gray-700 last:border-b-0">
-                <td className="sticky left-0 z-10 px-4 py-2 font-bold bg-gray-800 border-r border-gray-700">
+                <td className="sticky left-0 z-10 px-4 py-2 font-bold bg-gray-800 border-r border-gray-700 text-xs">
                   {row.item}
                 </td>
                 {row.ranks.map((rate, colIndex) => (
                   <td
                     key={colIndex}
-                    className={`px-4 py-2 text-center ${
+                    className={`px-4 py-2 text-center text-xs ${
                       colIndex + 1 === currentRank ? 'bg-primary/70' : ''
                     }`}
                   >
@@ -122,8 +163,11 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
       try {
         setIsLoading(true);
 
+        // キャッシュを無効化するためのタイムスタンプ
+        const timestamp = Date.now();
+
         // 鉱石ドロップ率データを読み込み
-        const rondData = await fetchCSV<RondDropRate>('/data/rond-drop-rates.csv');
+        const rondData = await fetchCSV<RondDropRate>(`/data/rond-drop-rates.csv?t=${timestamp}`);
         const rondRatesMap: Record<string, RondDropRate> = {};
         rondData.forEach((item) => {
           rondRatesMap[item.rarity] = item;
@@ -131,14 +175,33 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
         setRondDropRates(rondRatesMap);
 
         // 宝箱ドロップ率データを読み込み
-        const chestData = await fetchCSV<ChestDropRate>('/data/chest-drop-rates.csv');
+        const chestData = await fetchCSV<ChestDropRate>(
+          `/data/chest-drop-rates.csv?t=${timestamp}`
+        );
         const chestRatesMap: Record<string, any> = {};
 
         chestData.forEach((item) => {
           if (!chestRatesMap[item.chest_type]) {
+            // 色クラスをインラインスタイルに変換
+            let titleStyle = '';
+            switch (item.title_color) {
+              case 'text-yellow-400':
+                titleStyle = 'color: #fbbf24;'; // yellow-400
+                break;
+              case 'text-gray-200':
+                titleStyle = 'color: #e5e7eb;'; // gray-200
+                break;
+              case 'text-amber-600':
+                titleStyle = 'color: #d97706;'; // amber-600
+                break;
+              default:
+                titleStyle = 'color: #ffffff;'; // デフォルトは白
+            }
+
             chestRatesMap[item.chest_type] = {
               title: item.title,
               titleColor: item.title_color,
+              titleStyle: titleStyle,
               items: [],
             };
           }
@@ -155,6 +218,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
               item.rank7,
               item.rank8,
               item.rank9,
+              item.rank10 || '',
             ],
           });
         });
@@ -162,7 +226,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
         setChestDropRates(chestRatesMap);
 
         // ランク閾値データを読み込み
-        const rankData = await fetchCSV<RankThreshold>('/data/rank-thresholds.csv');
+        const rankData = await fetchCSV<RankThreshold>(`/data/rank-thresholds.csv?t=${timestamp}`);
         setRankThresholds(rankData);
       } catch (error) {
         console.error('Error loading CSV data:', error);
@@ -396,9 +460,10 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
               <DropRateTable
                 key={key}
                 title={data.title}
-                titleColor={data.titleColor}
+                titleStyle={data.titleStyle}
                 items={data.items}
                 currentRank={currentRank}
+                chestType={key}
               />
             ))}
           </div>
