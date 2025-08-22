@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Button } from "./Button";
+import { CloseIcon } from './Icons';
 
 interface DialogProps {
   open: boolean;
@@ -36,6 +37,14 @@ export function Dialog({
           className || ''
         }`}
       >
+        <button
+          type="button"
+          aria-label="閉じる"
+          onClick={() => onOpenChange(false)}
+          className="absolute right-2 top-2 text-primary hover:bg-primary/10 rounded-full p-2"
+        >
+          <CloseIcon size={22} />
+        </button>
         <h2 className="font-bold mb-3">{title}</h2>
         <div className="text-text-secondary mb-6">{description}</div>
         <div className="flex justify-end gap-2">

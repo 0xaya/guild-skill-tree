@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog } from "./Dialog";
 import { Button } from "./Button";
-import { PencilIcon, CloseIcon } from "./Icons";
+import { PencilIcon } from './Icons';
 
 interface AccountDialogProps {
   open: boolean;
@@ -87,13 +87,6 @@ export function AccountDialog({
         title={
           <div className="flex items-center justify-between">
             <span className="text-primary">アカウント情報</span>
-            <button
-              onClick={() => onOpenChange(false)}
-              className="absolute top-2 right-2 p-1.5 hover:bg-primary/10 rounded-full transition-colors"
-              aria-label="閉じる"
-            >
-              <CloseIcon size={24} className="text-primary" />
-            </button>
           </div>
         }
         description={
@@ -106,18 +99,23 @@ export function AccountDialog({
                       <input
                         type="text"
                         value={newDisplayName}
-                        onChange={e => setNewDisplayName(e.target.value)}
+                        onChange={(e) => setNewDisplayName(e.target.value)}
                         className="w-full px-2 py-1 bg-background-dark border border-primary/50 rounded"
                         placeholder="ユーザー名を入力"
                       />
                     ) : (
                       <span className="text-text-primary">
-                        ユーザー名: {userData?.displayName || displayName || "未設定"}
+                        ユーザー名: {userData?.displayName || displayName || '未設定'}
                       </span>
                     )}
                   </div>
                   {!isEditing ? (
-                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="ml-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditing(true)}
+                      className="ml-2"
+                    >
                       <PencilIcon size={16} />
                     </Button>
                   ) : (
@@ -127,19 +125,26 @@ export function AccountDialog({
                         size="sm"
                         onClick={() => {
                           setIsEditing(false);
-                          setNewDisplayName(userData?.displayName || displayName || "");
+                          setNewDisplayName(userData?.displayName || displayName || '');
                         }}
                         disabled={isUpdating}
                       >
                         キャンセル
                       </Button>
-                      <Button variant="primary" size="sm" onClick={handleUpdateDisplayName} disabled={isUpdating}>
-                        {isUpdating ? "更新中..." : "保存"}
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleUpdateDisplayName}
+                        disabled={isUpdating}
+                      >
+                        {isUpdating ? '更新中...' : '保存'}
                       </Button>
                     </div>
                   )}
                 </div>
-                <div className="text-text-secondary">ログイン方法: {getAuthMethodText(authMethod)}</div>
+                <div className="text-text-secondary">
+                  ログイン方法: {getAuthMethodText(authMethod)}
+                </div>
               </div>
             </div>
           </>
@@ -150,10 +155,10 @@ export function AccountDialog({
             onClick={handleDeleteClick}
             variant="primary"
             size="md"
-            className={`w-full ${isEditing ? "hidden" : ""}`}
+            className={`w-full ${isEditing ? 'hidden' : ''}`}
             disabled={isDeleting}
           >
-            {isDeleting ? "削除中..." : "アカウントを削除"}
+            {isDeleting ? '削除中...' : 'アカウントを削除'}
           </Button>,
         ]}
       />
@@ -182,7 +187,7 @@ export function AccountDialog({
             className="w-full whitespace-nowrap"
             disabled={isDeleting}
           >
-            {isDeleting ? "削除中..." : "アカウントを削除"}
+            {isDeleting ? '削除中...' : 'アカウントを削除'}
           </Button>,
           <Button
             key="cancel"
