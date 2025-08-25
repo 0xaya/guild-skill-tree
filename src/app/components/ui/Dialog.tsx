@@ -48,7 +48,8 @@ export function Dialog({
         <h2 className="font-bold mb-3">{title}</h2>
         <div className="text-text-secondary mb-6">{description}</div>
         <div className="flex justify-end gap-2">
-          {actions && actions.length > 0 ? (
+          {actions ? (
+            actions.length > 0 &&
             actions.map((action, idx) => <React.Fragment key={idx}>{action}</React.Fragment>)
           ) : (
             <>

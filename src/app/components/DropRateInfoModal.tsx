@@ -306,6 +306,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
       onOpenChange={onOpenChange}
       title=""
       className="max-w-[350px] md:max-w-2xl"
+      actions={[]}
       description={
         <div className="p-4 text-white max-h-[80vh] overflow-y-auto">
           <p className="text-sm text-text-muted mb-4">
