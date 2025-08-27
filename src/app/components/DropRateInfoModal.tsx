@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
-import { Button } from './ui/Button';
-import { Input } from './ui/Input';
 import { Icons, PlusIcon } from './ui/Icons';
 import { fetchCSV, RondDropRate, ChestDropRate, RankThreshold } from '../utils/csvUtils';
 
@@ -432,20 +430,25 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                       </option>
                     ))}
                   </select>
-                  <input
-                    type="number"
+                  <select
                     value={equipment.level}
                     onChange={(e) =>
-                      handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value) || 0)
-                    }
-                    min="0"
-                    max={
-                      equipment.rarity && rondDropRates[equipment.rarity]
-                        ? rondDropRates[equipment.rarity].maxLevel
-                        : 0
+                      handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value))
                     }
                     className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
+                  >
+                    <option value={0}>0</option>
+                    {equipment.rarity &&
+                      rondDropRates[equipment.rarity] &&
+                      Array.from(
+                        { length: rondDropRates[equipment.rarity].maxLevel + 1 },
+                        (_, i) => (
+                          <option key={i} value={i}>
+                            {i}
+                          </option>
+                        )
+                      )}
+                  </select>
                   <span className="text-gray-300">Lv</span>
                 </div>
               );
