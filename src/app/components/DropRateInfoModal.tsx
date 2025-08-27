@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
-import { Icons, PlusIcon } from './ui/Icons';
+import { Icons } from './ui/Icons';
 import { fetchCSV, RondDropRate, ChestDropRate, RankThreshold } from '../utils/csvUtils';
-import { loadEquipmentConfig, saveEquipmentConfig, getCurrentUserId } from '../utils/storageUtils';
+import { loadEquipmentConfig, saveEquipmentConfig } from '../utils/storageUtils';
 import { Equipment } from '../types/character';
+import { useAuth } from '../contexts/AuthContext';
 
 // 装備部位の定義
 const EQUIPMENT_SLOTS = [
@@ -139,6 +140,7 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
 };
 
 export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, onOpenChange }) => {
+  const { user } = useAuth();
   const [equipmentList, setEquipmentList] = useState<Equipment[]>(() =>
     EQUIPMENT_SLOTS.map((slot) => ({
       id: slot.id,
@@ -155,8 +157,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
   useEffect(() => {
     const loadEquipment = async () => {
       try {
-        const userId = getCurrentUserId();
-        const equipment = await loadEquipmentConfig(userId);
+        const equipment = await loadEquipmentConfig(user?.uid);
         setEquipmentList(equipment);
       } catch (error) {
         console.error('Failed to load equipment config:', error);
@@ -164,7 +165,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
     };
 
     loadEquipment();
-  }, []);
+  }, [user?.uid]);
 
   // CSVファイルからデータを読み込む
   useEffect(() => {
@@ -290,8 +291,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
     // 装備設定を保存
     try {
-      const userId = getCurrentUserId();
-      await saveEquipmentConfig(newEquipmentList, userId);
+      await saveEquipmentConfig(newEquipmentList, user?.uid);
     } catch (error) {
       console.error('Failed to save equipment config:', error);
     }

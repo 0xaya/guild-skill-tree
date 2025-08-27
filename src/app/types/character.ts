@@ -7,7 +7,6 @@ export interface Equipment {
 export interface EquipmentConfig {
   equipment: Equipment[];
   updatedAt: Date;
-  userId?: string; // ログインユーザーの場合のみ
 }
 
 export interface Character {

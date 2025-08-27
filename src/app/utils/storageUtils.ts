@@ -1,4 +1,6 @@
 import { GlobalState, Character, Equipment, EquipmentConfig } from '../types/character';
+import { db } from '../config/firebase';
+import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
 const STORAGE_KEY = 'guild-skill-tree-simulator-state';
 const EQUIPMENT_STORAGE_KEY = 'guild-skill-tree-equipment-config';
@@ -115,12 +117,40 @@ export const updateSkillTree = (
   return { ...state, characters };
 };
 
+// Firestore: 装備設定の保存
+const saveEquipmentConfigToDB = async (userId: string, config: EquipmentConfig) => {
+  const userRef = doc(db, 'users', userId);
+  await setDoc(
+    userRef,
+    {
+      equipmentConfig: {
+        ...config,
+        // FirestoreのTimestampに合わせる（保存時はサーバー時刻を使用）
+        updatedAt: serverTimestamp(),
+      },
+    },
+    { merge: true }
+  );
+};
+
+// Firestore: 装備設定の読み込み
+const loadEquipmentConfigFromDB = async (userId: string): Promise<Equipment[] | null> => {
+  const userRef = doc(db, 'users', userId);
+  const snap = await getDoc(userRef);
+  if (!snap.exists()) return null;
+  const data = snap.data() as any;
+  const cfg = data?.equipmentConfig;
+  if (cfg && Array.isArray(cfg.equipment)) {
+    return cfg.equipment as Equipment[];
+  }
+  return null;
+};
+
 // 装備設定の保存
 export const saveEquipmentConfig = async (equipment: Equipment[], userId?: string) => {
   const config: EquipmentConfig = {
     equipment,
     updatedAt: new Date(),
-    userId,
   };
 
   // LocalStorageに保存
@@ -135,9 +165,7 @@ export const saveEquipmentConfig = async (equipment: Equipment[], userId?: strin
   // ログイン済みの場合はDBにも保存
   if (userId) {
     try {
-      // TODO: DB保存の実装
-      // await saveToDB(getEquipmentDBKey(userId), config);
-      console.log('Equipment config saved to DB for user:', userId);
+      await saveEquipmentConfigToDB(userId, config);
     } catch (error) {
       console.error('Failed to save equipment to DB:', error);
     }
@@ -146,29 +174,32 @@ export const saveEquipmentConfig = async (equipment: Equipment[], userId?: strin
 
 // 装備設定の読み込み
 export const loadEquipmentConfig = async (userId?: string): Promise<Equipment[]> => {
+  // まずログイン済みならDBから読み込みを試みる
+  if (userId) {
+    try {
+      const fromDB = await loadEquipmentConfigFromDB(userId);
+      if (fromDB) {
+        // DBから取得できたらLocalStorageも更新
+        if (typeof window !== 'undefined') {
+          const cfg: EquipmentConfig = { equipment: fromDB, updatedAt: new Date() };
+          try {
+            localStorage.setItem(EQUIPMENT_STORAGE_KEY, JSON.stringify(cfg));
+          } catch {}
+        }
+        return fromDB;
+      }
+    } catch (error) {
+      console.error('Failed to load equipment from DB:', error);
+    }
+  }
+
   // LocalStorageから読み込み
   if (typeof window !== 'undefined') {
     const saved = localStorage.getItem(EQUIPMENT_STORAGE_KEY);
     if (saved) {
       try {
         const config: EquipmentConfig = JSON.parse(saved);
-
-        // ログイン済みの場合はDBから最新データを取得
-        if (userId) {
-          try {
-            // TODO: DB読み込みの実装
-            // const dbConfig = await loadFromDB(getEquipmentDBKey(userId));
-            // if (dbConfig && dbConfig.updatedAt > config.updatedAt) {
-            //   localStorage.setItem(EQUIPMENT_STORAGE_KEY, JSON.stringify(dbConfig));
-            //   return dbConfig.equipment;
-            // }
-            console.log('Equipment config loaded from DB for user:', userId);
-          } catch (error) {
-            console.error('Failed to load equipment from DB:', error);
-          }
-        }
-
-        return config.equipment;
+        if (Array.isArray(config.equipment)) return config.equipment;
       } catch (error) {
         console.error('Failed to parse saved equipment:', error);
       }
