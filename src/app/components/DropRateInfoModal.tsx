@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Dialog } from './ui/Dialog';
 import { Icons, PlusIcon } from './ui/Icons';
 import { fetchCSV, RondDropRate, ChestDropRate, RankThreshold } from '../utils/csvUtils';
+import { loadEquipmentConfig, saveEquipmentConfig, getCurrentUserId } from '../utils/storageUtils';
+import { Equipment } from '../types/character';
 
 // 装備部位の定義
 const EQUIPMENT_SLOTS = [
@@ -18,12 +20,6 @@ const EQUIPMENT_SLOTS = [
 interface DropRateInfoModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-}
-
-interface Equipment {
-  id: string;
-  rarity?: string;
-  level: number;
 }
 
 interface DropRateTableProps {
@@ -155,6 +151,21 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
   const [rankThresholds, setRankThresholds] = useState<RankThreshold[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 装備設定を読み込む
+  useEffect(() => {
+    const loadEquipment = async () => {
+      try {
+        const userId = getCurrentUserId();
+        const equipment = await loadEquipmentConfig(userId);
+        setEquipmentList(equipment);
+      } catch (error) {
+        console.error('Failed to load equipment config:', error);
+      }
+    };
+
+    loadEquipment();
+  }, []);
+
   // CSVファイルからデータを読み込む
   useEffect(() => {
     const loadData = async () => {
@@ -261,21 +272,29 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
   };
 
   // 装備のレアリティやレベルが変更されたときのハンドラ
-  const handleEquipmentChange = (
+  const handleEquipmentChange = async (
     id: string,
     key: keyof Equipment,
     value: string | number | undefined
   ) => {
-    setEquipmentList((prevList) =>
-      prevList.map((eq) =>
-        eq.id === id
-          ? {
-              ...eq,
-              [key]: key === 'level' ? Math.max(0, parseInt(value as string) || 0) : value,
-            }
-          : eq
-      )
+    const newEquipmentList = equipmentList.map((eq) =>
+      eq.id === id
+        ? {
+            ...eq,
+            [key]: key === 'level' ? Math.max(0, parseInt(value as string) || 0) : value,
+          }
+        : eq
     );
+
+    setEquipmentList(newEquipmentList);
+
+    // 装備設定を保存
+    try {
+      const userId = getCurrentUserId();
+      await saveEquipmentConfig(newEquipmentList, userId);
+    } catch (error) {
+      console.error('Failed to save equipment config:', error);
+    }
   };
 
   const totalRondDropRate = calculateTotalRondDropRate();
