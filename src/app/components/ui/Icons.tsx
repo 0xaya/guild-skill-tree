@@ -1,11 +1,12 @@
 import React from "react";
+import { SVGProps } from 'react';
 
 interface IconProps {
   size?: number;
   className?: string;
 }
 
-export const ZoomInIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const ZoomInIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -25,7 +26,7 @@ export const ZoomInIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =
   </svg>
 );
 
-export const ZoomOutIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const ZoomOutIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -44,7 +45,7 @@ export const ZoomOutIcon: React.FC<IconProps> = ({ size = 20, className = "" }) 
   </svg>
 );
 
-export const ResetIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const ResetIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -64,7 +65,7 @@ export const ResetIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =>
   </svg>
 );
 
-export const LogoutIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const LogoutIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -83,7 +84,7 @@ export const LogoutIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =
   </svg>
 );
 
-export const WalletIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const WalletIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -102,8 +103,14 @@ export const WalletIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =
   </svg>
 );
 
-export const GoogleIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 48 48" className={className}>
+export const GoogleIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 48 48"
+    className={className}
+  >
     <path
       fill="#FFC107"
       d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"
@@ -123,7 +130,7 @@ export const GoogleIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =
   </svg>
 );
 
-export const SignInIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const SignInIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -141,7 +148,7 @@ export const SignInIcon: React.FC<IconProps> = ({ size = 20, className = "" }) =
   </svg>
 );
 
-export const XIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const XIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -154,7 +161,7 @@ export const XIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
   </svg>
 );
 
-export const PlusIcon: React.FC<IconProps> = ({ size = 20, className = "" }) => (
+export const PlusIcon: React.FC<IconProps> = ({ size = 20, className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -192,7 +199,7 @@ export function PencilIcon({ size = 24, className }: IconProps) {
   );
 }
 
-export function ChevronDownIcon({ size = 24, className = "" }: IconProps) {
+export function ChevronDownIcon({ size = 24, className = '' }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -211,7 +218,7 @@ export function ChevronDownIcon({ size = 24, className = "" }: IconProps) {
   );
 }
 
-export function CheckIcon({ size = 24, className = "" }: IconProps) {
+export function CheckIcon({ size = 24, className = '' }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -252,7 +259,7 @@ export function TrashIcon() {
   );
 }
 
-export function CloseIcon({ size = 24, className = "" }: IconProps) {
+export function CloseIcon({ size = 24, className = '' }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -271,3 +278,39 @@ export function CloseIcon({ size = 24, className = "" }: IconProps) {
     </svg>
   );
 }
+
+export const Icons = {
+  Info: ({ className, ...props }: SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </svg>
+  ),
+  X: ({ className, ...props }: SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      {...props}
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  ),
+} as const;

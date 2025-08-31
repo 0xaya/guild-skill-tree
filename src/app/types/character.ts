@@ -1,3 +1,14 @@
+export interface Equipment {
+  id: string; // 装備部位ID (right_hand, left_hand, etc.)
+  rarity?: string; // レアリティ
+  level: number; // 強化レベル
+}
+
+export interface EquipmentConfig {
+  equipment: Equipment[];
+  updatedAt: Date;
+}
+
 export interface Character {
   id: string;
   name: string;
