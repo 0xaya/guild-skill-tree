@@ -5,23 +5,25 @@ import { Skill } from "../types/skill";
 import { Character, GlobalState } from "../types/character";
 import { SkillNode } from "./SkillNode";
 import { SkillConnection } from "./SkillConnection";
+import { DropRateInfoModal } from './DropRateInfoModal';
 import {
   loadSkillsFromCSV,
   isSkillUnlocked,
   calculateTotalCost,
   calculateRemainingMaterials,
   SKILL_POSITIONS,
-} from "../utils/skillUtils";
-import { loadGlobalState, saveGlobalState } from "../utils/storageUtils";
-import { useCharacter } from "../contexts/CharacterContext";
-import { useAuth } from "../contexts/AuthContext";
-import { Button } from "./ui/Button";
-import { ZoomInIcon, ZoomOutIcon, ResetIcon } from "./ui/Icons";
-import { Dialog } from "./ui/Dialog";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "../config/firebase";
-import { batchSaveCharacterData } from "../utils/syncUtils";
-import { useIsMobile } from "../hooks/useIsMobile";
+} from '../utils/skillUtils';
+import { loadGlobalState, saveGlobalState } from '../utils/storageUtils';
+import { useCharacter } from '../contexts/CharacterContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Button } from './ui/Button';
+import { ZoomInIcon, ZoomOutIcon, ResetIcon } from './ui/Icons';
+import { GiLockedChest } from 'react-icons/gi';
+import { Dialog } from './ui/Dialog';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from '../config/firebase';
+import { batchSaveCharacterData } from '../utils/syncUtils';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export function SkillTreeSimulator() {
   const [skills, setSkills] = useState<Skill[]>([]);
@@ -30,8 +32,12 @@ export function SkillTreeSimulator() {
   const [scale, setScale] = useState<number>(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [isDropRateModalOpen, setIsDropRateModalOpen] = useState(false);
   const [containerRef, setContainerRef] = useState<HTMLDivElement | null>(null);
-  const [totalCost, setTotalCost] = useState<{ coins: number; materials: { [key: string]: number } }>({
+  const [totalCost, setTotalCost] = useState<{
+    coins: number;
+    materials: { [key: string]: number };
+  }>({
     coins: 0,
     materials: {},
   });
@@ -81,13 +87,13 @@ export function SkillTreeSimulator() {
         setIsLoading(true);
         const loadedSkills = await loadSkillsFromCSV();
         setSkills(loadedSkills);
-        if (!loadedSkills.find(s => s.id === "core")) {
-          console.error("Core skill not found in loaded skills!");
+        if (!loadedSkills.find((s) => s.id === 'core')) {
+          console.error('Core skill not found in loaded skills!');
         }
         setIsLoading(false);
       } catch (err) {
-        console.error("Error loading skills data:", err);
-        setError("スキルデータの読み込みに失敗しました。");
+        console.error('Error loading skills data:', err);
+        setError('スキルデータの読み込みに失敗しました。');
         setIsLoading(false);
       }
     };
@@ -128,16 +134,16 @@ export function SkillTreeSimulator() {
     };
 
     adjustInitialScale();
-    window.addEventListener("resize", adjustInitialScale);
+    window.addEventListener('resize', adjustInitialScale);
 
     return () => {
-      window.removeEventListener("resize", adjustInitialScale);
+      window.removeEventListener('resize', adjustInitialScale);
     };
   }, [containerRef, skills]);
 
   // 現在のキャラクターのギルドランクを表示用の状態に反映
   useEffect(() => {
-    console.log("useEffect guildRank changed:", {
+    console.log('useEffect guildRank changed:', {
       newGuildRank: currentCharacter?.guildRank,
       displayRank,
       originalRank,
@@ -153,7 +159,7 @@ export function SkillTreeSimulator() {
   }, [currentCharacter?.guildRank, isRankChanging]);
 
   const handleSkillClick = (skillId: string, e: React.MouseEvent | React.TouchEvent) => {
-    if (skillId === "core") return;
+    if (skillId === 'core') return;
 
     const skill = skills.find((s: Skill) => s.id === skillId);
     if (!skill) return;
@@ -162,13 +168,17 @@ export function SkillTreeSimulator() {
     const maxLevel = skill.levels.length;
 
     // モバイル時はレベルアップ/ダウンをスキップ（プラスボタンは除く）
-    if (isMobile && currentLevel > 0 && !(e.target as HTMLElement).closest(".plus-button")) return;
+    if (isMobile && currentLevel > 0 && !(e.target as HTMLElement).closest('.plus-button')) return;
 
     if (currentLevel >= maxLevel) return;
 
     if (!isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)) {
-      const parentNames = skill.parentIds?.map(pId => skills.find(s => s.id === pId)?.name || pId).join(", ") || "なし";
-      setError(`${skill.name}はロックされています。必要ランク: ${skill.requiredRank}, 前提スキル: ${parentNames}`);
+      const parentNames =
+        skill.parentIds?.map((pId) => skills.find((s) => s.id === pId)?.name || pId).join(', ') ||
+        'なし';
+      setError(
+        `${skill.name}はロックされています。必要ランク: ${skill.requiredRank}, 前提スキル: ${parentNames}`
+      );
       return;
     }
 
@@ -176,7 +186,9 @@ export function SkillTreeSimulator() {
     const nextLevelData = skill.levels[nextLevelIndex];
     if (nextLevelData && nextLevelData.requiredRank > (currentCharacter?.guildRank || 5)) {
       setError(
-        `${skill.name} Lv${nextLevelIndex + 1} を取得するにはギルドランク ${nextLevelData.requiredRank} が必要です`
+        `${skill.name} Lv${nextLevelIndex + 1} を取得するにはギルドランク ${
+          nextLevelData.requiredRank
+        } が必要です`
       );
       return;
     }
@@ -198,13 +210,13 @@ export function SkillTreeSimulator() {
   };
 
   const handleSkillRightClick = (skillId: string, e: React.MouseEvent | React.TouchEvent) => {
-    if (skillId === "core") return;
+    if (skillId === 'core') return;
 
     const currentLevel = selectedSkills[skillId] || 0;
     if (currentLevel <= 0) return;
 
     // モバイル時はレベルダウンをスキップ（マイナスボタンは除く）
-    if (isMobile && !(e.target as HTMLElement).closest(".minus-button")) return;
+    if (isMobile && !(e.target as HTMLElement).closest('.minus-button')) return;
 
     const acquiredLevel = acquiredSkills[skillId] || 0;
     // acquiredLevel > currentLevel - 1 の場合は両方下げる
@@ -236,7 +248,7 @@ export function SkillTreeSimulator() {
         (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
       );
       if (hasActiveChildren) {
-        setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
+        setError('このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。');
         return;
       }
     }
@@ -280,7 +292,7 @@ export function SkillTreeSimulator() {
     if (!currentCharacter) return [];
 
     const affected: { id: string; name: string; currentLevel: number; newLevel: number }[] = [];
-    skills.forEach(skill => {
+    skills.forEach((skill) => {
       const currentLevel = selectedSkills[skill.id] || 0;
       if (currentLevel > 0) {
         // 現在のレベルで必要なランクを確認
@@ -309,7 +321,10 @@ export function SkillTreeSimulator() {
   };
 
   const handleRankChange = (newRank: number) => {
-    console.log("handleRankChange called with:", { newRank, currentRank: currentCharacter?.guildRank });
+    console.log('handleRankChange called with:', {
+      newRank,
+      currentRank: currentCharacter?.guildRank,
+    });
     // 表示用の状態を即時更新
     setDisplayRank(newRank);
 
@@ -332,7 +347,7 @@ export function SkillTreeSimulator() {
   };
 
   const handleRankChangeCancel = () => {
-    console.log("handleRankChangeCancel called:", {
+    console.log('handleRankChangeCancel called:', {
       currentGuildRank: currentCharacter?.guildRank,
       displayRank,
       originalRank,
@@ -349,7 +364,7 @@ export function SkillTreeSimulator() {
   };
 
   const applyRankChange = (newRank: number) => {
-    console.log("applyRankChange called with:", {
+    console.log('applyRankChange called with:', {
       newRank,
       currentGuildRank: currentCharacter?.guildRank,
       isRankChanging,
@@ -359,7 +374,7 @@ export function SkillTreeSimulator() {
 
     // 影響を受けるスキルのレベルを調整
     const updatedSelectedSkills = { ...selectedSkills };
-    affectedSkills.forEach(skill => {
+    affectedSkills.forEach((skill) => {
       updatedSelectedSkills[skill.id] = skill.newLevel;
     });
 
@@ -382,11 +397,11 @@ export function SkillTreeSimulator() {
   };
 
   const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 2));
+    setScale((prev) => Math.min(prev + 0.1, 2));
   };
 
   const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 0.5));
+    setScale((prev) => Math.max(prev - 0.1, 0.5));
   };
 
   const handleZoomReset = () => {
@@ -406,12 +421,12 @@ export function SkillTreeSimulator() {
     };
 
     const handleMouseUp = () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
   };
 
   // タッチデバイス用
@@ -429,12 +444,12 @@ export function SkillTreeSimulator() {
     };
 
     const handleTouchEnd = () => {
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleTouchEnd);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
     };
 
-    document.addEventListener("touchmove", handleTouchMove);
-    document.addEventListener("touchend", handleTouchEnd);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
   };
 
   // ステータス上昇の累計を計算する関数
@@ -460,7 +475,7 @@ export function SkillTreeSimulator() {
       physicalCriMulti: 0, // 物理CRI倍率
     };
 
-    skills.forEach(skill => {
+    skills.forEach((skill) => {
       const level = selectedSkills[skill.id] || 0;
       if (level > 0) {
         const levelData = skill.levels[level - 1];
@@ -541,7 +556,9 @@ export function SkillTreeSimulator() {
       <div className="w-full lg:w-1/5 rounded-lg p-12 lg:p-4 overflow-y-auto max-h-[800px]">
         <div className="flex flex-col gap-y-10">
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-4">ギルドランク {tempRank ?? displayRank}</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-4">
+              ギルドランク {tempRank ?? displayRank}
+            </h3>
             <div className="relative h-2">
               <div className="absolute inset-0 bg-background-light rounded-lg overflow-hidden">
                 <div
@@ -556,17 +573,17 @@ export function SkillTreeSimulator() {
                 min="1"
                 max="14"
                 value={tempRank ?? displayRank}
-                onChange={e => {
+                onChange={(e) => {
                   const newRank = parseInt(e.target.value);
                   setDisplayRank(newRank);
                   setTempRank(newRank);
                 }}
-                onMouseUp={e => {
+                onMouseUp={(e) => {
                   if (tempRank !== null) {
                     handleRankChange(tempRank);
                   }
                 }}
-                onTouchEnd={e => {
+                onTouchEnd={(e) => {
                   if (tempRank !== null) {
                     handleRankChange(tempRank);
                   }
@@ -577,7 +594,18 @@ export function SkillTreeSimulator() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2">必要コスト</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg my-4 font-medium text-text-primary">必要コスト</h3>
+              <Button
+                onClick={() => setIsDropRateModalOpen(true)}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-primary border-primary/50 hover:bg-primary/10 text-xs"
+              >
+                <GiLockedChest size={20} />
+                <span className="inline-block mt-{2px}">ドロ率計算</span>
+              </Button>
+            </div>
             <div className="space-y-2 text-sm">
               {/* ヘッダー行 */}
               <div className="grid grid-cols-3 gap-2 text-text-primary/70 text-xs mb-1">
@@ -607,14 +635,18 @@ export function SkillTreeSimulator() {
                       {(remainingMaterials.materials[material] || 0) > 0 &&
                         `×${(remainingMaterials.materials[material] || 0).toLocaleString()}`}
                     </div>
-                    <div className="text-right text-text-primary">{count > 0 && `×${count.toLocaleString()}`}</div>
+                    <div className="text-right text-text-primary">
+                      {count > 0 && `×${count.toLocaleString()}`}
+                    </div>
                   </div>
                 ))}
             </div>
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2 whitespace-nowrap">パッシブスキル上昇値</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-2 whitespace-nowrap">
+              パッシブスキル上昇値
+            </h3>
             <div className="space-y-2 text-sm">
               {totalStats.str > 0 && (
                 <div className="flex justify-between items-center">
@@ -732,7 +764,6 @@ export function SkillTreeSimulator() {
           </Button>
         </div>
       </div>
-
       {/* スキルツリー表示部分 */}
       <div
         ref={setContainerRef}
@@ -754,9 +785,9 @@ export function SkillTreeSimulator() {
             className="absolute flex items-center justify-center"
             style={{
               transform: `scale(${scale})`,
-              transformOrigin: "center",
-              width: "800px",
-              height: "800px",
+              transformOrigin: 'center',
+              width: '800px',
+              height: '800px',
             }}
             onMouseDown={handleMouseDown}
             onTouchStart={handleTouchStart}
@@ -764,16 +795,16 @@ export function SkillTreeSimulator() {
             <div
               style={{
                 transform: `translate(${position.x}px, ${position.y}px)`,
-                position: "relative",
-                width: "100%",
-                height: "100%",
+                position: 'relative',
+                width: '100%',
+                height: '100%',
               }}
             >
               {/* スキル接続線 */}
-              {skills.map(skill => {
+              {skills.map((skill) => {
                 if (!skill.parentIds) return null;
-                return skill.parentIds.map(parentId => {
-                  const parent = skills.find(s => s.id === parentId);
+                return skill.parentIds.map((parentId) => {
+                  const parent = skills.find((s) => s.id === parentId);
                   if (!parent) return null;
                   return (
                     <SkillConnection
@@ -787,14 +818,18 @@ export function SkillTreeSimulator() {
               })}
 
               {/* スキルノード */}
-              {skills.map(skill => (
+              {skills.map((skill) => (
                 <SkillNode
                   key={skill.id}
                   skill={skill}
                   selectedLevel={selectedSkills[skill.id] || 0}
                   acquiredLevel={acquiredSkills[skill.id] || 0}
                   maxLevel={skill.levels.length}
-                  isUnlocked={isSkillUnlocked(skill, selectedSkills, currentCharacter?.guildRank || 5)}
+                  isUnlocked={isSkillUnlocked(
+                    skill,
+                    selectedSkills,
+                    currentCharacter?.guildRank || 5
+                  )}
                   guildRank={currentCharacter?.guildRank || 5}
                   onClick={(skillId, e) => handleSkillClick(skillId, e)}
                   onRightClick={(skillId, e) => handleSkillRightClick(skillId, e)}
@@ -802,10 +837,13 @@ export function SkillTreeSimulator() {
                   onSelectedLevelDown={handleSelectedLevelDown}
                   onCheckDependencies={(skillId: string) => {
                     const hasActiveChildren = skills.some(
-                      (s: Skill) => s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
+                      (s: Skill) =>
+                        s.parentIds?.includes(skillId) && (selectedSkills[s.id] || 0) > 0
                     );
                     if (hasActiveChildren) {
-                      setError("このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。");
+                      setError(
+                        'このスキルを未取得にするには、先に依存する子スキルを未取得状態にしてください。'
+                      );
                       return false;
                     }
                     return true;
@@ -825,11 +863,10 @@ export function SkillTreeSimulator() {
           </div>
         </div>
       </div>
-
       {/* ランク変更確認ダイアログ */}
       <Dialog
         open={rankChangeDialogOpen}
-        onOpenChange={open => {
+        onOpenChange={(open) => {
           if (!open) {
             handleRankChangeCancel();
           }
@@ -842,7 +879,7 @@ export function SkillTreeSimulator() {
               に下げると、以下のスキルに影響があります：
             </p>
             <div className="max-h-40 overflow-y-auto mb-4">
-              {affectedSkills.map(skill => (
+              {affectedSkills.map((skill) => (
                 <div key={skill.id} className="mb-2">
                   <p className="text-text-primary">
                     {skill.name}:
@@ -850,7 +887,7 @@ export function SkillTreeSimulator() {
                       <span className="text-red-500"> 選択解除</span>
                     ) : (
                       <span className="text-yellow-500">
-                        {" "}
+                        {' '}
                         Lv{skill.currentLevel} → Lv{skill.newLevel}
                       </span>
                     )}
@@ -864,6 +901,8 @@ export function SkillTreeSimulator() {
         cancelText="キャンセル"
         onConfirm={() => pendingRankChange && applyRankChange(pendingRankChange)}
       />
+      {/* ドロップ率情報モーダル */}
+      <DropRateInfoModal isOpen={isDropRateModalOpen} onOpenChange={setIsDropRateModalOpen} />
     </div>
   );
 }

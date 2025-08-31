@@ -22,13 +22,6 @@ export default function Home() {
         <div className="flex items-start w-full md:w-auto justify-between gap-4 z-10">
           <CharacterSelect />
           <AuthButton />
-          <Button
-            onClick={() => setIsDropRateModalOpen(true)}
-            variant="outline"
-            className="text-sm px-4 py-2 border border-blue-500 text-blue-500 hover:bg-blue-900 transition-colors rounded"
-          >
-            ドロップ率情報
-          </Button>
         </div>
       </header>
 
