@@ -595,15 +595,15 @@ export function SkillTreeSimulator() {
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-lg my-4 font-medium text-text-primary">必要コスト</h3>
+              <h3 className="my-4 font-medium text-primary whitespace-nowrap">必要素材</h3>
               <Button
                 onClick={() => setIsDropRateModalOpen(true)}
-                variant="outline"
+                variant="primary"
                 size="sm"
-                className="flex items-center gap-2 text-primary border-primary/50 hover:bg-primary/10 text-xs"
+                className="flex items-center gap-1 hover:bg-primary/10 text-xs px-1"
               >
-                <GiLockedChest size={20} />
-                <span className="inline-block mt-{2px}">ドロ率計算</span>
+                <GiLockedChest size={18} />
+                <span className="text-xs inline-block mt-{2px}">ランク計算</span>
               </Button>
             </div>
             <div className="space-y-2 text-sm">
@@ -616,7 +616,7 @@ export function SkillTreeSimulator() {
 
               {/* ギルドコイン */}
               <div className="grid grid-cols-3 gap-2 items-center">
-                <div className="text-text-primary">ギルドコイン</div>
+                <div className="text-text-primary">コイン</div>
                 <div className="text-right text-text-primary">
                   {remainingMaterials.coins > 0 && `×${remainingMaterials.coins.toLocaleString()}`}
                 </div>
@@ -644,7 +644,7 @@ export function SkillTreeSimulator() {
           </div>
 
           <div>
-            <h3 className="text-lg font-medium text-text-primary mb-2 whitespace-nowrap">
+            <h3 className="my-4 font-medium text-primary whitespace-nowrap">
               パッシブスキル上昇値
             </h3>
             <div className="space-y-2 text-sm">
