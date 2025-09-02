@@ -94,22 +94,34 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                 items[0].ranks.map((_, i) => (
                   <th
                     key={i}
-                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs content-center ${
+                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs ${
                       i + 1 === currentRank ? 'bg-primary/70' : ''
-                    } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright] [-webkit-writing-mode:vertical-rl] [-webkit-text-orientation:upright]`}
+                    }`}
+                    style={{
+                      display: 'grid',
+                      placeItems: 'center',
+                      minHeight: '60px',
+                    }}
                   >
-                    {i + 1 === 10 ? (
-                      <>
-                        <span className="[writing-mode:vertical-rl] [text-orientation:upright] [-webkit-writing-mode:vertical-rl] [-webkit-text-orientation:upright]">
-                          ランク
-                        </span>
-                        <span className="[writing-mode:horizontal-tb] [text-orientation:upright] [-webkit-writing-mode:horizontal-tb] [-webkit-text-orientation:upright]">
-                          10
-                        </span>
-                      </>
-                    ) : (
-                      `ランク${i + 1}`
-                    )}
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transform: 'rotate(90deg)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {i + 1 === 10 ? (
+                        <>
+                          <span style={{ fontSize: '10px' }}>ランク</span>
+                          <span style={{ fontSize: '10px' }}>10</span>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: '10px' }}>{`ランク${i + 1}`}</span>
+                      )}
+                    </div>
                   </th>
                 ))}
             </tr>
