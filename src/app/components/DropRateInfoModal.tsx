@@ -96,14 +96,21 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                     key={i}
                     className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs content-center ${
                       i + 1 === currentRank ? 'bg-primary/70' : ''
-                    } whitespace-nowrap align-bottom [writing-mode:vertical-rl] [text-orientation:upright] [-webkit-writing-mode:vertical-rl] [-webkit-text-orientation:upright]`}
+                    } whitespace-nowrap align-bottom`}
+                    style={{
+                      writingMode: 'vertical-rl',
+                      textOrientation: 'upright',
+                      WebkitWritingMode: 'vertical-rl',
+                      WebkitTextOrientation: 'upright',
+                      transform: 'rotate(180deg)',
+                    }}
                   >
                     {i + 1 === 10 ? (
                       <>
-                        <span className="[writing-mode:vertical-rl] [text-orientation:upright] [-webkit-writing-mode:vertical-rl] [-webkit-text-orientation:upright]">
+                        <span style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
                           ランク
                         </span>
-                        <span className="[writing-mode:horizontal-tb] [text-orientation:upright] [-webkit-writing-mode:horizontal-tb] [-webkit-text-orientation:upright]">
+                        <span style={{ writingMode: 'horizontal-tb', textOrientation: 'upright' }}>
                           10
                         </span>
                       </>
