@@ -159,6 +159,45 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
       level: 0,
     }))
   );
+  const [equipmentType, setEquipmentType] = useState<'individual' | 'setup'>('individual');
+
+  // 装備タイプが変更された時のハンドラ
+  const handleEquipmentTypeChange = (newType: 'individual' | 'setup') => {
+    setEquipmentType(newType);
+
+    // 装備タイプが変更された時、他の装備の値をリセット
+    const resetEquipmentList = equipmentList.map((eq) => {
+      if (newType === 'setup') {
+        // セットアップ装備に切り替えた場合
+        if (eq.id !== 'setup') {
+          // 個別装備をリセット
+          return { ...eq, rarity: undefined, level: 0 };
+        } else {
+          // セットアップ装備にSR (setup)を設定
+          return { ...eq, rarity: 'SR (setup)', level: 0 };
+        }
+      } else {
+        // 個別装備に切り替えた場合、セットアップ装備をリセット
+        if (eq.id === 'setup') {
+          return { ...eq, rarity: undefined, level: 0 };
+        }
+      }
+      return eq;
+    });
+
+    setEquipmentList(resetEquipmentList);
+
+    // リセットされた装備設定を保存（undefined値を除外）
+    const equipmentForSave = resetEquipmentList.map((eq) => ({
+      id: eq.id,
+      level: eq.level,
+      ...(eq.rarity && { rarity: eq.rarity }),
+    }));
+
+    saveEquipmentConfig(equipmentForSave, user?.uid).catch((error) => {
+      console.error('Failed to save equipment config after type change:', error);
+    });
+  };
   const [showDetails, setShowDetails] = useState(false);
   const [rondDropRates, setRondDropRates] = useState<Record<string, RondDropRate>>({});
   const [chestDropRates, setChestDropRates] = useState<Record<string, any>>({});
@@ -171,6 +210,19 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
       try {
         const equipment = await loadEquipmentConfig(user?.uid);
         setEquipmentList(equipment);
+
+        // 装備タイプを自動判定
+        const setupEquipment = equipment.find((eq) => eq.id === 'setup');
+        const individualEquipment = equipment.filter((eq) => eq.id !== 'setup');
+        const hasIndividualEquipment = individualEquipment.some((eq) => eq.rarity);
+
+        if (setupEquipment && setupEquipment.rarity && !hasIndividualEquipment) {
+          // セットアップ装備のみが選択されている場合は、セットアップタブを選択
+          setEquipmentType('setup');
+        } else if (hasIndividualEquipment) {
+          // 個別装備が選択されている場合は、個別装備タブを選択
+          setEquipmentType('individual');
+        }
       } catch (error) {
         console.error('Failed to load equipment config:', error);
       }
@@ -271,7 +323,16 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
   // 合計RONDドロップ率を計算する関数
   const calculateTotalRondDropRate = () => {
-    return equipmentList.reduce((total, eq) => total + calculateSingleEquipmentDropRate(eq), 0);
+    if (equipmentType === 'setup') {
+      // セットアップ装備の場合、Setupのみを計算
+      const setupEquipment = equipmentList.find((eq) => eq.id === 'setup');
+      return setupEquipment ? calculateSingleEquipmentDropRate(setupEquipment) : 0;
+    } else {
+      // 個別装備の場合、Setup以外の7部位を計算
+      return equipmentList
+        .filter((eq) => eq.id !== 'setup')
+        .reduce((total, eq) => total + calculateSingleEquipmentDropRate(eq), 0);
+    }
   };
 
   // 合計ドロップ率に基づいてランクを決定する関数
@@ -301,9 +362,14 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
     setEquipmentList(newEquipmentList);
 
-    // 装備設定を保存
+    // 装備設定を保存（undefined値を除外）
     try {
-      await saveEquipmentConfig(newEquipmentList, user?.uid);
+      const equipmentForSave = newEquipmentList.map((eq) => ({
+        id: eq.id,
+        level: eq.level,
+        ...(eq.rarity && { rarity: eq.rarity }),
+      }));
+      await saveEquipmentConfig(equipmentForSave, user?.uid);
     } catch (error) {
       console.error('Failed to save equipment config:', error);
     }
@@ -435,55 +501,146 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
             </div>
           )}
 
-          <div className="space-y-2 max-w-[400px]">
-            {EQUIPMENT_SLOTS.map((slot) => {
-              const equipment = equipmentList.find((eq) => eq.id === slot.id);
-              if (!equipment) return null;
+          {/* 装備タイプ選択タブ */}
+          <div className="mb-4">
+            <div className="flex border-b border-gray-600">
+              <button
+                type="button"
+                onClick={() => handleEquipmentTypeChange('individual')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  equipmentType === 'individual'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                個別装備
+              </button>
+              <button
+                type="button"
+                onClick={() => handleEquipmentTypeChange('setup')}
+                className={`px-4 py-2 text-sm font-medium transition-colors ${
+                  equipmentType === 'setup'
+                    ? 'text-primary border-b-2 border-primary'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                セットアップ装備
+              </button>
+            </div>
+          </div>
 
-              return (
-                <div key={slot.id} className="flex items-center space-x-2">
-                  <div className="w-[20%] text-xs med:text-sm text-gray-300 whitespace-nowrap">
-                    {slot.name}
-                  </div>
-                  <select
-                    value={equipment.rarity || ''}
-                    onChange={(e) =>
-                      handleEquipmentChange(equipment.id, 'rarity', e.target.value || undefined)
-                    }
-                    className={`w-[60%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
-                      !equipment.rarity ? 'text-gray-300/90' : 'text-white'
-                    }`}
-                  >
-                    <option value="">レアリティを選択</option>
-                    {Object.keys(rondDropRates).map((rarity) => (
-                      <option key={rarity} value={rarity}>
-                        {rarity}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={equipment.level}
-                    onChange={(e) =>
-                      handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value))
-                    }
-                    className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
-                  >
-                    <option value={0}>0</option>
-                    {equipment.rarity &&
-                      rondDropRates[equipment.rarity] &&
-                      Array.from(
-                        { length: rondDropRates[equipment.rarity].maxLevel + 1 },
-                        (_, i) => (
-                          <option key={i} value={i}>
-                            {i}
-                          </option>
-                        )
-                      )}
-                  </select>
-                  <span className="text-gray-300">Lv</span>
-                </div>
-              );
-            })}
+          {/* 装備選択エリア */}
+          <div className="space-y-2 max-w-[400px]">
+            {equipmentType === 'individual'
+              ? // 個別装備選択
+                EQUIPMENT_SLOTS.filter((slot) => slot.id !== 'setup').map((slot) => {
+                  const equipment = equipmentList.find((eq) => eq.id === slot.id);
+                  if (!equipment) return null;
+
+                  return (
+                    <div key={slot.id} className="flex items-center space-x-2">
+                      <div className="w-[20%] text-xs med:text-sm text-gray-300 whitespace-nowrap">
+                        {slot.name}
+                      </div>
+                      <select
+                        value={equipment.rarity || ''}
+                        onChange={(e) =>
+                          handleEquipmentChange(equipment.id, 'rarity', e.target.value || undefined)
+                        }
+                        className={`w-[60%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
+                          !equipment.rarity ? 'text-gray-300/90' : 'text-white'
+                        }`}
+                      >
+                        <option value="">レアリティを選択</option>
+                        {Object.keys(rondDropRates)
+                          .filter((rarity) => rarity !== 'SR (setup)')
+                          .map((rarity) => (
+                            <option key={rarity} value={rarity}>
+                              {rarity}
+                            </option>
+                          ))}
+                      </select>
+                      <select
+                        value={equipment.level}
+                        onChange={(e) =>
+                          handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value))
+                        }
+                        className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value={0}>0</option>
+                        {equipment.rarity &&
+                          rondDropRates[equipment.rarity] &&
+                          Array.from(
+                            { length: rondDropRates[equipment.rarity].maxLevel + 1 },
+                            (_, i) => (
+                              <option key={i} value={i}>
+                                {i}
+                              </option>
+                            )
+                          )}
+                      </select>
+                      <span className="text-gray-300">Lv</span>
+                    </div>
+                  );
+                })
+              : // セットアップ装備選択
+                (() => {
+                  const setupEquipment = equipmentList.find((eq) => eq.id === 'setup');
+                  if (!setupEquipment) return null;
+
+                  return (
+                    <div className="flex items-center space-x-2">
+                      <div className="w-[20%] text-xs med:text-sm text-gray-300 whitespace-nowrap">
+                        Setup
+                      </div>
+                      <select
+                        value={setupEquipment.rarity || 'SR (setup)'}
+                        onChange={(e) =>
+                          handleEquipmentChange(
+                            setupEquipment.id,
+                            'rarity',
+                            e.target.value || undefined
+                          )
+                        }
+                        className={`w-[60%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
+                          !setupEquipment.rarity ? 'text-gray-300/90' : 'text-white'
+                        }`}
+                      >
+                        {Object.keys(rondDropRates)
+                          .filter((rarity) => rarity === 'SR (setup)')
+                          .map((rarity) => (
+                            <option key={rarity} value={rarity}>
+                              {rarity}
+                            </option>
+                          ))}
+                      </select>
+                      <select
+                        value={setupEquipment.level}
+                        onChange={(e) =>
+                          handleEquipmentChange(
+                            setupEquipment.id,
+                            'level',
+                            parseInt(e.target.value)
+                          )
+                        }
+                        className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                      >
+                        <option value={0}>0</option>
+                        {setupEquipment.rarity &&
+                          rondDropRates[setupEquipment.rarity] &&
+                          Array.from(
+                            { length: rondDropRates[setupEquipment.rarity].maxLevel + 1 },
+                            (_, i) => (
+                              <option key={i} value={i}>
+                                {i}
+                              </option>
+                            )
+                          )}
+                      </select>
+                      <span className="text-gray-300">Lv</span>
+                    </div>
+                  );
+                })()}
           </div>
 
           <div className="mt-6">
