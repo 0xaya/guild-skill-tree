@@ -96,34 +96,28 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                 items[0].ranks.map((_, i) => (
                   <th
                     key={i}
-                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs ${
+                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs content-center ${
                       i + 1 === currentRank ? 'bg-primary/70' : ''
-                    }`}
+                    } whitespace-nowrap align-bottom`}
                     style={{
-                      display: 'grid',
-                      placeItems: 'center',
-                      minHeight: '60px',
+                      writingMode: 'vertical-rl',
+                      textOrientation: 'upright',
+                      WebkitWritingMode: 'vertical-rl',
+                      WebkitTextOrientation: 'upright',
                     }}
                   >
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transform: 'rotate(90deg)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {i + 1 === 10 ? (
-                        <>
-                          <span style={{ fontSize: '10px' }}>ランク</span>
-                          <span style={{ fontSize: '10px' }}>10</span>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: '10px' }}>{`ランク${i + 1}`}</span>
-                      )}
-                    </div>
+                    {i + 1 === 10 ? (
+                      <>
+                        <span style={{ writingMode: 'vertical-rl', textOrientation: 'upright' }}>
+                          ランク
+                        </span>
+                        <span style={{ writingMode: 'horizontal-tb', textOrientation: 'upright' }}>
+                          10
+                        </span>
+                      </>
+                    ) : (
+                      `ランク${i + 1}`
+                    )}
                   </th>
                 ))}
             </tr>
