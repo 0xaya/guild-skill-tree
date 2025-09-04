@@ -513,7 +513,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                個別装備
+                部位別
               </button>
               <button
                 type="button"
@@ -524,7 +524,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                     : 'text-gray-400 hover:text-gray-300'
                 }`}
               >
-                セットアップ装備
+                セットアップ
               </button>
             </div>
           </div>
@@ -551,7 +551,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                           !equipment.rarity ? 'text-gray-300/90' : 'text-white'
                         }`}
                       >
-                        <option value="">レアリティを選択</option>
+                        <option value="">レアリティ</option>
                         {Object.keys(rondDropRates)
                           .filter((rarity) => rarity !== 'SR (setup)')
                           .map((rarity) => (
