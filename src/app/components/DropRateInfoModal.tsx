@@ -5,6 +5,8 @@ import { fetchCSV, RondDropRate, ChestDropRate, RankThreshold } from '../utils/c
 import { loadEquipmentConfig, saveEquipmentConfig } from '../utils/storageUtils';
 import { Equipment } from '../types/character';
 import { useAuth } from '../contexts/AuthContext';
+import { GiLockedChest } from 'react-icons/gi';
+import { VscSparkleFilled } from 'react-icons/vsc';
 
 // 装備部位の定義
 const EQUIPMENT_SLOTS = [
@@ -645,10 +647,23 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
 
           <div className="mt-6">
             <p>
-              <span className="">合計ドロップ率: </span>
+              <span className="text-sm">合計: </span>
               {totalRondDropRate.toFixed(2)}%
             </p>
-            <p className="mt-2 font-bold">現在のランク: {currentRank}</p>
+            <div className="mt-2 flex flex-col items-center justify-center">
+              <img src="images/decorative-line-1.svg" alt="装飾線" className="w-full my-4" />
+              <p className="-ml-1 text-xl font-bold text-primary flex items-center gap-1">
+                <VscSparkleFilled size={16} />
+                <GiLockedChest size={20} className="mr-2" />
+                防衛戦ランク {currentRank}
+                <VscSparkleFilled size={16} className="ml-2" />
+              </p>
+              <img
+                src="images/decorative-line-1.svg"
+                alt="装飾線"
+                className="w-full my-4 transform rotate-180"
+              />
+            </div>
           </div>
 
           <div className="mt-8 space-y-6">
