@@ -96,9 +96,9 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                 items[0].ranks.map((_, i) => (
                   <th
                     key={i}
-                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-xs content-center ${
+                    className={`w-[40px] px-2 py-2 border-b border-gray-600 text-center text-xs ${
                       i + 1 === currentRank ? 'bg-primary/70' : ''
-                    } whitespace-nowrap align-bottom`}
+                    } whitespace-nowrap`}
                   >
                     {i + 1 === 10 ? (
                       <>
@@ -112,16 +112,7 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                         >
                           ランク
                         </span>
-                        <span
-                          style={{
-                            writingMode: 'horizontal-tb',
-                            textOrientation: 'upright',
-                            WebkitWritingMode: 'vertical-rl',
-                            WebkitTextOrientation: 'upright',
-                          }}
-                        >
-                          10
-                        </span>
+                        <div className="-mt-[3px] ml-[2px]">10</div>
                       </>
                     ) : (
                       <span
@@ -132,7 +123,7 @@ const DropRateTable: React.FC<DropRateTableProps> = ({
                           WebkitTextOrientation: 'upright',
                         }}
                       >
-                        `ランク${i + 1}`
+                        ランク{i + 1}
                       </span>
                     )}
                   </th>
@@ -273,13 +264,13 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
             let titleStyle = '';
             switch (item.title_color) {
               case 'text-yellow-400':
-                titleStyle = 'color: #fbbf24;'; // yellow-400
+                titleStyle = 'color: #ffe270;'; // yellow-400
                 break;
               case 'text-gray-200':
                 titleStyle = 'color: #e5e7eb;'; // gray-200
                 break;
               case 'text-amber-600':
-                titleStyle = 'color: #d97706;'; // amber-600
+                titleStyle = 'color: #a75f33;'; // amber-600
                 break;
               default:
                 titleStyle = 'color: #ffffff;'; // デフォルトは白
@@ -560,7 +551,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleEquipmentChange(equipment.id, 'rarity', e.target.value || undefined)
                         }
-                        className={`w-[60%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
+                        className={`w-[50%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
                           !equipment.rarity ? 'text-gray-300/90' : 'text-white'
                         }`}
                       >
@@ -578,7 +569,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                         onChange={(e) =>
                           handleEquipmentChange(equipment.id, 'level', parseInt(e.target.value))
                         }
-                        className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-[30%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value={0}>0</option>
                         {equipment.rarity &&
@@ -615,7 +606,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                             e.target.value || undefined
                           )
                         }
-                        className={`w-[60%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
+                        className={`w-[50%] bg-gray-700 border border-gray-600 rounded p-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary ${
                           !setupEquipment.rarity ? 'text-gray-300/90' : 'text-white'
                         }`}
                       >
@@ -636,7 +627,7 @@ export const DropRateInfoModal: React.FC<DropRateInfoModalProps> = ({ isOpen, on
                             parseInt(e.target.value)
                           )
                         }
-                        className="w-[20%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-[30%] bg-gray-700 border border-gray-600 rounded p-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value={0}>0</option>
                         {setupEquipment.rarity &&
